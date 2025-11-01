@@ -1,0 +1,188 @@
+/* CuratorOdyssey - DYSS 디자인 시스템 기반 글로벌 스타일 */
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Square+Round:wght@400;700&display=swap');
+
+/* 🎯 DYSS 디자인 시스템 변수 */
+:root {
+  /* Primary Colors - 보라색 계열 */
+  --dyss-color-primary: #8B5CF6;
+  --dyss-color-primary-50: #F5F3FF;
+  --dyss-color-primary-100: #EDE9FE;
+  --dyss-color-primary-200: #DDD6FE;
+  --dyss-color-primary-300: #C4B5FD;
+  --dyss-color-primary-400: #A78BFA;
+  --dyss-color-primary-500: #8B5CF6;
+  --dyss-color-primary-600: #7C3AED;
+  --dyss-color-primary-700: #6D28D9;
+  --dyss-color-primary-800: #5B21B6;
+  --dyss-color-primary-900: #4C1D95;
+  
+  /* Secondary Colors - 연한 노란색 계열 */
+  --dyss-color-secondary: #F3F5DC;
+  --dyss-color-secondary-100: #F3F5DC;
+  --dyss-color-secondary-200: #E8EBCD;
+  --dyss-color-secondary-300: #DDE1BE;
+  
+  /* Neutral Colors */
+  --dyss-color-white: #FFFFFF;
+  --dyss-color-gray-50: #F9FAFB;
+  --dyss-color-gray-100: #F3F4F6;
+  --dyss-color-gray-200: #E5E7EB;
+  --dyss-color-gray-300: #D1D5DB;
+  --dyss-color-gray-400: #9CA3AF;
+  --dyss-color-gray-500: #6B7280;
+  --dyss-color-gray-600: #4B5563;
+  --dyss-color-gray-700: #374151;
+  --dyss-color-gray-800: #1F2937;
+  --dyss-color-gray-900: #111827;
+  
+  /* Background Colors */
+  --dyss-color-bg-primary: var(--dyss-color-white);
+  --dyss-color-bg-secondary: var(--dyss-color-gray-50);
+  --dyss-color-bg-tertiary: var(--dyss-color-gray-100);
+  
+  /* Text Colors */
+  --dyss-color-text-primary: var(--dyss-color-gray-900);
+  --dyss-color-text-secondary: var(--dyss-color-gray-600);
+  --dyss-color-text-tertiary: var(--dyss-color-gray-400);
+  
+  /* Font Families */
+  --dyss-font-family-primary: 
+    "NanumSquareRound", "Zen Maru Gothic", 
+    -apple-system, BlinkMacSystemFont, 
+    "Segoe UI", "Noto Sans KR", sans-serif;
+  --dyss-font-family-heading: 
+    "Zen Maru Gothic", "NanumSquareRound",
+    -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  /* Font Sizes */
+  --dyss-font-size-xs: 0.75rem;    /* 12px */
+  --dyss-font-size-sm: 0.875rem;   /* 14px */
+  --dyss-font-size-base: 1rem;     /* 16px */
+  --dyss-font-size-lg: 1.125rem;   /* 18px */
+  --dyss-font-size-xl: 1.25rem;    /* 20px */
+  --dyss-font-size-2xl: 1.5rem;    /* 24px */
+  --dyss-font-size-3xl: 1.875rem;  /* 30px */
+  --dyss-font-size-4xl: 2.25rem;   /* 36px */
+  --dyss-font-size-5xl: 3rem;      /* 48px */
+  
+  /* Font Weights */
+  --dyss-font-weight-light: 300;
+  --dyss-font-weight-normal: 400;
+  --dyss-font-weight-medium: 500;
+  --dyss-font-weight-semibold: 600;
+  --dyss-font-weight-bold: 700;
+  
+  /* Line Heights */
+  --dyss-line-height-tight: 1.25;
+  --dyss-line-height-normal: 1.5;
+  --dyss-line-height-relaxed: 1.625;
+  
+  /* Spacing - 8px 기반 */
+  --dyss-space-1: 0.4rem;   /* 4px */
+  --dyss-space-2: 0.8rem;   /* 8px */
+  --dyss-space-3: 1.2rem;   /* 12px */
+  --dyss-space-4: 1.6rem;   /* 16px */
+  --dyss-space-5: 2.0rem;   /* 20px */
+  --dyss-space-6: 2.4rem;   /* 24px */
+  --dyss-space-8: 3.2rem;   /* 32px */
+  --dyss-space-10: 4.0rem;  /* 40px */
+  --dyss-space-12: 4.8rem;  /* 48px */
+  --dyss-space-16: 6.4rem;  /* 64px */
+  --dyss-space-20: 8.0rem;  /* 80px */
+  
+  /* Radius */
+  --dyss-radius-sm: 0.25rem;  /* 4px */
+  --dyss-radius-md: 0.5rem;   /* 8px */
+  --dyss-radius-lg: 0.75rem;  /* 12px */
+  --dyss-radius-xl: 1rem;     /* 16px */
+  --dyss-radius-2xl: 1.5rem;  /* 24px */
+  --dyss-radius-full: 9999px;
+  
+  /* Shadows */
+  --dyss-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --dyss-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --dyss-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --dyss-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Transitions */
+  --dyss-transition-fast: 0.15s ease-out;
+  --dyss-transition-normal: 0.3s ease-out;
+  --dyss-transition-slow: 0.6s ease-out;
+  
+  /* Grid */
+  --dyss-grid-gap: 1.6rem;
+  --dyss-container-padding: 2rem;
+  --dyss-container-max-width: 1200px;
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dyss-color-bg-primary: var(--dyss-color-gray-900);
+    --dyss-color-bg-secondary: var(--dyss-color-gray-800);
+    --dyss-color-bg-tertiary: var(--dyss-color-gray-700);
+    --dyss-color-text-primary: var(--dyss-color-gray-100);
+    --dyss-color-text-secondary: var(--dyss-color-gray-300);
+    --dyss-color-text-tertiary: var(--dyss-color-gray-400);
+  }
+}
+
+/* 글로벌 리셋 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--dyss-font-family-primary);
+  font-size: var(--dyss-font-size-base);
+  line-height: var(--dyss-line-height-normal);
+  color: var(--dyss-color-text-primary);
+  background: var(--dyss-color-bg-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* 헤딩 스타일 */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--dyss-font-family-heading);
+  font-weight: var(--dyss-font-weight-semibold);
+  line-height: var(--dyss-line-height-tight);
+  margin: 0;
+}
+
+h1 { font-size: var(--dyss-font-size-4xl); }
+h2 { font-size: var(--dyss-font-size-3xl); }
+h3 { font-size: var(--dyss-font-size-2xl); }
+h4 { font-size: var(--dyss-font-size-xl); }
+h5 { font-size: var(--dyss-font-size-lg); }
+h6 { font-size: var(--dyss-font-size-base); }
+
+/* 컨테이너 */
+.dyss-container {
+  max-width: var(--dyss-container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--dyss-container-padding);
+}
+
+/* 감소된 모션 선호도 지원 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

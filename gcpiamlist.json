@@ -1,0 +1,462 @@
+{
+  "bindings": [
+    {
+      "members": [
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/aiplatform.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/aiplatform.user"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com"
+      ],
+      "role": "roles/appengine.appAdmin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/artifactregistry.writer"
+    },
+    {
+      "members": [
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/bigquery.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudbuild.builds.builder"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/cloudbuild.builds.editor"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudbuild.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudbuild.workerPoolUser"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/cloudconfig.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudfunctions.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/cloudfunctions.developer"
+    },
+    {
+      "members": [
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:service-501326088107@gcf-admin-robot.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudfunctions.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudkms.cryptoKeyDecrypter"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-cloudscheduler.iam.gserviceaccount.com"
+      ],
+      "role": "roles/cloudscheduler.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/compute.instanceAdmin.v1"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@compute-system.iam.gserviceaccount.com"
+      ],
+      "role": "roles/compute.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/container.developer"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@container-engine-robot.iam.gserviceaccount.com"
+      ],
+      "role": "roles/container.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@container-analysis.iam.gserviceaccount.com"
+      ],
+      "role": "roles/containeranalysis.ServiceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@containerregistry.iam.gserviceaccount.com"
+      ],
+      "role": "roles/containerregistry.ServiceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-containerscanning.iam.gserviceaccount.com"
+      ],
+      "role": "roles/containerscanning.ServiceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@dataflow-service-producer-prod.iam.gserviceaccount.com"
+      ],
+      "role": "roles/dataflow.serviceAgent"
+    },
+    {
+      "members": [
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/datapipelines.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/datastore.user"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-app-hosting-compute@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/developerconnect.readTokenAccessor"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-devconnect.iam.gserviceaccount.com"
+      ],
+      "role": "roles/developerconnect.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudservices.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-measurement@system.gserviceaccount.com"
+      ],
+      "role": "roles/editor"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com"
+      ],
+      "role": "roles/eventarc.eventReceiver"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/firebase.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-firebase.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebase.managementServiceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-app-hosting-compute@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebase.sdkAdminServiceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebaseappdistro.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-app-hosting-compute@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebaseapphosting.computeRunner"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-firebaseapphosting.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebaseapphosting.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebasedatabase.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@firebase-rules.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firebaserules.system"
+    },
+    {
+      "members": [
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/firebasestorage.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-firestore.iam.gserviceaccount.com"
+      ],
+      "role": "roles/firestore.serviceAgent"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:service-501326088107@gcp-sa-pubsub.iam.gserviceaccount.com"
+      ],
+      "role": "roles/iam.serviceAccountTokenCreator"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/iam.serviceAccountUser"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/logging.configWriter"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/logging.logWriter"
+    },
+    {
+      "members": [
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/ml.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-notebooks.iam.gserviceaccount.com"
+      ],
+      "role": "roles/notebooks.serviceAgent"
+    },
+    {
+      "members": [
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/owner"
+    },
+    {
+      "members": [
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/pubsub.publisher"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-pubsub.iam.gserviceaccount.com"
+      ],
+      "role": "roles/pubsub.serviceAgent"
+    },
+    {
+      "members": [
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/resourcemanager.projectIamAdmin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/run.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com"
+      ],
+      "role": "roles/run.invoker"
+    },
+    {
+      "members": [
+        "serviceAccount:service-501326088107@serverless-robot-prod.iam.gserviceaccount.com"
+      ],
+      "role": "roles/run.serviceAgent"
+    },
+    {
+      "condition": {
+        "expression": "request.time < timestamp(\"2025-09-20T09:22:21.504Z\")",
+        "title": "cloudbuild-connection-setup"
+      },
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-cloudbuild.iam.gserviceaccount.com"
+      ],
+      "role": "roles/secretmanager.admin"
+    },
+    {
+      "condition": {
+        "expression": "request.time < timestamp(\"2025-09-20T10:12:44.135Z\")",
+        "title": "developer-connect-connection-setup"
+      },
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-devconnect.iam.gserviceaccount.com"
+      ],
+      "role": "roles/secretmanager.admin"
+    },
+    {
+      "condition": {
+        "expression": "request.time < timestamp(\"2025-10-16T05:25:06.964Z\")",
+        "title": "developer-connect-connection-setup"
+      },
+      "members": [
+        "serviceAccount:service-501326088107@gcp-sa-devconnect.iam.gserviceaccount.com"
+      ],
+      "role": "roles/secretmanager.admin"
+    },
+    {
+      "members": [
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "user:6siegfriex@argo.ai.kr"
+      ],
+      "role": "roles/secretmanager.secretAccessor"
+    },
+    {
+      "members": [
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/secretmanager.secretVersionManager"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/storage.admin"
+    },
+    {
+      "condition": {
+        "expression": "request.time < timestamp(\"2025-10-16T05:25:06.964Z\")",
+        "title": "developer-connect-connection-setup"
+      },
+      "members": [
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/storage.admin"
+    },
+    {
+      "condition": {
+        "expression": "request.time < timestamp(\"2025-10-16T05:25:06.964Z\")",
+        "title": "developer-connect-connection-setup"
+      },
+      "members": [
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/storage.objectAdmin"
+    },
+    {
+      "members": [
+        "serviceAccount:501326088107-compute@developer.gserviceaccount.com",
+        "serviceAccount:501326088107@cloudbuild.gserviceaccount.com",
+        "serviceAccount:co-1016@appspot.gserviceaccount.com",
+        "serviceAccount:co-function-runner@co-1016.iam.gserviceaccount.com",
+        "serviceAccount:firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com"
+      ],
+      "role": "roles/storage.objectCreator"
+    }
+  ],
+  "etag": "BwZBP3Uh9vc=",
+  "version": 3
+}
