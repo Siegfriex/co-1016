@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import * as d3 from 'd3';
 
-const ComparisonAreaChart = React.memo(({ 
+const ComparisonAreaChart = ({ 
   series, 
   axis, 
   artistA, 
@@ -64,15 +64,7 @@ const ComparisonAreaChart = React.memo(({
     const g = svg.append('g')
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // 스케일 설정
-    const xScale = d3.scaleLinear()
-      .domain(d3.extent(series, d => d.t))
-      .range([0, width - margin.left - margin.right]);
-
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max(series, d => Math.max(d.v_A, d.v_B))])
-      .nice()
-      .range([height - margin.top - margin.bottom, 0]);
+    // 스케일은 이미 scales에서 가져왔으므로 중복 선언 제거
 
     // 그라데이션 정의
     const defs = svg.append('defs');
@@ -329,4 +321,4 @@ const ComparisonAreaChart = React.memo(({
   );
 };
 
-export default ComparisonAreaChart;
+export default React.memo(ComparisonAreaChart);
