@@ -40,19 +40,28 @@ steps:
       - 'CI=true'
 
   # =====================================================
+  # 3.5 Firebase CLI 설치
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'install-firebase-cli'
+    args: ['install', '-g', 'firebase-tools']
+    waitFor: ['verify-build']
+
+  # =====================================================
   # 4. 환경별 배포 전략
   # =====================================================
-  - name: 'gcr.io/$_PROJECT_ID/firebase'
+  - name: 'gcr.io/cloud-builders/node'
     id: 'deploy-firebase'
+    entrypoint: 'firebase'
     args:
       - 'deploy'
       - '--only'
-      - 'hosting,functions'
+      - 'hosting,functions,firestore:indexes'
       - '--project'
       - '$_PROJECT_ID'
       - '--token'
-      - '$(cat /workspace/.firebase-token || echo "")'
-    waitFor: ['verify-build']
+      - '${_FIREBASE_TOKEN}'
+    waitFor: ['install-firebase-cli']
     env:
       - 'FIREBASE_TOKEN=${_FIREBASE_TOKEN}'
 
@@ -73,14 +82,7 @@ steps:
   # =====================================================
   - name: 'gcr.io/cloud-builders/gcloud'
     id: 'save-rollback-info'
-    args:
-      - 'firebase'
-      - 'functions:list'
-      - '--project'
-      - '$_PROJECT_ID'
-      - '--format=json'
     waitFor: ['deploy-firebase']
-    entrypoint: 'bash'
     script: |
       #!/bin/bash
       FUNCTIONS_LIST=$(gcloud firebase functions:list --project=$_PROJECT_ID --format=json)

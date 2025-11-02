@@ -401,11 +401,20 @@ erDiagram
 
 **Firestore 복합 인덱스**:
 
-| 컬렉션 | 인덱스 필드 | 용도 |
-|--------|------------|------|
-| `timeseries` | `(artist_id, axis, version DESC)` | 시계열 조회 |
-| `compare_pairs` | `(artistA, artistB, axis)` | 비교 데이터 조회 |
-| `artist_summary` | `(artist_id, updated_at DESC)` | 최신 요약 데이터 |
+| 컬렉션 | 인덱스 필드 | 우선순위 | 상태 | 용도 |
+|--------|------------|---------|------|------|
+| `timeseries` | `(artist_id, axis, version DESC)` | HIGH | ✅ 배포됨 | 시계열 조회 (블루프린트/SRD 명시) |
+| `timeseries` | `(artist_id, axis)` | HIGH | ✅ 배포됨 | 기본 시계열 조회 |
+| `compare_pairs` | `(pair_id, axis)` | HIGH | ✅ 배포됨 | 기본 비교 데이터 조회 |
+| `compare_pairs` | `(artistA_id, artistB_id, axis)` | MEDIUM | ✅ 배포됨 | 작가 쌍별 비교 분석 |
+| `artist_summary` | `(artist_id, updated_at DESC)` | MEDIUM | ✅ 배포됨 | 최신 요약 데이터 |
+| `artist_summary` | `(is_temporary)` | MEDIUM | ✅ 배포됨 | P2 협업 상태 확인 |
+| `measures` | `(entity_id, axis, time_window)` | HIGH | ✅ 배포됨 | 시계열 집계 쿼리 |
+| `measures` | `(entity_id, axis)` | HIGH | ✅ 배포됨 | 축별 집계 쿼리 |
+| `events` | `(entity_participants CONTAINS, start_date DESC)` | MEDIUM | ✅ 배포됨 | 이벤트 시간순 조회 (최신순) |
+| `events` | `(entity_participants CONTAINS, start_date ASC)` | MEDIUM | ✅ 배포됨 | 이벤트 범위 조회 |
+| `entities` | `(identity_type, career_status)` | MEDIUM | ✅ 배포됨 | 활성 아티스트 목록 |
+| `edges` | `(src_id, relation_type, weight DESC)` | MEDIUM | ✅ 배포됨 | 관계 네트워크 조회 |
 
 **인덱스 히트율 목표**: 99%
 
@@ -413,6 +422,11 @@ erDiagram
 - `.limit(50)` 적용 (시계열 bins)
 - `.orderBy()` + `.limit()` 조합
 - `.where()` 조건 순서 최적화
+
+**인덱스 관리**:
+- 자동 검증: `node scripts/firestore/validateIndexes.js`
+- 체크리스트: `docs/firestore/INDEX_CHECKLIST.md`
+- 상세 명세: `docs/data/DATA_MODEL_SPECIFICATION.md` Section 4
 
 ### 4.3 데이터 계층화 다이어그램
 

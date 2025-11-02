@@ -1438,9 +1438,23 @@ compressTimeseriesData(timeseriesData) {
 - `axis` (단순 인덱스)
 
 #### 복합 인덱스 (Composite)
-- `(artist_id, axis, start_date DESC)` for timeseries
-- `(pair_id, axis)` for compare_pairs
-- 생성: Firebase Console 또는 `gcloud firestore indexes create`
+
+**HIGH 우선순위 (필수):**
+- `(artist_id, axis, version DESC)` for timeseries - ✅ 배포됨 (블루프린트/SRD 명시 필수)
+- `(pair_id, axis)` for compare_pairs - ✅ 배포됨
+- `(entity_id, axis, time_window)` for measures - ✅ 배포됨 (fnBatchTimeseries 필수)
+- `(entity_id, axis)` for measures - ✅ 배포됨
+
+**MEDIUM 우선순위:**
+- `(artist_id, axis)` for timeseries - ✅ 배포됨
+- `(artistA_id, artistB_id, axis)` for compare_pairs - ✅ 배포됨
+- `(artist_id, updated_at DESC)` for artist_summary - ✅ 배포됨
+- `(entity_participants CONTAINS, start_date DESC/ASC)` for events - ✅ 배포됨
+
+**인덱스 생성 방법:**
+- Firebase Console 또는 `firebase deploy --only firestore:indexes` (권장)
+- 자동 검증: `node scripts/firestore/validateIndexes.js`
+- 상세 정보: `docs/firestore/INDEX_CHECKLIST.md` 참조
 
 **Geo/Fulltext**: 불필요 (아티스트 데이터 중심)
 

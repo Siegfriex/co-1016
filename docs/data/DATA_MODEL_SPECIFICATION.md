@@ -397,26 +397,58 @@ erDiagram
 
 #### 4.1.1 measures 컬렉션 인덱스
 
-| 인덱스 이름 | 필드 조합 | 타입 | 용도 |
-|-----------|----------|------|------|
-| `measures_entity_axis_metric` | `entity_id` (ASC) + `axis` (ASC) + `metric_code` (ASC) | composite | 특정 작가의 특정 축/지표 조회 |
-| `measures_entity_axis_time` | `entity_id` (ASC) + `axis` (ASC) + `time_window` (ASC) | composite | 시계열 집계 쿼리 최적화 |
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `measures_entity_axis_metric` | `entity_id` (ASC) + `axis` (ASC) + `metric_code` (ASC) | composite | ✅ 배포됨 | 특정 작가의 특정 축/지표 조회 |
+| `measures_entity_axis_time` | `entity_id` (ASC) + `axis` (ASC) + `time_window` (ASC) | composite | ✅ 배포됨 | 시계열 집계 쿼리 최적화 |
+| `measures_entity_axis` | `entity_id` (ASC) + `axis` (ASC) | composite | ✅ 배포됨 | 축별 집계 쿼리 (SCHEMA_DESIGN_GUIDE 명시) |
+| `measures_entity_axis_value_time` | `entity_id` (ASC) + `axis` (ASC) + `value_normalized` (ASC) + `time_window` (ASC) | composite | ✅ 배포됨 | 정규화된 값 기준 시계열 조회 (fnBatchTimeseries) |
+| `measures_source_priority` | `source_id` (ASC) + `priority` (ASC) | composite | ✅ 배포됨 | 출처별 우선순위 조회 (SCHEMA_DESIGN_GUIDE 명시) |
 
 **예시 쿼리:**
 ```javascript
-// fnBatchTimeseries에서 사용
+// timeWindowRules.js에서 사용 (measures_entity_axis_time 인덱스 사용)
+db.collection('measures')
+  .where('entity_id', '==', 'ARTIST_0005')
+  .where('axis', '==', '제도')
+  .orderBy('time_window')
+
+// normalizationSpecs.js에서 사용 (measures_entity_axis_time 인덱스 사용)
+db.collection('measures')
+  .where('entity_id', '==', 'ARTIST_0005')
+  .where('axis', '==', '제도')
+  .orderBy('time_window')
+
+// fnBatchTimeseries에서 사용 (measures_entity_axis_value_time 인덱스 사용)
+db.collection('measures')
+  .where('entity_id', '==', 'ARTIST_0005')
+  .where('axis', '==', '제도')
+  .where('value_normalized', '!=', null)
+  .orderBy('time_window')
+
+// 범위 쿼리 예시
 db.collection('measures')
   .where('entity_id', '==', 'ARTIST_0005')
   .where('axis', '==', '제도')
   .where('time_window', '>=', '2014-01')
   .orderBy('time_window')
+
+// 정규화된 값 기준 조회
+db.collection('measures')
+  .where('entity_id', '==', 'ARTIST_0005')
+  .where('axis', '==', '제도')
+  .where('value_normalized', '!=', null)
+  .orderBy('time_window')
 ```
+
+**참고**: 모든 인덱스는 `firestore.indexes.json`에 정의되어 있으며, `docs/firestore/INDEX_CHECKLIST.md`에서 상세 정보를 확인할 수 있습니다.
 
 #### 4.1.2 timeseries 컬렉션 인덱스
 
-| 인덱스 이름 | 필드 조합 | 타입 | 용도 |
-|-----------|----------|------|------|
-| `timeseries_artist_axis` | `artist_id` (ASC) + `axis` (ASC) | composite | 특정 작가의 특정 축 시계열 조회 |
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `timeseries_artist_axis` | `artist_id` (ASC) + `axis` (ASC) | composite | ✅ 배포됨 | 특정 작가의 특정 축 시계열 조회 |
+| `timeseries_artist_axis_version` | `artist_id` (ASC) + `axis` (ASC) + `version` (DESC) | composite | ✅ 배포됨 | 최신 버전 시계열 조회 (블루프린트/SRD 명시) |
 
 **예시 쿼리:**
 ```javascript
@@ -424,19 +456,38 @@ db.collection('measures')
 db.collection('timeseries')
   .where('artist_id', '==', 'ARTIST_0005')
   .where('axis', '==', '제도')
+
+// getBatchTimeseries에서 사용 (최신 버전 조회)
+db.collection('timeseries')
+  .where('artist_id', '==', 'ARTIST_0005')
+  .where('axis', '==', '제도')
+  .orderBy('version', 'desc')
+  .limit(1)
 ```
+
+**참고**: `timeseries_artist_axis_version` 인덱스는 블루프린트와 SRD 문서에 명시된 필수 인덱스입니다.
 
 #### 4.1.3 compare_pairs 컬렉션 인덱스
 
-| 인덱스 이름 | 필드 조합 | 타입 | 용도 |
-|-----------|----------|------|------|
-| `compare_pairs_pair_axis` | `pair_id` (ASC) + `axis` (ASC) | composite | 특정 비교 쌍의 특정 축 조회 |
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `compare_pairs_pair_axis` | `pair_id` (ASC) + `axis` (ASC) | composite | ✅ 배포됨 | 특정 비교 쌍의 특정 축 조회 |
+| `compare_pairs_artists_axis` | `artistA_id` (ASC) + `artistB_id` (ASC) + `axis` (ASC) | composite | ✅ 배포됨 | 작가 쌍별 비교 분석 (IA 문서 명시) |
+
+**예시 쿼리:**
+```javascript
+// getCompareArtists에서 사용
+db.collection('compare_pairs')
+  .where('pair_id', '==', 'ARTIST_0005_vs_ARTIST_0010')
+  .where('axis', '==', '제도')
+```
 
 #### 4.1.4 events 컬렉션 인덱스
 
-| 인덱스 이름 | 필드 조합 | 타입 | 용도 |
-|-----------|----------|------|------|
-| `events_participants_date` | `entity_participants` (array_contains) + `start_date` (DESC) | composite | 특정 작가의 이벤트 시간순 조회 |
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `events_participants_date_desc` | `entity_participants` (CONTAINS) + `start_date` (DESC) | composite | ✅ 배포됨 | 특정 작가의 이벤트 시간순 조회 (최신순) |
+| `events_participants_date_asc` | `entity_participants` (CONTAINS) + `start_date` (ASC) | composite | ✅ 배포됨 | 특정 작가의 이벤트 범위 조회 (timeWindowRules.js) |
 
 **예시 쿼리:**
 ```javascript
@@ -444,9 +495,45 @@ db.collection('timeseries')
 db.collection('events')
   .where('entity_participants', 'array-contains', 'ARTIST_0005')
   .orderBy('start_date', 'desc')
+
+// timeWindowRules.js getEventsForYear에서 사용
+db.collection('events')
+  .where('entity_participants', 'array-contains', 'ARTIST_0005')
+  .where('start_date', '>=', startDate)
+  .where('start_date', '<=', endDate)
 ```
 
+#### 4.1.5 artist_summary 컬렉션 인덱스
+
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `artist_summary_is_temporary` | `is_temporary` (ASC) | composite | ✅ 배포됨 | P2 협업 상태 확인 (universalDataAdapter.js) |
+| `artist_summary_artist_updated` | `artist_id` (ASC) + `updated_at` (DESC) | composite | ✅ 배포됨 | 최신 요약 데이터 조회 (IA 문서 명시) |
+
+#### 4.1.6 entities 컬렉션 인덱스
+
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `entities_identity_career` | `identity_type` (ASC) + `career_status` (ASC) | composite | ✅ 배포됨 | 활성 아티스트 목록 조회 (fnBatchComparePairs) |
+
+#### 4.1.7 edges 컬렉션 인덱스
+
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `edges_src_relation_weight` | `src_id` (ASC) + `relation_type` (ASC) + `weight` (DESC) | composite | ✅ 배포됨 | 관계 네트워크 조회 |
+
 ### 4.2 인덱스 생성 방법
+
+**중요**: Firestore는 단일 필드 인덱스를 자동으로 생성하므로 `firestore.indexes.json`에 정의하지 않습니다. 단일 필드 인덱스를 명시하면 배포 오류가 발생합니다.
+
+**단일 필드 인덱스 예시** (자동 생성됨, 명시 불필요):
+- `artist_summary: (is_temporary)` - 자동 생성됨
+- `measures: (entity_id)` - 자동 생성됨
+- `timeseries: (artist_id)` - 자동 생성됨
+
+**복합 인덱스** (2개 이상 필드, 명시 필요):
+- `(entity_id, axis, time_window)` - 명시 필요
+- `(artist_id, axis, version DESC)` - 명시 필요
 
 **방법 1: Firebase Console**
 1. Firebase Console → Firestore → Indexes 탭
@@ -454,15 +541,41 @@ db.collection('events')
 3. 컬렉션 및 필드 선택
 4. 인덱스 생성 대기 (수분~수십분 소요)
 
-**방법 2: firestore.indexes.json 배포**
+**방법 2: firestore.indexes.json 배포 (권장)**
 ```bash
+# 검증
+firebase deploy --only firestore:indexes --dry-run
+
+# 배포
 firebase deploy --only firestore:indexes
+
+# 배포 확인
+firebase firestore:indexes
 ```
 
 **방법 3: CLI로 직접 생성**
 ```bash
 firebase firestore:indexes:create
 ```
+
+### 4.3 인덱스 검증 및 관리
+
+**자동 검증 스크립트:**
+```bash
+# 인덱스 검증 실행
+node scripts/firestore/validateIndexes.js
+
+# JSON 형식 출력
+node scripts/firestore/validateIndexes.js --json
+
+# CI/CD 모드 (누락 인덱스 발견 시 종료 코드 1)
+node scripts/firestore/validateIndexes.js --check-only
+```
+
+**인덱스 체크리스트:**
+- 모든 인덱스 목록: `docs/firestore/INDEX_CHECKLIST.md`
+- 인덱스 관리 가이드: `docs/firestore/INDEX_MANAGEMENT_GUIDE.md` (작성 예정)
+- 분석 리포트: `firestore-index-analysis-report.json`
 
 ---
 
