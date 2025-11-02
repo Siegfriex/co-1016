@@ -1,0 +1,68 @@
+{
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ],
+  "rules": {
+    "react/jsx-no-undef": ["error", { "allowGlobals": false }],
+    "no-undef": ["error", { "typeof": true }],
+    "no-unused-vars": ["warn", { 
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_"
+    }],
+    "react-hooks/exhaustive-deps": "warn"
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "overrides": [
+    {
+      "files": ["*.js"],
+      "rules": {
+        "react/react-in-jsx-scope": "off",
+        "react/jsx-no-undef": "off",
+        "no-undef": ["error", { "typeof": true }]
+      },
+      "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+      }
+    },
+    {
+      "files": ["*.jsx"],
+      "rules": {
+        "react/react-in-jsx-scope": "error"
+      }
+    },
+    {
+      "files": ["src/utils/*.js"],
+      "rules": {
+        "react/react-in-jsx-scope": "off",
+        "react/jsx-no-undef": "off",
+        "no-undef": ["error", { "typeof": true }]
+      },
+      "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+      }
+    }
+  ]
+}
+

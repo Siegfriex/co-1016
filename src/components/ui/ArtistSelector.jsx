@@ -173,6 +173,6 @@ const ArtistSelector = React.memo(({ selectedArtists, onChange }) => {
       )}
     </div>
   );
-};
+});
 
 export default ArtistSelector;
