@@ -364,7 +364,7 @@ P1/2/3 데이터 취합 → universalDataAdapter 정제 → vertexAIDataAdapter 
 
 - Hosting: 빌드 산출물 호스팅, `firebase.json` rewrites로 /api/* 프록시, SPA 라우팅
 - Functions: nodejs20, asia-northeast3, 코드베이스 `functions/`
-- Secret Manager: `openai-api-key`, `anthropic-api-key`, `vertex-ai-credentials`, `app-config`
+- Secret Manager: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `VERTEX_AI_CREDENTIALS`, `app-config`, `apphosting-github-conn-bf9212r-github-oauthtoken-111de7`, `co-1016-firebase-adminsdk-fbsvc-ec20702062`
 
 ### 4.2 CI/CD (Cloud Build)
 
@@ -680,10 +680,36 @@ logger.error('API 오류', { error: error.message, stack: error.stack });
 - Firebase Authentication 도입(이메일/비번 또는 Google OAuth)
 - 인증 사용자만 원천 데이터 접근 허용
 
-### 7.2 서비스 계정 권한 (최소 권한)
+### 7.2 서비스 계정 권한 (최소 권한 원칙)
 
-- firebase-adminsdk-fbsvc@co-1016: `roles/datastore.user`, `roles/firebase.admin`, `roles/secretmanager.secretAccessor`
-- co-function-runner@co-1016(신규): `roles/secretmanager.secretAccessor`, `roles/aiplatform.user`, `roles/datastore.user`
+#### Firebase Admin SDK 서비스 계정
+
+**서비스 계정**: `firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com`
+
+**주요 역할**:
+- `roles/firebase.admin` - Firebase 전체 관리
+- `roles/datastore.user` - Firestore 접근
+- `roles/secretmanager.secretAccessor` - Secret Manager 접근
+- `roles/aiplatform.admin` - Vertex AI 관리 (Gemini 1.5 Pro)
+- `roles/cloudfunctions.admin` - Cloud Functions 관리
+- `roles/storage.admin` - Cloud Storage 관리
+- `roles/logging.logWriter` - Cloud Logging 로그 작성
+
+**전체 역할 목록** (28개): `roles/firebase.admin`, `roles/firebase.sdkAdminServiceAgent`, `roles/firebaseappdistro.admin`, `roles/firebasedatabase.admin`, `roles/datastore.user`, `roles/aiplatform.admin`, `roles/container.developer`, `roles/compute.instanceAdmin.v1`, `roles/cloudbuild.workerPoolUser`, `roles/cloudconfig.admin`, `roles/cloudfunctions.admin`, `roles/cloudfunctions.developer`, `roles/cloudkms.cryptoKeyDecrypter`, `roles/secretmanager.secretAccessor`, `roles/secretmanager.secretVersionManager`, `roles/iam.serviceAccountTokenCreator`, `roles/iam.serviceAccountUser`, `roles/storage.admin`, `roles/storage.objectCreator`, `roles/logging.configWriter`, `roles/logging.logWriter`, `roles/editor`, `roles/artifactregistry.writer`, `roles/run.admin`
+
+#### Cloud Build 서비스 계정
+
+**서비스 계정**: `501326088107@cloudbuild.gserviceaccount.com`
+
+**주요 역할**:
+- `roles/cloudbuild.builds.builder` - 빌드 실행
+- `roles/cloudbuild.builds.editor` - 빌드 관리
+- `roles/firebase.admin` - Firebase 배포
+- `roles/secretmanager.secretAccessor` - Secret Manager 접근
+
+**전체 역할 목록** (17개): `roles/artifactregistry.writer`, `roles/cloudbuild.builds.builder`, `roles/cloudbuild.builds.editor`, `roles/cloudbuild.workerPoolUser`, `roles/cloudfunctions.developer`, `roles/cloudkms.cryptoKeyDecrypter`, `roles/compute.instanceAdmin.v1`, `roles/container.developer`, `roles/editor`, `roles/firebase.admin`, `roles/iam.serviceAccountUser`, `roles/logging.configWriter`, `roles/logging.logWriter`, `roles/run.admin`, `roles/secretmanager.secretAccessor`, `roles/storage.admin`, `roles/storage.objectCreator`
+
+**참고**: `co-function-runner@co-1016.iam.gserviceaccount.com` 서비스 계정은 현재 사용되지 않으며, 실제로는 `firebase-adminsdk-fbsvc@co-1016.iam.gserviceaccount.com`가 모든 기능을 수행합니다.
 
 ### 7.3 Firestore Rules (초기 정책 예시)
 

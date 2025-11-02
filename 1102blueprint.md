@@ -525,7 +525,7 @@ firebase deploy --project co-1016
 - [ ] Secret Manager 키 접근 확인
 - [ ] Firestore 컬렉션 생성 확인 (12개)
 - [ ] 목업 데이터 적재 확인
-- [ ] 인덱스 생성 확인 (복합 인덱스 포함)
+- [ ] 인덱스 생성 확인 (복합 인덱스 포함) - **인덱스 검증 스크립트 실행 필수**: `node scripts/firestore/validateIndexes.js --check-only`
 - [ ] OpenAPI 스펙 검증 완료 (swagger-cli)
 - [ ] 레드팀 반례 검증 완료
 - [ ] 보안 스캔 통과 (`gitleaks`, `trivy`) - 사용자 인증 미도입 시 임시 대응
@@ -583,6 +583,19 @@ firebase deploy --project co-1016
 | **P2-1** | 배치 API 구현 (FR-P2-BAT-001) | Dr. Sarah Kim | 5일 | P1-3 완료 |
 | **P2-2** | 이벤트 조인 구현 (FR-P2-EVT-001) | Dr. Sarah Kim | 5일 | P1-3 완료 |
 | **P2-3** | CI/CD 파이프라인 구축 (Cloud Build) | Ops Team | 5일 | P1-1 완료 |
+
+**CI/CD 파이프라인 구축** (P2-3):
+- **Cloud Build 트리거 설정**: 
+  - 트리거 이름: `curator-odyssey-prod-deploy`
+  - 이벤트: 브랜치에 푸시 (`^main$`)
+  - 구성 파일: `/cloudbuild.yaml`
+  - 서비스 계정: `501326088107@cloudbuild.gserviceaccount.com`
+  - Substitution 변수: `_ENVIRONMENT=production`, `_PROJECT_ID=co-1016`, `_FIREBASE_PROJECT=co-1016`
+- **트리거 생성 방법**: [Cloud Build 트리거 설정 가이드](docs/deployment/CLOUD_BUILD_TRIGGER_SETUP.md) 참조
+- **서비스 계정 권한 요구사항**: 
+  - Cloud Build 서비스 계정: `roles/cloudbuild.builds.builder`, `roles/firebase.admin`, `roles/secretmanager.secretAccessor`
+- **Secret Manager 접근**: Firebase 배포 토큰 등 Secret 접근 설정
+- **트리거 테스트**: 수동 빌드 실행 및 배포 검증
 | **P2-4** | 데이터 품질 검증 자동화 | Dr. Sarah Kim | 3일 | P2-1 완료 |
 
 **구현 코드 예시** (배치 API):
@@ -667,6 +680,9 @@ ab -n 1000 -c 10 https://co-1016.web.app/api/batch/timeseries
 - [ ] 배치 API 성능 테스트 (p95 <500ms)
 - [ ] 이벤트 조인 정확도 검증 (>90%)
 - [ ] CI/CD 파이프라인 자동 배포 확인
+- [ ] Cloud Build 트리거 활성화 확인 ([Cloud Build 트리거 설정 가이드](docs/deployment/CLOUD_BUILD_TRIGGER_SETUP.md) 참조)
+- [ ] 서비스 계정 권한 확인 (`501326088107@cloudbuild.gserviceaccount.com`)
+- [ ] Secret Manager 시크릿 접근 확인
 - [ ] 데이터 품질 검증 자동화 통합 확인
 - [ ] 레드팀 반례 검증 완료
 
@@ -1294,7 +1310,68 @@ steps:
                         [폴백 메커니즘] → [Markdown 보고서]
 ```
 
-### 8.3 다음 단계
+### 8.3 인덱스 관리 프로세스 (Firestore Index Management)
+
+**CuratorOdyssey 2.0 인덱스 관리 원칙**: 코드와 문서 간 인덱스 정의 동기화 유지
+
+#### 8.3.1 인덱스 검증 프로세스
+
+**PR 제출 전 필수 검증**:
+```bash
+# 인덱스 검증 실행
+node scripts/firestore/validateIndexes.js
+
+# CI/CD 모드 (누락 인덱스 발견 시 종료 코드 1)
+node scripts/firestore/validateIndexes.js --check-only
+```
+
+**검증 체크리스트**:
+- [ ] 새로운 쿼리 추가 시 인덱스 필요성 확인
+- [ ] `scripts/firestore/validateIndexes.js` 실행하여 누락 인덱스 확인
+- [ ] `firestore.indexes.json` 파일 업데이트
+- [ ] **단일 필드 인덱스 검증**: 단일 필드 인덱스가 포함되어 있지 않은지 확인 (Firestore 자동 생성, 명시 시 배포 오류)
+- [ ] `docs/firestore/INDEX_CHECKLIST.md` 문서 업데이트
+- [ ] 인덱스 배포 전 로컬 검증 완료 (`firebase deploy --only firestore:indexes --dry-run`)
+
+#### 8.3.2 인덱스 배포 프로세스
+
+**단계별 배포**:
+1. **로컬 검증**: `firebase deploy --only firestore:indexes --dry-run`
+2. **배포**: `firebase deploy --only firestore:indexes`
+3. **배포 확인**: `firebase firestore:indexes`
+4. **쿼리 테스트**: 각 인덱스 사용 쿼리 실행 확인
+
+**인덱스 생성 대기 시간**: 수분~수십분 (Firestore 서버 측 처리)
+
+#### 8.3.3 인덱스 문서화
+
+**주요 문서**:
+- **인덱스 체크리스트**: `docs/firestore/INDEX_CHECKLIST.md` - 모든 인덱스 목록 및 상태
+- **데이터 모델 명세서**: `docs/data/DATA_MODEL_SPECIFICATION.md` Section 4 - 인덱스 전략 상세
+- **스키마 가이드**: `scripts/firestore/SCHEMA_DESIGN_GUIDE.js` - 인덱스 명세 동기화
+- **분석 리포트**: `firestore-index-analysis-report.json` - 자동 생성된 누락 인덱스 리포트
+
+**인덱스 관리 규칙**:
+- 단일 필드 인덱스는 Firestore가 자동 생성하므로 `firestore.indexes.json`에 정의하지 않습니다
+- 단일 필드 인덱스를 명시하면 배포 오류 발생: "this index is not necessary, configure using single field index controls"
+- 복합 인덱스(2개 이상 필드)만 `firestore.indexes.json`에 정의합니다
+
+#### 8.3.4 인덱스 모니터링
+
+**성능 지표**:
+- 인덱스 히트율: 99% 목표 (IA 문서 Section 4.2)
+- 쿼리 성능: p95 <300ms (RISK-004 완화 전략)
+- Firestore 읽기 ops: <1M/month (무료 티어 활용)
+
+**모니터링 도구**:
+- Cloud Monitoring: 인덱스 미사용 쿼리 감지
+- 인덱스 검증 스크립트: 주간 자동 실행 (CI/CD 통합 예정)
+
+**참조 문서**: [인덱스 관리 가이드](docs/firestore/INDEX_MANAGEMENT_GUIDE.md) (작성 예정)
+
+---
+
+### 8.4 다음 단계
 
 **주간 리뷰**: 매주 월요일 진행 상황 점검 및 리스크 재평가
 
