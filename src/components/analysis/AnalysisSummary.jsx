@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+﻿import React, { useMemo } from 'react';
 
 const AnalysisSummary = React.memo(({ 
   artistA, 
@@ -49,8 +49,8 @@ const AnalysisSummary = React.memo(({
         items: [
           {
             label: '최고 호당 가격 차이',
-            value: formatCurrency(Math.abs(artistA.highestPricePerHo - artistB.highestPricePerHo)),
-            description: `${artistA.name}: ${formatCurrency(artistA.highestPricePerHo)} | ${artistB.name}: ${formatCurrency(artistB.highestPricePerHo)}`,
+            value: formatCurrency(Math.abs((artistA?.highestPricePerHo || 0) - (artistB?.highestPricePerHo || 0))),
+            description: `${artistA?.name || 'N/A'}: ${formatCurrency(artistA?.highestPricePerHo || 0)} | ${artistB?.name || 'N/A'}: ${formatCurrency(artistB?.highestPricePerHo || 0)}`,
             type: 'primary'
           },
           {
@@ -93,22 +93,10 @@ const AnalysisSummary = React.memo(({
     };
   }, [analysisResults, artistA, artistB]);
 
-  if (!summaryData || !analysisResults) {
-    return (
-      <div className="curator-chart-container curator-analysis-summary">
-        <h3 className="curator-chart-title">🔍 분석 결과</h3>
-        <div className="curator-loading">
-          <div className="curator-spinner"></div>
-          <div>분석 결과를 계산하고 있습니다...</div>
-        </div>
-      </div>
-    );
-  }
-
-  const currentData = summaryData[analysisMethod];
-
-  // 인사이트 생성 메모이제이션
+  // 인사이트 생성 메모이제이션 (Hooks 규칙: early return 전에 호출)
   const insights = useMemo(() => {
+    if (!analysisResults) return [];
+    
     const insightList = [];
     const method = analysisMethod;
 
@@ -125,8 +113,10 @@ const AnalysisSummary = React.memo(({
     }
 
     if (method === 'market') {
-      const priceLeader = artistA.highestPricePerHo > artistB.highestPricePerHo ? artistA.name : artistB.name;
-      insightList.push(`${priceLeader}이 현재 시장에서 더 높은 평가를 받고 있습니다.`);
+      const priceLeader = artistA?.highestPricePerHo > artistB?.highestPricePerHo ? artistA?.name : artistB?.name;
+      if (priceLeader) {
+        insightList.push(`${priceLeader}이 현재 시장에서 더 높은 평가를 받고 있습니다.`);
+      }
     }
 
     if (method === 'combined') {
@@ -137,6 +127,20 @@ const AnalysisSummary = React.memo(({
 
     return insightList;
   }, [analysisResults, artistA, artistB, analysisMethod]);
+
+  if (!summaryData || !analysisResults) {
+    return (
+      <div className="curator-chart-container curator-analysis-summary">
+        <h3 className="curator-chart-title">🔍 분석 결과</h3>
+        <div className="curator-loading">
+          <div className="curator-spinner"></div>
+          <div>분석 결과를 계산하고 있습니다...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const currentData = summaryData[analysisMethod];
 
   return (
     <div className="curator-chart-container curator-analysis-summary">
@@ -204,6 +208,6 @@ const AnalysisSummary = React.memo(({
       )}
     </div>
   );
-};
+});
 
 export default AnalysisSummary;
