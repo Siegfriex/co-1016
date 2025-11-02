@@ -107,6 +107,37 @@ const AnalysisSummary = React.memo(({
 
   const currentData = summaryData[analysisMethod];
 
+  // 인사이트 생성 메모이제이션
+  const insights = useMemo(() => {
+    const insightList = [];
+    const method = analysisMethod;
+
+    if (method === 'trajectory') {
+      if (analysisResults.dominantDifferenceAxis) {
+        insightList.push(`${analysisResults.dominantDifferenceAxis.axis} 축에서 가장 큰 성장 궤적 차이를 보입니다.`);
+      }
+      
+      if (analysisResults.growthPatternSimilarity > 0.7) {
+        insightList.push(`두 작가의 성장 패턴이 ${(analysisResults.growthPatternSimilarity * 100).toFixed(0)}% 유사하여, 동일한 전략이 효과적일 가능성이 높습니다.`);
+      } else {
+        insightList.push(`서로 다른 성장 경로를 보이므로, 차별화된 전략이 필요합니다.`);
+      }
+    }
+
+    if (method === 'market') {
+      const priceLeader = artistA.highestPricePerHo > artistB.highestPricePerHo ? artistA.name : artistB.name;
+      insightList.push(`${priceLeader}이 현재 시장에서 더 높은 평가를 받고 있습니다.`);
+    }
+
+    if (method === 'combined') {
+      if (analysisResults.futurePotential?.leader) {
+        insightList.push(`종합 분석 결과, ${analysisResults.futurePotential.leader}의 미래 성장 잠재력이 더 높게 평가됩니다.`);
+      }
+    }
+
+    return insightList;
+  }, [analysisResults, artistA, artistB, analysisMethod]);
+
   return (
     <div className="curator-chart-container curator-analysis-summary">
       <h3 className="curator-chart-title">
@@ -142,10 +173,12 @@ const AnalysisSummary = React.memo(({
       <div className="analysis-insights">
         <h4 className="insights-title">💡 핵심 인사이트</h4>
         <div className="insights-content">
-          {useMemo(() => 
-            generateInsights(analysisResults, artistA, artistB, analysisMethod), 
-            [analysisResults, artistA, artistB, analysisMethod]
-          )}
+          {insights.map((insight, index) => (
+            <div key={index} className="insight-item">
+              <span className="insight-bullet">•</span>
+              <span className="insight-text">{insight}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -171,41 +204,6 @@ const AnalysisSummary = React.memo(({
       )}
     </div>
   );
-};
-
-// 인사이트 생성 함수
-const generateInsights = (analysisResults, artistA, artistB, method) => {
-  const insights = [];
-
-  if (method === 'trajectory') {
-    if (analysisResults.dominantDifferenceAxis) {
-      insights.push(`${analysisResults.dominantDifferenceAxis.axis} 축에서 가장 큰 성장 궤적 차이를 보입니다.`);
-    }
-    
-    if (analysisResults.growthPatternSimilarity > 0.7) {
-      insights.push(`두 작가의 성장 패턴이 ${(analysisResults.growthPatternSimilarity * 100).toFixed(0)}% 유사하여, 동일한 전략이 효과적일 가능성이 높습니다.`);
-    } else {
-      insights.push(`서로 다른 성장 경로를 보이므로, 차별화된 전략이 필요합니다.`);
-    }
-  }
-
-  if (method === 'market') {
-    const priceLeader = artistA.highestPricePerHo > artistB.highestPricePerHo ? artistA.name : artistB.name;
-    insights.push(`${priceLeader}이 현재 시장에서 더 높은 평가를 받고 있습니다.`);
-  }
-
-  if (method === 'combined') {
-    if (analysisResults.futurePotential?.leader) {
-      insights.push(`종합 분석 결과, ${analysisResults.futurePotential.leader}의 미래 성장 잠재력이 더 높게 평가됩니다.`);
-    }
-  }
-
-  return insights.map((insight, index) => (
-    <div key={index} className="insight-item">
-      <span className="insight-bullet">•</span>
-      <span className="insight-text">{insight}</span>
-    </div>
-  ));
 };
 
 export default AnalysisSummary;
