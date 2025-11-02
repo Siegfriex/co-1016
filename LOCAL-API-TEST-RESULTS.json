@@ -1,0 +1,58 @@
+{
+  "start_time": "2025-10-18T08:09:42.689Z",
+  "tests": [
+    {
+      "test": "GET /artist/ARTIST_0005/summary",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:42.739Z"
+    },
+    {
+      "test": "GET /artist/ARTIST_0003/summary",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:43.257Z"
+    },
+    {
+      "test": "GET /artist/INVALID/summary",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:43.771Z"
+    },
+    {
+      "test": "GET /artist/ARTIST_0005/sunburst",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:44.286Z"
+    },
+    {
+      "test": "GET /artist/ARTIST_0005/timeseries/제도",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:44.800Z"
+    },
+    {
+      "test": "GET /compare/ARTIST_0005/ARTIST_0003/담론",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:45.304Z"
+    },
+    {
+      "test": "POST /report/generate",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:45.820Z"
+    },
+    {
+      "test": "GET /ai/vertex-health",
+      "success": false,
+      "details": "404: Request failed with status code 404",
+      "timestamp": "2025-10-18T08:09:46.337Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 0,
+    "failed": 8
+  }
+}

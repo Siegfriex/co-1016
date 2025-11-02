@@ -1,0 +1,83 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "measures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "entity_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis", 
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "metric_code",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "timeseries",
+      "queryScope": "COLLECTION", 
+      "fields": [
+        {
+          "fieldPath": "artist_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "compare_pairs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "pair_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis", 
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "entity_participants",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "start_date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "edges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "src_id", 
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "relation_type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "weight",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

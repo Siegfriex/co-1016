@@ -1,0 +1,122 @@
+# CO-1016 CURATOR ODYSSEY Cloud Build Pipeline
+# 환경별 배포 전략 및 롤백 절차 포함
+
+substitutions:
+  _ENVIRONMENT: 'production'  # production, staging, development
+  _PROJECT_ID: 'co-1016'
+  _FIREBASE_PROJECT: 'co-1016'
+
+steps:
+  # =====================================================
+  # 1. 의존성 설치 및 빌드 (Frontend)
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'install-frontend'
+    args: ['ci']
+    waitFor: ['-']
+
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'build-frontend'
+    args: ['run','build']
+    waitFor: ['install-frontend']
+
+  # =====================================================
+  # 2. 의존성 설치 (Backend Functions)
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'install-backend'
+    args: ['ci']
+    dir: 'functions'
+    waitFor: ['-']
+
+  # =====================================================
+  # 3. 빌드 검증
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'verify-build'
+    args: ['run','test']
+    waitFor: ['build-frontend', 'install-backend']
+    env:
+      - 'CI=true'
+
+  # =====================================================
+  # 4. 환경별 배포 전략
+  # =====================================================
+  - name: 'gcr.io/$_PROJECT_ID/firebase'
+    id: 'deploy-firebase'
+    args:
+      - 'deploy'
+      - '--only'
+      - 'hosting,functions'
+      - '--project'
+      - '$_PROJECT_ID'
+      - '--token'
+      - '$(cat /workspace/.firebase-token || echo "")'
+    waitFor: ['verify-build']
+    env:
+      - 'FIREBASE_TOKEN=${_FIREBASE_TOKEN}'
+
+  # =====================================================
+  # 5. 배포 검증
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/curl'
+    id: 'verify-deployment'
+    args:
+      - '-f'
+      - '-X'
+      - 'GET'
+      - 'https://$_PROJECT_ID.web.app/api/artist/ARTIST_0005/summary'
+    waitFor: ['deploy-firebase']
+
+  # =====================================================
+  # 6. 롤백 준비 (이전 버전 정보 저장)
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: 'save-rollback-info'
+    args:
+      - 'firebase'
+      - 'functions:list'
+      - '--project'
+      - '$_PROJECT_ID'
+      - '--format=json'
+    waitFor: ['deploy-firebase']
+    entrypoint: 'bash'
+    script: |
+      #!/bin/bash
+      FUNCTIONS_LIST=$(gcloud firebase functions:list --project=$_PROJECT_ID --format=json)
+      echo "$FUNCTIONS_LIST" > /workspace/previous-functions.json
+      echo "Previous functions version saved for rollback"
+
+  # =====================================================
+  # 7. 알림 (Slack/PagerDuty - 선택적)
+  # =====================================================
+  - name: 'gcr.io/cloud-builders/curl'
+    id: 'notify-deployment'
+    args:
+      - '-X'
+      - 'POST'
+      - '${_SLACK_WEBHOOK_URL}'
+      - '-H'
+      - 'Content-Type: application/json'
+      - '-d'
+      - '{"text":"Deployment completed: $_ENVIRONMENT"}'
+    waitFor: ['verify-deployment']
+    allowFailure: true
+
+# =====================================================
+# 옵션 설정
+# =====================================================
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'N1_HIGHCPU_8'
+  substitution_option: 'ALLOW_LOOSE'
+  env:
+    - 'NODE_ENV=${_ENVIRONMENT}'
+
+# =====================================================
+# 롤백 트리거 (수동 실행)
+# =====================================================
+# 롤백을 위해서는 다음 명령어 실행:
+# gcloud builds submit --config=cloudbuild-rollback.yaml \
+#   --substitutions=_PREVIOUS_VERSION=<version-id>
+

@@ -1,0 +1,484 @@
+openapi: 3.0.3
+info:
+  title: CuratorOdyssey API
+  version: 1.0.0
+  description: CO-1016 CURATOR ODYSSEY API Documentation
+servers:
+  - url: https://co-1016.web.app
+    description: Production server
+  - url: http://localhost:5002
+    description: Local development server
+
+paths:
+  /api/artist/{id}/summary:
+    get:
+      summary: Get artist summary (radar5, sunburst_l1)
+      description: Returns Phase 1 artist summary data including radar5 and sunburst_l1 values
+      operationId: getArtistSummary
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: ARTIST_0005
+          description: Artist ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistSummary'
+              example:
+                artist_id: ARTIST_0005
+                name: 양혜규
+                radar5:
+                  I: 97.5
+                  F: 90.0
+                  A: 92.0
+                  M: 86.0
+                  Sedu: 9.8
+                sunburst_l1:
+                  제도: 91.2
+                  학술: 88.0
+                  담론: 86.0
+                  네트워크: 90.0
+                weights_version: AHP_v1
+                updated_at: '2024-10-16T00:00:00Z'
+                data_source: firestore_p2
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/artist/{id}/sunburst:
+    get:
+      summary: Get sunburst snapshot or generate on-the-fly
+      description: Returns sunburst data for the artist, either from snapshot or generated on-the-fly
+      operationId: getArtistSunburst
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: ARTIST_0005
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SunburstData'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/artist/{id}/timeseries/{axis}:
+    get:
+      summary: Get timeseries by axis
+      description: Returns Phase 2 timeseries data for a specific axis
+      operationId: getArtistTimeseries
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: ARTIST_0005
+        - in: path
+          name: axis
+          required: true
+          schema:
+            type: string
+            enum: [제도, 학술, 담론, 네트워크]
+            example: 제도
+          description: Axis name
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeseriesData'
+              example:
+                artist_id: ARTIST_0005
+                axis: 제도
+                bins:
+                  - t: 0
+                    v: 45.2
+                  - t: 5
+                    v: 58.7
+                  - t: 10
+                    v: 72.3
+                version: v1.0
+                debut_year: 1994
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/compare/{A}/{B}/{axis}:
+    get:
+      summary: Compare two artists on a specific axis
+      description: Returns Phase 3 comparison data for two artists on a specific axis
+      operationId: getCompareArtists
+      parameters:
+        - in: path
+          name: A
+          required: true
+          schema:
+            type: string
+            example: ARTIST_0005
+          description: First artist ID
+        - in: path
+          name: B
+          required: true
+          schema:
+            type: string
+            example: ARTIST_0010
+          description: Second artist ID
+        - in: path
+          name: axis
+          required: true
+          schema:
+            type: string
+            enum: [제도, 학술, 담론, 네트워크]
+            example: 제도
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComparisonData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/report/generate:
+    post:
+      summary: Generate AI report (Vertex AI → fallback)
+      description: Generates a comprehensive AI report using Vertex AI with fallback to OpenAI GPT-4 or template
+      operationId: generateAiReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+            example:
+              artist_id: ARTIST_0005
+              report_type: comprehensive
+              include_phases: [1, 2, 3]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    ArtistSummary:
+      type: object
+      required:
+        - artist_id
+        - name
+        - radar5
+        - sunburst_l1
+        - weights_version
+      properties:
+        artist_id:
+          type: string
+          example: ARTIST_0005
+        name:
+          type: string
+          example: 양혜규
+        radar5:
+          $ref: '#/components/schemas/Radar5'
+        sunburst_l1:
+          $ref: '#/components/schemas/SunburstL1'
+        weights_version:
+          type: string
+          example: AHP_v1
+        updated_at:
+          type: string
+          format: date-time
+        data_source:
+          type: string
+          example: firestore_p2
+
+    Radar5:
+      type: object
+      required:
+        - I
+        - F
+        - A
+        - M
+        - Sedu
+      properties:
+        I:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Institution (기관전시)
+          example: 97.5
+        F:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Fair (아트페어)
+          example: 90.0
+        A:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Award (시상)
+          example: 92.0
+        M:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Media (미디어)
+          example: 86.0
+        Sedu:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Seduction (교육)
+          example: 9.8
+
+    SunburstL1:
+      type: object
+      required:
+        - 제도
+        - 학술
+        - 담론
+        - 네트워크
+      properties:
+        제도:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 91.2
+        학술:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 88.0
+        담론:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 86.0
+        네트워크:
+          type: number
+          minimum: 0
+          maximum: 100
+          example: 90.0
+
+    SunburstData:
+      type: object
+      properties:
+        artist_id:
+          type: string
+        data:
+          type: object
+        generated_at:
+          type: string
+          format: date-time
+
+    TimeseriesData:
+      type: object
+      required:
+        - artist_id
+        - axis
+        - bins
+        - version
+        - debut_year
+      properties:
+        artist_id:
+          type: string
+        axis:
+          type: string
+          enum: [제도, 학술, 담론, 네트워크]
+        bins:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeBin'
+        version:
+          type: string
+        debut_year:
+          type: integer
+
+    TimeBin:
+      type: object
+      required:
+        - t
+        - v
+      properties:
+        t:
+          type: number
+          description: Relative time (years since debut)
+          example: 0
+        v:
+          type: number
+          description: Value (0-100)
+          example: 45.2
+
+    ComparisonData:
+      type: object
+      required:
+        - pair_id
+        - artistA_id
+        - artistB_id
+        - axis
+        - series
+        - abs_diff_sum
+      properties:
+        pair_id:
+          type: string
+        artistA_id:
+          type: string
+        artistB_id:
+          type: string
+        axis:
+          type: string
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComparisonSeries'
+        abs_diff_sum:
+          type: number
+        correlation:
+          type: number
+
+    ComparisonSeries:
+      type: object
+      required:
+        - t
+        - v_A
+        - v_B
+        - diff
+      properties:
+        t:
+          type: number
+        v_A:
+          type: number
+        v_B:
+          type: number
+        diff:
+          type: number
+
+    ReportRequest:
+      type: object
+      required:
+        - artist_id
+      properties:
+        artist_id:
+          type: string
+        report_type:
+          type: string
+          enum: [comprehensive, executive, summary]
+          default: comprehensive
+        include_phases:
+          type: array
+          items:
+            type: integer
+            enum: [1, 2, 3]
+          default: [1, 2, 3]
+
+    ReportResponse:
+      type: object
+      required:
+        - success
+        - content
+        - model
+        - timestamp
+      properties:
+        success:
+          type: boolean
+        content:
+          type: string
+          description: Markdown formatted report
+        model:
+          type: string
+          example: vertex-ai-gemini-1.5-pro
+        report_type:
+          type: string
+        usage:
+          type: object
+          properties:
+            input_tokens:
+              type: integer
+            output_tokens:
+              type: integer
+            total_tokens:
+              type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required:
+        - error
+        - code
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+        details:
+          type: string
+          description: Additional error details
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Artist ID가 제공되지 않았습니다.
+            code: MISSING_ARTIST_ID
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 작가 ARTIST_0005의 데이터를 찾을 수 없습니다.
+            code: ARTIST_NOT_FOUND
+
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 작가 요약 데이터 조회 중 오류가 발생했습니다.
+            code: INTERNAL_ERROR
+            details: Database connection failed
+

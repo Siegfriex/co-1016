@@ -1,0 +1,83 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/artist/*/summary",
+        "function": "getArtistSummary"
+      },
+      {
+        "source": "/api/artist/*/sunburst", 
+        "function": "getArtistSunburst"
+      },
+      {
+        "source": "/api/artist/*/timeseries/*",
+        "function": "getArtistTimeseries"
+      },
+      {
+        "source": "/api/compare/*/*",
+        "function": "getCompareArtists"  
+      },
+      {
+        "source": "/api/report/generate",
+        "function": "generateAiReport"
+      },
+      {
+        "source": "/api/ai/vertex-generate",
+        "function": "generateComprehensiveReport"
+      },
+      {
+        "source": "/api/ai/vertex-health",
+        "function": "checkVertexHealth"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/api/**",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods", 
+            "value": "GET, POST, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Authorization"
+          }
+        ]
+      }
+    ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs20"
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5002
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4002
+    }
+  }
+}

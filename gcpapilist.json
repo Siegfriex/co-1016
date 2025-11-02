@@ -1,0 +1,367 @@
+[
+    {
+      "config": {
+        "name": "aiplatform.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "analyticshub.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "appengine.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "artifactregistry.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "autoscaling.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigquery.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigqueryconnection.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigquerydatapolicy.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigquerydatatransfer.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigquerymigration.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigqueryreservation.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "bigquerystorage.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudaicompanion.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudapis.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudbuild.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudfunctions.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudkms.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudresourcemanager.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudscheduler.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "cloudtrace.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "compute.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "container.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "containeranalysis.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "containerfilesystem.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "containerregistry.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "containerscanning.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "dataflow.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "dataform.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "datalineage.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "dataplex.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "datastore.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "deploymentmanager.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "developerconnect.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "dns.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "eventarc.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "fcm.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "fcmregistrations.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebase.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaseappdistribution.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaseapphosting.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebasedatabase.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaseextensions.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebasehosting.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaseinstallations.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaseremoteconfig.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaseremoteconfigrealtime.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebaserules.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firebasestorage.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "firestore.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "generativelanguage.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "gkebackup.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "iam.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "iamcredentials.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "identitytoolkit.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "logging.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "monitoring.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "networkconnectivity.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "notebooks.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "oslogin.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "pubsub.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "run.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "runtimeconfig.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "secretmanager.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "securetoken.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "servicemanagement.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "serviceusage.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "source.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "sql-component.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "storage-api.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "storage-component.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "storage.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "testing.googleapis.com"
+      }
+    },
+    {
+      "config": {
+        "name": "websecurityscanner.googleapis.com"
+      }
+    }
+  ]
