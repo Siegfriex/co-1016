@@ -35,7 +35,7 @@ steps:
   # =====================================================
   # 3. 빌드 검증 (연결 확인용으로 선택적 비활성화)
   # =====================================================
-  # - name: 'gcr.io/cloud-builders/npm'
+  # - name: 'gcr.io/cloud-builders/node:20'
   #   id: 'verify-build'
   #   entrypoint: 'npm'
   #   args: ['run','test']
@@ -46,7 +46,7 @@ steps:
   # =====================================================
   # 3.5 Firebase LI 설치
   # =====================================================
-  - name: 'gcr.io/cloud-builders/npm'
+  - name: 'gcr.io/cloud-builders/node:20'
     id: 'install-firebase-cli'
     entrypoint: 'npm'
     args: ['install', '-g', 'firebase-tools']
@@ -55,7 +55,7 @@ steps:
   # =====================================================
   # 4. 환경별 배포 전략
   # =====================================================
-  - name: 'gcr.io/cloud-builders/npm'
+  - name: 'gcr.io/cloud-builders/node:20'
     id: 'deploy-firebase'
     entrypoint: 'firebase'
     args:

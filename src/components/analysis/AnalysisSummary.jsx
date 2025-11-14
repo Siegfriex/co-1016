@@ -239,6 +239,6 @@ const AnalysisSummary = React.memo(({
       )}
     </div>
   );
-};
+});
 
 export default AnalysisSummary;
