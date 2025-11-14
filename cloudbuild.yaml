@@ -44,7 +44,7 @@ steps:
   #     - 'CI=true'
 
   # =====================================================
-  # 3.5 Firebase CLI 설치
+  # 3.5 Firebase LI 설치
   # =====================================================
   - name: 'gcr.io/cloud-builders/node:20'
     id: 'install-firebase-cli'

@@ -20,20 +20,12 @@
         "function": "getArtistTimeseries"
       },
       {
-        "source": "/api/compare/*/*",
+        "source": "/api/compare/*/*/*",
         "function": "getCompareArtists"  
       },
       {
         "source": "/api/report/generate",
         "function": "generateAiReport"
-      },
-      {
-        "source": "/api/ai/vertex-generate",
-        "function": "generateComprehensiveReport"
-      },
-      {
-        "source": "/api/ai/vertex-health",
-        "function": "checkVertexHealth"
       },
       {
         "source": "**",
