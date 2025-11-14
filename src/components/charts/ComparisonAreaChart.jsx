@@ -53,6 +53,16 @@ const ComparisonAreaChart = ({
     const { width, height, margin } = chartConfig;
     const { xScale, yScale } = scales;
 
+    // VID v2.0 기본 색상 설정 (Section 5.4.3 참조)
+    const defaultArtistA = {
+      name: artistA?.name || '플레이어',
+      color: artistA?.color || '#F28317C' // Primary 500
+    };
+    const defaultArtistB = {
+      name: artistB?.name || '작가',
+      color: artistB?.color || '#F1F0EC' // Secondary 기본
+    };
+
     // SVG 설정
     const svg = d3.select(svgRef.current)
       .attr('width', width)
@@ -78,12 +88,12 @@ const ComparisonAreaChart = ({
     
     gradientA.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', artistA.color)
+      .attr('stop-color', defaultArtistA.color)
       .attr('stop-opacity', 0.1);
     
     gradientA.append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', artistA.color)
+      .attr('stop-color', defaultArtistA.color)
       .attr('stop-opacity', 0.7);
 
     // Artist B 그라데이션
@@ -95,12 +105,12 @@ const ComparisonAreaChart = ({
     
     gradientB.append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', artistB.color)
+      .attr('stop-color', defaultArtistB.color)
       .attr('stop-opacity', 0.1);
     
     gradientB.append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', artistB.color)
+      .attr('stop-color', defaultArtistB.color)
       .attr('stop-opacity', 0.7);
 
     // Area 생성기
@@ -148,7 +158,7 @@ const ComparisonAreaChart = ({
       .datum(series)
       .attr('class', 'line-b')
       .attr('d', lineB)
-      .attr('stroke', artistB.color)
+      .attr('stroke', defaultArtistB.color)
       .attr('stroke-width', 2)
       .attr('fill', 'none');
 
@@ -157,8 +167,8 @@ const ComparisonAreaChart = ({
       .datum(series)
       .attr('class', 'line-a')
       .attr('d', lineA)
-      .attr('stroke', artistA.color)
-      .attr('stroke-width', 2)
+      .attr('stroke', defaultArtistA.color)
+      .attr('stroke-width', 3) // VID v2.0 스펙: 플레이어 라인 굵기 3px
       .attr('fill', 'none');
 
     // 축 렌더링
@@ -201,7 +211,7 @@ const ComparisonAreaChart = ({
     focus.append('circle')
       .attr('class', 'focus-circle-a')
       .attr('r', 4)
-      .style('fill', artistA.color)
+      .style('fill', defaultArtistA.color)
       .style('stroke', '#fff')
       .style('stroke-width', 2);
 
@@ -209,7 +219,7 @@ const ComparisonAreaChart = ({
     focus.append('circle')
       .attr('class', 'focus-circle-b')
       .attr('r', 4)
-      .style('fill', artistB.color)
+      .style('fill', defaultArtistB.color)
       .style('stroke', '#fff')
       .style('stroke-width', 2);
 
@@ -254,17 +264,17 @@ const ComparisonAreaChart = ({
           </div>
           <div class="tooltip-body">
             <div class="tooltip-row">
-              <span class="artist-indicator" style="background: ${artistA.color}"></span>
-              <span>${artistA.name}: ${d.v_A.toFixed(1)}</span>
+              <span class="artist-indicator" style="background: ${defaultArtistA.color}"></span>
+              <span>${defaultArtistA.name}: ${d.v_A.toFixed(1)}</span>
             </div>
             <div class="tooltip-row">
-              <span class="artist-indicator" style="background: ${artistB.color}"></span>
-              <span>${artistB.name}: ${d.v_B.toFixed(1)}</span>
+              <span class="artist-indicator" style="background: ${defaultArtistB.color}"></span>
+              <span>${defaultArtistB.name}: ${d.v_B.toFixed(1)}</span>
             </div>
             <div class="tooltip-separator"></div>
             <div class="tooltip-diff">
               차이: ${Math.abs(d.v_A - d.v_B).toFixed(1)} 
-              (${d.v_A > d.v_B ? artistA.name : artistB.name} 우세)
+              (${d.v_A > d.v_B ? defaultArtistA.name : defaultArtistB.name} 우세)
             </div>
           </div>
         `;
@@ -284,7 +294,7 @@ const ComparisonAreaChart = ({
       .attr('cx', 0)
       .attr('cy', 0)
       .attr('r', 6)
-      .style('fill', artistA.color);
+      .style('fill', defaultArtistA.color);
 
     legend.append('text')
       .attr('x', 12)
@@ -292,13 +302,13 @@ const ComparisonAreaChart = ({
       .attr('dy', '0.35em')
       .style('font-size', '12px')
       .style('fill', 'var(--dyss-color-text-secondary)')
-      .text(artistA.name);
+      .text(defaultArtistA.name);
 
     legend.append('circle')
       .attr('cx', 0)
       .attr('cy', 20)
       .attr('r', 6)
-      .style('fill', artistB.color);
+      .style('fill', defaultArtistB.color);
 
     legend.append('text')
       .attr('x', 12)
@@ -306,7 +316,7 @@ const ComparisonAreaChart = ({
       .attr('dy', '0.35em')
       .style('font-size', '12px')
       .style('fill', 'var(--dyss-color-text-secondary)')
-      .text(artistB.name);
+      .text(defaultArtistB.name);
 
   }, [series, axis, artistA, artistB, isHighlighted, chartConfig, scales, handleTooltip]);
 

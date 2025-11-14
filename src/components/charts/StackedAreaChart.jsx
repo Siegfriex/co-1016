@@ -17,17 +17,25 @@ const StackedAreaChart = ({
   useEffect(() => {
     if (!data || !svgRef.current) return;
 
-    // 차트 기본 설정 (DYSS 디자인 시스템 적용)
+    // 차트 기본 설정 (VID v2.0 디자인 시스템 적용)
     const margin = { top: 20, right: 80, bottom: 60, left: 80 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    // DYSS 4축 컬러 시스템 (Dr. Sarah Kim의 전문적 색상 선택)
+    // VID v2.0 4축 색상 시스템 (Section 2.2.1 참조, 위에서 아래 순서)
     const axisColors = {
-      '제도': '#8B5CF6',      // DYSS Primary 500
-      '학술': '#7C3AED',      // DYSS Primary 600  
-      '담론': '#6D28D9',      // DYSS Primary 700
-      '네트워크': '#5B21B6'   // DYSS Primary 800
+      '제도': 'rgba(242, 131, 23, 0.8)',      // 주 컬러
+      '학술': 'rgba(232, 229, 216, 0.8)',     // 세컨더리 베리에이션
+      '담론': 'rgba(245, 168, 90, 0.8)',      // 주 컬러 밝은 톤
+      '네트워크': 'rgba(222, 221, 214, 0.8)'  // 세컨더리 어두운 톤
+    };
+
+    // 스트로크 색상 (경계선용, 투명도 제거)
+    const axisStrokeColors = {
+      '제도': 'rgb(242, 131, 23)',      // 주 컬러
+      '학술': 'rgb(232, 229, 216)',     // 세컨더리 베리에이션
+      '담론': 'rgb(245, 168, 90)',      // 주 컬러 밝은 톤
+      '네트워크': 'rgb(222, 221, 214)'  // 세컨더리 어두운 톤
     };
 
     const axisOrder = ['네트워크', '담론', '학술', '제도']; // 안정성 순서 (변동성 오름차순)
@@ -123,7 +131,14 @@ const StackedAreaChart = ({
         ])
         .enter().append('stop')
         .attr('offset', d => d.offset)
-        .attr('stop-color', d => d.color)
+        .attr('stop-color', d => {
+          // rgba 값을 rgb로 변환 (그라데이션용)
+          const rgbMatch = d.color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+          if (rgbMatch) {
+            return `rgb(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]})`;
+          }
+          return d.color;
+        })
         .attr('stop-opacity', d => d.opacity);
 
       // 영역 패스
@@ -131,8 +146,8 @@ const StackedAreaChart = ({
         .datum(layerData)
         .attr('class', `area-${axisName}`)
         .attr('d', area)
-        .style('fill', `url(#${gradientId})`)
-        .style('stroke', axisColors[axisName])
+        .style('fill', axisColors[axisName])
+        .style('stroke', axisStrokeColors[axisName])
         .style('stroke-width', '2px')
         .style('stroke-opacity', 0.6);
     });
@@ -229,7 +244,7 @@ const StackedAreaChart = ({
           .attr('x2', xScale(closestData.t))
           .attr('y1', 0)
           .attr('y2', innerHeight)
-          .style('stroke', '#8B5CF6')
+          .style('stroke', '#F28317C') // Primary 500
           .style('stroke-width', '1px')
           .style('stroke-dasharray', '2,2')
           .style('opacity', 0.7);
@@ -244,7 +259,7 @@ const StackedAreaChart = ({
               .attr('cx', xScale(closestData.t))
               .attr('cy', yScale(dataPoint[1]))
               .attr('r', 4)
-              .style('fill', axisColors[layerData.key])
+              .style('fill', axisStrokeColors[layerData.key])
               .style('stroke', '#FFFFFF')
               .style('stroke-width', '2px');
           }

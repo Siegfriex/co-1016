@@ -129,6 +129,19 @@ const ArtistPhase2View = ({ artistId = "ARTIST_0005", onBackToPhase1, onDrilldow
     }
   };
 
+  // 컨트롤 버튼 스타일 정의
+  const controlButtonStyle = {
+    padding: 'var(--dyss-space-2) var(--dyss-space-4)',
+    border: '1px solid var(--dyss-color-primary)',
+    borderRadius: 'var(--dyss-radius-md)',
+    background: 'var(--dyss-color-bg-primary)',
+    color: 'var(--dyss-color-primary)',
+    cursor: 'pointer',
+    fontSize: 'var(--dyss-font-size-sm)',
+    fontWeight: '500',
+    transition: 'all 0.2s ease'
+  };
+
   // 인사이트 생성 함수
   const generateInsights = (analysisData) => {
     const { analysis, eventImpacts, forecast } = analysisData;

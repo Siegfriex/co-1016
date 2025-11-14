@@ -19,6 +19,74 @@
       ]
     },
     {
+      "collectionGroup": "measures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "entity_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "measures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "entity_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "time_window",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "measures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "entity_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "value_normalized",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "time_window",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "measures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "source_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "priority",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "timeseries",
       "queryScope": "COLLECTION", 
       "fields": [
@@ -29,6 +97,38 @@
         {
           "fieldPath": "axis",
           "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "timeseries",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artist_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "version",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "artist_summary",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artist_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "updated_at",
+          "order": "DESCENDING"
         }
       ]
     },
@@ -47,6 +147,38 @@
       ]
     },
     {
+      "collectionGroup": "compare_pairs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistA_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "artistB_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "entities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "identity_type",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "career_status",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "events",
       "queryScope": "COLLECTION",
       "fields": [
@@ -57,6 +189,20 @@
         {
           "fieldPath": "start_date",
           "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "entity_participants",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "start_date",
+          "order": "ASCENDING"
         }
       ]
     },

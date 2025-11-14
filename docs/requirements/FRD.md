@@ -4,11 +4,11 @@
 
 **문서명**: CO-1016 CURATOR ODYSSEY Functional Requirements Document (FRD) v1.0
 
-**버전**: 1.0
+**버전**: 1.1
 
 **상태**: Draft (초안, API Spec v1.0 기반)
 
-**최종 수정**: 2025-11-02
+**최종 수정**: 2025-11-10
 
 **소유자**: NEO GOD (Director)
 
@@ -16,15 +16,23 @@
 
 **개정 이력**:
 - v1.0 (2025-11-02): API Spec 기반 초기 초안, SRD FR을 API 엔드포인트와 매핑하여 세부화
+- v1.1 (2025-11-10): 문서 동기화 및 참조 관계 확정
 
 **배포 범위**: Backend Development Team (Firebase Functions), Frontend Development Team (React Query Integration), QA Team (Testing)
 
 **변경 관리 프로세스**: GitHub Issues/PR 워크플로, 변경 시 SRD/TSD/API Spec 동시 업데이트
 
 **참조 문서 (References)**:
-- **[SRD v1.0](SRD.md)** - Software Requirements Document, 기능 요구사항 (FR) 및 수용 기준 (AC)
-- **[TSD v1.0](../TSD.md)** - Technical Design Document, API Layer 상세 및 Functions 구현
-- **[API Specification v1.0](../api/API_SPECIFICATION.md)** - RESTful API 엔드포인트 정의, JSON Schema, 에러 코드
+- **[BRD v1.1](BRD.md)** - Business Requirements Document, 비즈니스 요구사항 및 프로젝트 비전 (웹앱 통합 포함)
+- **[SRD v1.1](SRD.md)** - Software Requirements Document, 기능 요구사항 (FR) 및 수용 기준 (AC)
+- **[TSD v1.1](../TSD.md)** - Technical Design Document, API Layer 상세 및 Functions 구현
+- **[API Specification v1.1](../api/API_SPECIFICATION.md)** - RESTful API 엔드포인트 정의, JSON Schema, 에러 코드
+- **[FR ID 매핑 테이블](../FR_ID_MAPPING.md)** - SRD FR ID와 FRD FR ID 간 매핑 관계
+- **[VID v2.0](../design/VID.md)** - Visual Interaction Design Document, 컴포넌트 스펙 및 디자인 시스템 (색상, 타이포그래피, 그리드, 애니메이션)
+  - [VID Section 2.5](../design/VID.md#25-랜딩-페이지-컴포넌트) - 랜딩 페이지 컴포넌트
+  - [VID Section 2.6](../design/VID.md#26-피지컬-게임-결과-화면-컴포넌트) - 피지컬 게임 결과 화면 컴포넌트
+  - [VID Section 5](../design/VID.md#5-색상-시스템-color-system) - 색상 시스템
+  - [VID Section 7](../design/VID.md#7-그리드-시스템-및-반응형-레이아웃-grid-system--responsive-layout) - 그리드 시스템
 
 ---
 
@@ -42,6 +50,7 @@
 - **Phase 2 기능**: 커리어 궤적 분석 (시계열 조회, 이벤트 영향, 배치 API)
 - **Phase 3 기능**: 비교 분석 (두 아티스트 비교)
 - **Phase 4 기능**: AI 보고서 생성 (데이터 취합 + AI 호출)
+- **웹앱 통합 기능**: 피지컬 컴퓨팅 아트워크와의 통합 (WebSocket 클라이언트, 게임 결과 표시, CuratorOdyssey API 연동)
 
 #### Out of Scope (범위 외)
 
@@ -260,7 +269,7 @@ interface Bin {
 
 **설명**: 시스템은 아티스트 ID를 입력받아 sunburst 상세 데이터(L1/L2 계층)를 조회하여 반환해야 한다.
 
-**SRD FR ID**: FR-P1-DQ-001 (보완)
+**SRD FR ID**: [FR-P1-DQ-001](SRD.md#fr-p1-dq-001-아티스트-요약-데이터-조회) (보완)
 
 **API 매핑**: `GET /api/artist/{id}/sunburst` ([API Spec Section 4.2](../api/API_SPECIFICATION.md#get-apipartistidsunburst))
 
@@ -409,7 +418,7 @@ interface Bin {
 
 **설명**: 시스템은 아티스트 ID와 다중 축 배열을 입력받아 단일 요청으로 모든 축의 시계열 데이터를 조회하여 반환해야 한다.
 
-**SRD FR ID**: FR-P2-DQ-001 (확장, 효율성 향상)
+**SRD FR ID**: [FR-P2-DQ-001](SRD.md#fr-p2-dq-001-시계열-데이터-조회) (확장, 효율성 향상)
 
 **API 매핑**: `POST /api/batch/timeseries` ([API Spec Section 4.3](../api/API_SPECIFICATION.md#post-apibatchtimeseries))
 
@@ -597,6 +606,413 @@ interface Bin {
 **AC 커버리지**: 100% ([AC-P4-RP-001](SRD.md#fr-p4-rp-001-vertex-ai-호출))
 
 **테스트 케이스**: [E2E-P4-001](../testing/E2E_TEST_SCENARIOS.md#s5-phase-4-ai-보고서-생성)
+
+---
+
+### 4.5 웹앱 통합 기능 요구사항 (Web App Integration Requirements)
+
+본 섹션은 CuratorOdyssey 웹앱이 피지컬 컴퓨팅 아트워크와 통합되는 기능 요구사항을 다룹니다. 피지컬 컴퓨팅 아트워크 자체의 기능 요구사항은 [BRD v1.1](BRD.md) Section 3을 참조하세요.
+
+#### FR-WEB-001: 모니터 자동 켜기
+
+**설명**: 웹앱은 WebSocket으로 배 감지 신호(`treasure_box_detected`)를 수신하면 모니터를 자동으로 켜고 전체화면 모드로 전환해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.1](BRD.md#81-fr-web-001-모니터-자동-켜기)
+
+**API 매핑**: WebSocket 수신 (메시지 타입: `treasure_box_detected`)
+
+**입력 (Input)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `type` | string | Yes | Enum: `"treasure_box_detected"` | 메시지 타입 |
+| `timestamp` | string | Yes | ISO 8601 | 이벤트 발생 시간 |
+
+**출력 (Output)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `monitor_status` | string | Yes | Enum: `"on"`, `"off"`, `"error"` | 모니터 켜기 성공/실패 상태 |
+| `fullscreen_status` | string | Yes | Enum: `"active"`, `"inactive"`, `"error"` | 전체화면 모드 활성화 상태 |
+
+**사전 조건 (Preconditions)**:
+
+- 웹앱 실행 중
+- WebSocket 연결 수립 완료
+- 브라우저 전체화면 API 지원 (`requestFullscreen` 또는 `webkitRequestFullscreen`)
+
+**사후 조건 (Postconditions)**:
+
+- 모니터 자동 켜기 완료 (HDMI CEC 또는 전체화면)
+- 결과 화면으로 자동 전환
+- 전체화면 모드 활성화
+
+**수용 기준 (Acceptance Criteria)**:
+
+- 모니터 켜기 지연 < 2초
+- 전체화면 전환 성공률 ≥ 95%
+- WebSocket 메시지 수신 후 2초 이내 전체화면 전환 완료
+
+**AC 커버리지**: 100% ([AC-WEB-001](SRD.md#fr-web-001-모니터-자동-켜기))
+
+**테스트 케이스**: TC-WEB-001 (모니터 자동 제어)
+
+**데이터 스키마**: 없음 (WebSocket 이벤트만)
+
+---
+
+#### FR-WEB-002: 게임 결과 표시
+
+**설명**: 웹앱은 게임 세션 데이터를 받아 주 페르소나, 노력 스펙, CuratorOdyssey 레이더/선버스트 차트, AI 매칭 결과를 표시해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.2](BRD.md#82-fr-web-002-게임-결과-표시)
+
+**API 매핑**: WebSocket 수신 (메시지 타입: `game_end`)
+
+**입력 (Input)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `type` | string | Yes | Enum: `"game_end"` | 메시지 타입 |
+| `session_id` | string | Yes | Pattern: `^SESSION_\d+$` | 게임 세션 ID |
+| `data` | object | Yes | - | 게임 세션 데이터 (아래 참조) |
+
+**게임 세션 데이터 구조** (`data` 필드):
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `main_persona` | object | Yes | 주 페르소나 정보 |
+| `main_persona.life_scenario` | string | Yes | 인생 시나리오 템플릿 (예: "구설수 → 퇴학 → 입대") |
+| `main_persona.event_sequence` | array[string] | Yes | 이벤트 시퀀스 배열 |
+| `calculated_metadata` | object | Yes | 계산된 메타데이터 |
+| `calculated_metadata.radar5` | object | Yes | 레이더 5축 점수 |
+| `calculated_metadata.sunburst_l1` | object | Yes | 선버스트 4축 점수 |
+| `ai_matching` | object | Yes | AI 매칭 결과 |
+| `ai_matching.matched_artist_id` | string | Yes | 매칭된 작가 ID |
+| `ai_matching.matched_artist_name` | string | Yes | 매칭된 작가 이름 |
+| `ai_matching.similarity_score` | number | Yes | 유사도 점수 (0-1) |
+| `ai_matching.curator_odyssey_link` | string | Yes | CuratorOdyssey 링크 |
+
+**출력 (Output)**:
+
+- 결과 화면 렌더링 완료
+- 주 페르소나 표시 완료
+- 레이더/선버스트 차트 표시 완료
+- 매칭 작가 정보 표시 완료
+
+**사전 조건 (Preconditions)**:
+
+- 게임 세션 완료
+- 세션 데이터 Firestore 저장 완료 (`physical_game_sessions` 컬렉션)
+- CuratorOdyssey API 접근 가능
+
+**사후 조건 (Postconditions)**:
+
+- 결과 화면 렌더링 완료
+- CuratorOdyssey 차트 표시 완료 (레이더 5축, 선버스트 4축)
+- 매칭 작가 정보 표시 완료
+- CuratorOdyssey 링크 클릭 가능
+
+**컴포넌트 구조**:
+
+VID v2.0에 따라 게임 결과 화면은 다음과 같이 모듈화된 컴포넌트 구조로 구현됩니다:
+
+1. **PhysicalGameResultView** (컨테이너 컴포넌트)
+   - 경로: `src/components/physical-game/PhysicalGameResultView.jsx`
+   - 역할: 가로 스크롤 컨테이너, 섹션 관리
+   - 참조: [VID Section 2.6.1](../design/VID.md#261-physicalgameresultview-결과-화면-컨테이너)
+
+2. **MainPersonaSection** (주 페르소나 섹션)
+   - 경로: `src/components/physical-game/MainPersonaSection.jsx`
+   - 데이터 소스: `gameSession.main_persona`
+   - 레이아웃: 타임라인 레이아웃 (18 Years of Büro 스타일)
+   - 애니메이션: 순차 등장 (stagger: 200ms)
+   - 참조: [VID Section 2.6.2](../design/VID.md#262-mainpersonasection-주-페르소나-섹션)
+
+3. **EffortResultSection** (노력의 결과 섹션)
+   - 경로: `src/components/physical-game/EffortResultSection.jsx`
+   - 데이터 소스: `gameSession.calculated_metadata`
+   - 재사용 컴포넌트: `ArtistRadarChart`, `SunburstChart`
+   - 레이아웃: 위아래 배치 (레이더 상단, 선버스트 하단)
+   - 애니메이션: 차트 순차 등장 (stagger: 300ms)
+   - 참조: [VID Section 2.6.3](../design/VID.md#263-effortresultsection-노력의-결과-섹션)
+
+4. **MatchedArtistSection** (매칭 작가 섹션)
+   - 경로: `src/components/physical-game/MatchedArtistSection.jsx`
+   - 데이터 소스: `gameSession.ai_matching`
+   - 스타일: 미니멀 카드 디자인, 유사도 프로그레스 바
+   - 카드 배경: 세컨더리 배경 (#F1F0EC)
+   - 프로그레스 바: 주 컬러 (#F28317C)
+   - 참조: [VID Section 2.6.4](../design/VID.md#264-matchedartistsection-매칭-작가-섹션)
+
+5. **ComparisonChartSection** (비교 차트 섹션)
+   - 경로: `src/components/physical-game/ComparisonChartSection.jsx`
+   - 데이터 소스: `gameSession` + CuratorOdyssey API
+   - 스타일: 오버레이 스타일 (플레이어: 주 컬러 #F28317C, 작가: 세컨더리 #F1F0EC)
+   - 인터랙션: 축별 토글 (I, F, A, M, Sedu 또는 제도, 학술, 담론, 네트워크)
+   - 참조: [VID Section 2.6.5](../design/VID.md#265-comparisonchartsection-비교-차트-섹션)
+
+6. **ResultNavigation** (결과 화면 네비게이션)
+   - 경로: `src/components/physical-game/ResultNavigation.jsx`
+   - 기능: 하단 점 네비게이션, 뒤로가기 버튼, CuratorOdyssey 링크
+   - 참조: [VID Section 2.6.6](../design/VID.md#266-resultnavigation-결과-화면-네비게이션)
+
+**레이아웃 스펙**:
+
+- 가로 스크롤 레이아웃 (18 Years of Büro 스타일):
+  - 섹션 너비: `100vw` (각 섹션)
+  - 섹션 높이: `100vh` / `100svh`
+  - 섹션 간 전환: 페이드 애니메이션 (0.8s ease-out)
+- 인터랙션 방식:
+  - 마우스 휠 → 가로 스크롤 변환 로직
+  - 키보드 네비게이션 (← →, Home, End)
+  - 하단 점 네비게이션 (현재 섹션 인디케이터)
+- 참조: [VID Section 2.6.1](../design/VID.md#261-physicalgameresultview-결과-화면-컨테이너), [VID Section 7.3](../design/VID.md#73-결과-화면-그리드-시스템)
+
+**색상 시스템**:
+
+- 주 컬러 기반 Primary 팔레트 사용
+- 차트 색상 매핑:
+  - 레이더 차트: I (#F28317C), F (#FFA333), A (#D66A0F), M (#BA510C), Sedu (#9E3809)
+  - 선버스트 차트: 제도 (#F28317C), 학술 (#D66A0F), 담론 (#BA510C), 네트워크 (#9E3809)
+  - 비교 차트: 플레이어 (#F28317C), 작가 (#F1F0EC), 차이 음영 (rgba(242, 131, 23, 0.15))
+- 참조: [VID Section 5.4](../design/VID.md#54-데이터-시각화-색상-매핑)
+
+**애니메이션 스펙**:
+
+- 섹션 전환 애니메이션: 0.8s ease-out (페이드)
+- 스태거 애니메이션:
+  - 주 페르소나 타임라인: stagger 200ms
+  - 차트 순차 등장: stagger 300ms
+- 차트 애니메이션:
+  - 레이더 차트: 초기 로딩 500ms (중앙에서 펼쳐짐)
+  - 선버스트 차트: 초기 로딩 300ms per sector (순차 등장)
+- 참조: [VID Section 6](../design/VID.md#6-애니메이션-스펙-animation-specifications)
+
+**수용 기준 (Acceptance Criteria)**:
+
+- 결과 화면 로딩 시간 < 2초
+- 차트 렌더링 시간 < 1초
+- CuratorOdyssey 링크 클릭 가능
+
+**AC 커버리지**: 100% ([AC-WEB-002](SRD.md#fr-web-002-게임-결과-표시))
+
+**테스트 케이스**: TC-WEB-002 (결과 화면 표시)
+
+**데이터 스키마**: `physical_game_sessions` 컬렉션 참조 ([Data Model Spec Section 3.3.1](../data/DATA_MODEL_SPECIFICATION.md#331-physical_game_sessions-게임-세션))
+
+---
+
+#### FR-WEB-003: CuratorOdyssey 작가 데이터 조회
+
+**설명**: 웹앱은 매칭된 작가의 Phase 1-4 데이터를 CuratorOdyssey API를 통해 조회하여 비교 차트를 표시해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.3](BRD.md#83-fr-web-003-curatorodyssey-작가-데이터-조회)
+
+**FRD 연계**: 본 요구사항은 다음 FRD FR과 연계됩니다:
+- [FR-P1-SUM-001](#fr-p1-sum-001-아티스트-요약-데이터-조회): 아티스트 요약 데이터 조회
+- [FR-P2-BAT-001](#fr-p2-bat-001-배치-시계열-데이터-조회): 배치 시계열 데이터 조회 (다중 축)
+- [FR-P3-CMP-001](#fr-p3-cmp-001-두-아티스트-비교-데이터-조회): 두 아티스트 비교 데이터 조회
+
+**API 매핑**: 
+- `GET /api/artist/{id}/summary` (Phase 1) - [API Spec Section 4.2](../api/API_SPECIFICATION.md#get-apipartistidsummary)
+- `POST /api/batch/timeseries` (Phase 2) - [API Spec Section 4.3](../api/API_SPECIFICATION.md#post-apibatchtimeseries)
+- `GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis}` (Phase 3, 확장 필요) - [API Spec Section 4.4](../api/API_SPECIFICATION.md#get-apicompareartistaartistbaxis)
+
+**입력 (Input)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `matched_artist_id` | string | Yes | Pattern: `^ARTIST_\d{4}$` | 매칭된 작가 ID |
+| `player_session_id` | string | Yes | Pattern: `^SESSION_\d+$` | 플레이어 게임 세션 ID (비교용) |
+
+**출력 (Output)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `artist_summary` | object | Yes | - | 작가 Phase 1 데이터 (FR-P1-SUM-001 참조) |
+| `artist_timeseries` | object | Yes | - | 작가 Phase 2 데이터 (FR-P2-BAT-001 참조) |
+| `comparison_data` | object | Yes | - | 비교 데이터 (FR-P3-CMP-001 참조, 확장) |
+
+**사전 조건 (Preconditions)**:
+
+- 매칭 작가 ID 존재 (`ai_matching.matched_artist_id`)
+- CuratorOdyssey API 접근 가능
+- 플레이어 세션 데이터 존재 (`physical_game_sessions` 컬렉션)
+
+**사후 조건 (Postconditions)**:
+
+- 매칭 작가 데이터 조회 완료 (Phase 1-4)
+- 비교 차트 렌더링 완료
+- 플레이어 vs 작가 비교 데이터 표시 완료
+
+**수용 기준 (Acceptance Criteria)**:
+
+- API 호출 시간 < 2초
+- 비교 차트 렌더링 시간 < 1초
+- 데이터 정확도 100% (플레이어 세션 데이터와 작가 데이터 일치)
+
+**AC 커버리지**: 100% ([AC-WEB-003](SRD.md#fr-web-003-curatorodyssey-작가-데이터-조회))
+
+**테스트 케이스**: TC-WEB-003 (CuratorOdyssey API 연동)
+
+**데이터 스키마**: 
+- `artist_summary` 컬렉션 참조 ([Data Model Spec Section 3.2.1](../data/DATA_MODEL_SPECIFICATION.md#321-artist_summary-phase-1-서빙))
+- `timeseries` 컬렉션 참조 ([Data Model Spec Section 3.2.2](../data/DATA_MODEL_SPECIFICATION.md#322-timeseries-phase-2-서빙))
+- `compare_pairs` 컬렉션 참조 ([Data Model Spec Section 3.2.3](../data/DATA_MODEL_SPECIFICATION.md#323-compare_pairs-phase-3-서빙))
+
+---
+
+#### FR-WEB-004: 비교 차트 표시 (플레이어 vs 매칭 작가)
+
+**설명**: 웹앱은 플레이어의 게임 결과와 매칭된 작가의 실제 데이터를 비교하여 차트로 표시해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.4](BRD.md#84-fr-web-004-비교-차트-표시-플레이어-vs-매칭-작가)
+
+**FRD 연계**: [FR-P3-CMP-001](#fr-p3-cmp-001-두-아티스트-비교-데이터-조회) (확장 필요)
+
+**API 매핑**: `GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis}` (확장 필요)
+
+**비교 항목**:
+
+- 레이더 5축 비교 (플레이어 vs 작가)
+- 선버스트 4축 비교 (플레이어 vs 작가)
+- 시계열 궤적 비교 (Phase 2 데이터, 향후 확장)
+
+**입력 (Input)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `player_session_id` | string | Yes | Pattern: `^SESSION_\d+$` | 플레이어 게임 세션 ID |
+| `matched_artist_id` | string | Yes | Pattern: `^ARTIST_\d{4}$` | 매칭된 작가 ID |
+| `axis` | string | Yes | Enum: `"제도"`, `"학술"`, `"담론"`, `"네트워크"` | 비교 축 |
+
+**출력 (Output)**:
+
+| 필드 | 타입 | 필수 | 검증 규칙 | 설명 |
+|------|------|------|----------|------|
+| `comparison_radar5` | object | Yes | - | 레이더 5축 비교 데이터 |
+| `comparison_sunburst` | object | Yes | - | 선버스트 4축 비교 데이터 |
+| `similarity_scores` | object | Yes | - | 축별 유사도 점수 |
+
+**사전 조건 (Preconditions)**:
+
+- 플레이어 세션 데이터 존재 (`physical_game_sessions` 컬렉션)
+- 매칭 작가 데이터 존재 (`artist_summary`, `timeseries` 컬렉션)
+- 비교 API 확장 완료
+
+**사후 조건 (Postconditions)**:
+
+- 비교 차트 렌더링 완료
+- 플레이어 vs 작가 데이터 정확도 100%
+
+**색상 스펙**:
+
+- 플레이어 색상: `#F28317C` (Primary 500, 주 컬러)
+- 작가 색상: `#F1F0EC` (Secondary 100, 세컨더리 기본)
+- 차이 음영: `rgba(242, 131, 23, 0.15)` (주 컬러 반투명)
+- 참조: [VID Section 5.4.3](../design/VID.md#543-비교-차트-색상-플레이어-vs-작가)
+
+**차트 스타일**:
+
+- 오버레이 스타일 (플레이어 vs 작가):
+  - 플레이어 라인/영역: 주 컬러 (#F28317C), 굵기 3px
+  - 작가 라인/영역: 세컨더리 컬러 (#F1F0EC), 굵기 2px
+  - 차이 영역: 반투명 오버레이 (`rgba(242, 131, 23, 0.15)`)
+- 축별 토글 인터랙션:
+  - 각 축 (I, F, A, M, Sedu 또는 제도, 학술, 담론, 네트워크)에 토글 버튼
+  - 토글 클릭 시 해당 축 표시/숨김
+  - 기본값: 모든 축 표시
+- 참조: [VID Section 2.6.5](../design/VID.md#265-comparisonchartsection-비교-차트-섹션)
+
+**수용 기준 (Acceptance Criteria)**:
+
+- 비교 차트 렌더링 시간 < 1초
+- 플레이어 vs 작가 데이터 정확도 100%
+- 유사도 점수 계산 정확도 100%
+
+**AC 커버리지**: 100% ([AC-WEB-004](SRD.md#fr-web-004-비교-차트-표시))
+
+**테스트 케이스**: TC-WEB-004 (비교 차트 표시)
+
+**데이터 스키마**: 
+- `physical_game_sessions` 컬렉션 참조 ([Data Model Spec Section 3.3.1](../data/DATA_MODEL_SPECIFICATION.md#331-physical_game_sessions-게임-세션))
+- `compare_pairs` 컬렉션 참조 ([Data Model Spec Section 3.2.3](../data/DATA_MODEL_SPECIFICATION.md#323-compare_pairs-phase-3-서빙)) (확장 필요)
+
+**확장 필요 사항**:
+
+- `GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis}` API 엔드포인트 확장
+- 플레이어 세션 데이터를 `physical_game_sessions` 컬렉션에서 조회하는 로직 추가
+- 플레이어의 `calculated_metadata`와 작가의 실제 데이터 비교 로직 구현
+
+---
+
+### 4.6 랜딩 페이지 기능 요구사항 (Landing Page Requirements)
+
+본 섹션은 CuratorOdyssey 웹앱의 랜딩 페이지 기능 요구사항을 다룹니다.
+
+#### FR-WEB-005: 랜딩 페이지 표시
+
+**FR ID**: FR-WEB-005
+
+**이름**: 랜딩 페이지 표시
+
+**설명**: 사용자는 랜딩 페이지에서 Hero 섹션, Feature Cards, 네비게이션을 볼 수 있어야 하며, CTA 버튼 클릭 시 결과 화면으로 전환할 수 있어야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.5](BRD.md#85-fr-web-005-랜딩-페이지-표시) (추가 필요 시)
+
+**API 매핑**: 없음 (정적 페이지)
+
+**컴포넌트**:
+- `LandingPageHero` (`src/components/layout/LandingPageHero.jsx`)
+- `FeatureCards` (`src/components/layout/FeatureCards.jsx`)
+- `LandingPageNavigation` (`src/components/layout/LandingPageNavigation.jsx`)
+- `WebGLBackground` (`src/components/common/WebGLBackground.jsx`)
+
+**입력 (Input)**:
+- 없음 (정적 페이지)
+
+**출력 (Output)**:
+- 랜딩 페이지 렌더링 완료
+- Hero 섹션 표시 완료
+- Feature Cards 그리드 표시 완료
+- 네비게이션 메뉴 표시 완료
+- WebGL 배경 렌더링 완료
+
+**사전 조건 (Preconditions)**:
+- 웹앱 실행 중
+- 브라우저 WebGL 지원 (선택적, 폴백 제공)
+
+**사후 조건 (Postconditions)**:
+- 랜딩 페이지 렌더링 완료
+- CTA 버튼 클릭 시 결과 화면 전환 (`/physical-game/result` 또는 해당 Phase 페이지)
+
+**수용 기준 (Acceptance Criteria)** (Gherkin 스타일):
+
+```
+Given: 랜딩 페이지 접속
+When: 페이지 로드 완료
+Then: 
+  - Hero 섹션 표시
+  - WebGL 배경 렌더링 (또는 폴백 표시)
+  - CTA 버튼 클릭 가능
+  - Feature Cards 그리드 표시
+  - 카드 호버 효과 확인
+  - 네비게이션 메뉴 표시
+```
+
+**디자인 스펙**:
+- 색상 시스템: [VID Section 5](../design/VID.md#5-색상-시스템-color-system)
+- 타이포그래피: [VID Section 9.2](../design/VID.md#92-타이포그래피-typography)
+- 그리드 시스템: [VID Section 7.2](../design/VID.md#72-랜딩-페이지-그리드-시스템)
+- 애니메이션: [VID Section 6](../design/VID.md#6-애니메이션-스펙-animation-specifications)
+- 컴포넌트 스펙: [VID Section 2.5](../design/VID.md#25-랜딩-페이지-컴포넌트)
+
+**AC 커버리지**: 100% ([AC-WEB-005](SRD.md#fr-web-005-랜딩-페이지-표시))
+
+**테스트 케이스**: TC-WEB-005 (랜딩 페이지 표시)
+
+**데이터 스키마**: 없음 (정적 페이지)
 
 ---
 

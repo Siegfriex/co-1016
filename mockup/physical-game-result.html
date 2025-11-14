@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CuratorOdyssey - 피지컬 게임 결과">
+  <title>피지컬 게임 결과 - CuratorOdyssey</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <!-- 가로 스크롤 컨테이너 -->
+  <div class="horizontal-scroll-container" id="result-container" role="main" aria-label="피지컬 게임 결과">
+    
+    <!-- 섹션 1: 주 페르소나 -->
+    <section class="section-result" id="main-persona" aria-label="주 페르소나 섹션">
+      <h2 class="section-title">주 페르소나</h2>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <p class="timeline-age">10대</p>
+          <p class="timeline-event">첫 작품 제작</p>
+          <p class="timeline-event">미술 수업 참여</p>
+        </div>
+        
+        <div class="timeline-item">
+          <p class="timeline-age">20대</p>
+          <p class="timeline-event">대학 입학</p>
+          <p class="timeline-event">첫 개인전 준비</p>
+        </div>
+        
+        <div class="timeline-item">
+          <p class="timeline-age">30대</p>
+          <p class="timeline-event">국제 전시 참여</p>
+          <p class="timeline-event">비평가 주목</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 2: 노력의 결과 -->
+    <section class="section-result" id="effort-result" aria-label="노력의 결과 섹션">
+      <h2 class="section-title">노력의 결과</h2>
+      
+      <div style="display: flex; flex-direction: column; gap: 48px; align-items: center;">
+        <div class="chart-container radar-chart-container" id="radar-chart"></div>
+        <div class="chart-container sunburst-chart-container" id="sunburst-chart"></div>
+      </div>
+    </section>
+
+    <!-- 섹션 3: 매칭 작가 -->
+    <section class="section-result" id="matched-artist" aria-label="매칭 작가 섹션">
+      <h2 class="section-title">매칭 작가</h2>
+      
+      <div class="artist-card">
+        <h3 class="artist-card-title">김작가</h3>
+        <p>유사도: 82%</p>
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: 82%"></div>
+        </div>
+        <a href="artist.html?id=ARTIST_0003" class="curator-link-button">CuratorOdyssey에서 보기</a>
+      </div>
+    </section>
+
+    <!-- 섹션 4: 비교 차트 -->
+    <section class="section-result" id="comparison-chart" aria-label="비교 차트 섹션">
+      <h2 class="section-title">비교 차트</h2>
+      
+      <div class="comparison-chart-container" id="comparison-chart-container">
+        <p>비교 차트 구현 예정</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Result Navigation -->
+  <nav class="result-nav" role="navigation" aria-label="결과 화면 네비게이션">
+    <button class="back-button" onclick="goBack()">뒤로가기</button>
+    
+    <div class="nav-dots">
+      <button class="nav-dot active" onclick="goToSection(0)" aria-label="주 페르소나 섹션으로 이동"></button>
+      <button class="nav-dot" onclick="goToSection(1)" aria-label="노력의 결과 섹션으로 이동"></button>
+      <button class="nav-dot" onclick="goToSection(2)" aria-label="매칭 작가 섹션으로 이동"></button>
+      <button class="nav-dot" onclick="goToSection(3)" aria-label="비교 차트 섹션으로 이동"></button>
+    </div>
+    
+    <a href="index.html" class="curator-link-button">CuratorOdyssey</a>
+  </nav>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/api-mock.js"></script>
+  <script src="js/charts/radar-chart.js"></script>
+  <script src="js/charts/sunburst-chart.js"></script>
+  <script src="js/horizontal-scroll.js"></script>
+  
+  <script>
+    // 가로 스크롤 초기화
+    let horizontalScroll;
+    
+    // 섹션 이동 함수
+    function goToSection(index) {
+      if (horizontalScroll) {
+        horizontalScroll.goToSection(index);
+      }
+    }
+    
+    // 뒤로가기 함수
+    function goBack() {
+      window.history.back();
+    }
+    
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 가로 스크롤 초기화
+      const container = document.getElementById('result-container');
+      horizontalScroll = new HorizontalScroll(container);
+      
+      // 목업 데이터 로드
+      try {
+        const sessionData = await apiMock.getPhysicalGameSession('SESSION_001');
+        const data = sessionData.data;
+        
+        // 레이더 차트 렌더링
+        const radarChart = new RadarChart('#radar-chart', {
+          width: 400,
+          height: 400
+        });
+        radarChart.render(data.player_data.radar5);
+        
+        // 선버스트 차트 렌더링
+        const sunburstChart = new SunburstChart('#sunburst-chart', {
+          width: 400,
+          height: 400
+        });
+        
+        // 선버스트 데이터 변환
+        const sunburstData = {
+          제도: {
+            L1: data.player_data.sunburst_l1.제도,
+            L2: { 갤러리: 0.4, 미술관: 0.5 },
+            L3: { 갤러리_국내: 0.2, 갤러리_해외: 0.2, 미술관_국내: 0.25, 미술관_해외: 0.25 }
+          },
+          학술: {
+            L1: data.player_data.sunburst_l1.학술,
+            L2: { 학회: 0.3, 저널: 0.3 },
+            L3: { 학회_국내: 0.15, 학회_해외: 0.15, 저널_국내: 0.15, 저널_해외: 0.15 }
+          },
+          담론: {
+            L1: data.player_data.sunburst_l1.담론,
+            L2: { 언론: 0.25, 비평: 0.25 },
+            L3: { 언론_국내: 0.12, 언론_해외: 0.13, 비평_국내: 0.12, 비평_해외: 0.13 }
+          },
+          네트워크: {
+            L1: data.player_data.sunburst_l1.네트워크,
+            L2: { 협업: 0.3, 교류: 0.3 },
+            L3: { 협업_국내: 0.15, 협업_해외: 0.15, 교류_국내: 0.15, 교류_해외: 0.15 }
+          }
+        };
+        
+        sunburstChart.render(sunburstData);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
+    });
+  </script>
+</body>
+</html>
+

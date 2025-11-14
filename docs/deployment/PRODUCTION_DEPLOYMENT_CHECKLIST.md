@@ -3,9 +3,20 @@
 ## 1) 사전 점검
 - [ ] GCP 프로젝트: co-1016 활성화
 - [ ] Firebase CLI/gcloud 로그인
-- [ ] Secret Manager: openai/anthropic/vertex/app-config 설정
+- [ ] Secret Manager: 다음 Secret들이 설정되어 있는지 확인
+  - [ ] `ANTHROPIC_API_KEY` - Anthropic Claude API 키
+  - [ ] `OPENAI_API_KEY` - OpenAI GPT-4 API 키 (폴백용)
+  - [ ] `VERTEX_AI_CREDENTIALS` - Vertex AI Gemini 서비스 계정 인증 정보
+  - [ ] `app-config` - 애플리케이션 설정
+  - [ ] `apphosting-github-conn-bf9212r-github-oauthtoken-111de7` - GitHub App Hosting 연결 토큰 (선택적)
+  - [ ] `co-1016-firebase-adminsdk-fbsvc-ec20702062` - Firebase Admin SDK 서비스 계정 키 (선택적)
 - [ ] IAM 최소권한: functions runner, secret accessor
 - [ ] Firestore rules/indexes 배포 준비
+- [ ] Cloud Build 트리거 설정 확인 (선택적, CI/CD 사용 시)
+  - [ ] 트리거 이름: `curator-odyssey-prod-deploy`
+  - [ ] 서비스 계정 권한 확인: `501326088107@cloudbuild.gserviceaccount.com`
+  - [ ] Secret Manager 접근 권한 확인
+  - [ ] 상세 가이드: [Cloud Build 트리거 설정 가이드](docs/deployment/CLOUD_BUILD_TRIGGER_SETUP.md)
 
 ## 2) Hosting 설정 검증
 - firebase.json rewrites:
