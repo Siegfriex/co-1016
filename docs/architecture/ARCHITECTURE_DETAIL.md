@@ -1,8 +1,32 @@
 # CO-1016 CURATOR ODYSSEY: 아키텍처 상세 설계 문서
 
-버전: 1.0  
-최종 수정: 2025-01-XX  
-작성자: NEO GOD (Director)  
+## 문서 메타데이터 (Document Metadata)
+
+**문서명**: CO-1016 CURATOR ODYSSEY 아키텍처 상세 설계 문서
+
+**버전**: 1.0
+
+**상태**: Draft (초안)
+
+**최종 수정**: 2025-11-10
+
+**소유자**: NEO GOD (Director)
+
+**승인자**: Technical Lead (TBD)
+
+**개정 이력**:
+- v1.0 (2025-11-10): 초기 작성
+
+**배포 범위**: Frontend Development Team, Backend Development Team, Architecture Team
+
+**변경 관리 프로세스**: GitHub Issues/PR 워크플로, 변경 시 TSD/FRD 동시 업데이트
+
+**참조 문서 (References)**:
+- **[TSD v1.1](../TSD.md)** - Technical Design Document, 기술 설계 및 API 구현
+- **[FRD v1.1](../requirements/FRD.md)** - Functional Requirements Document, 기능 요구사항
+- **[SRD v1.1](../requirements/SRD.md)** - Software Requirements Document, 소프트웨어 요구사항
+- **[VID v2.0](../design/VID.md)** - Visual Interaction Design Document, 컴포넌트 스펙 및 디자인 시스템
+- **[IA v1.1](./IA.md)** - Information Architecture Document, 정보 구조 및 네비게이션  
 
 ## 목차
 

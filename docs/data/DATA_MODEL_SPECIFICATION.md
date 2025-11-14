@@ -1,7 +1,7 @@
 # CO-1016 CURATOR ODYSSEY: 데이터 모델 명세서
 
-버전: 1.0  
-최종 수정: 2025-01-XX  
+버전: 1.1  
+최종 수정: 2025-11-10  
 작성자: Dr. Sarah Kim (Data Architect)  
 
 ## 목차
@@ -27,12 +27,13 @@
 
 ### 1.2 컬렉션 구조
 
-**총 12개 컬렉션:**
+**총 15개 컬렉션:**
 
 | 카테고리 | 컬렉션 수 | 컬렉션 목록 |
 |---------|----------|------------|
 | 원천 데이터 | 9개 | `entities`, `events`, `measures`, `axis_map`, `edges`, `sources`, `codebook`, `weights`, `snapshots` |
 | 서빙 레이어 | 3개 | `artist_summary`, `timeseries`, `compare_pairs` |
+| 피지컬 컴퓨팅 아트워크 | 3개 | `physical_game_sessions`, `treasure_boxes`, `treasure_box_combinations` |
 
 ### 1.3 데이터 흐름 개요
 
@@ -389,6 +390,230 @@ erDiagram
 
 ---
 
+### 3.3 피지컬 컴퓨팅 아트워크 컬렉션
+
+피지컬 컴퓨팅 아트워크는 CuratorOdyssey 플랫폼과 연동된 인터랙티브 아트워크로, 플레이어의 게임 세션 데이터와 보물 상자 조합 정보를 저장합니다. 자세한 내용은 [BRD v1.1](../requirements/BRD.md) Section 4.1을 참조하세요.
+
+#### 3.3.1 physical_game_sessions (게임 세션)
+
+**컬렉션 이름**: `physical_game_sessions`  
+**기본 키**: `session_id`  
+**설명**: 피지컬 컴퓨팅 아트워크 게임 세션 데이터 (공 수집, 보물 상자 선택, 점수 계산, AI 매칭 결과)
+
+| 필드명 | 타입 | 필수 | 설명 | 예시 |
+|--------|------|------|------|------|
+| `session_id` | string | ✅ | 세션 고유 식별자 | `SESSION_123456` |
+| `started_at` | timestamp | ✅ | 게임 시작 시간 | `2024-11-10T10:00:00Z` |
+| `ended_at` | timestamp | ❌ | 게임 종료 시간 | `2024-11-10T10:08:30Z` |
+| `balls_collected` | object | ✅ | 공 수집 데이터 (티어별, 축별) | `{tier_1: {...}, tier_2: {...}, tier_3: {...}}` |
+| `treasure_boxes_selected` | array[object] | ✅ | 선택된 보물 상자 배열 (시간순) | `[{box_id: 1, age_group: "10대", ...}]` |
+| `calculated_metadata` | object | ✅ | 계산된 메타데이터 (레이더/선버스트 점수) | `{radar5: {...}, sunburst_l1: {...}}` |
+| `main_persona` | object | ✅ | 주 페르소나 (보물 상자 조합) | `{life_scenario: "...", event_sequence: [...]}` |
+| `ai_matching` | object | ❌ | AI 매칭 결과 | `{matched_artist_id: "...", similarity_score: 0.85}` |
+| `created_at` | timestamp | ✅ | 생성 시간 | `2024-11-10T10:00:00Z` |
+| `updated_at` | timestamp | ✅ | 업데이트 시간 | `2024-11-10T10:08:30Z` |
+
+**balls_collected 객체 구조:**
+```typescript
+{
+  tier_1: {
+    count: number;
+    axis_distribution: {
+      제도: number;
+      학술: number;
+      담론: number;
+      네트워크: number;
+    };
+    calculated_scores: {
+      radar5: { I: number; F: number; A: number; M: number; Sedu: number; };
+      sunburst_l1: { 제도: number; 학술: number; 담론: number; 네트워크: number; };
+    };
+  };
+  tier_2: { /* 동일 구조 */ };
+  tier_3: { /* 동일 구조 */ };
+}
+```
+
+**treasure_boxes_selected 배열 구조:**
+```typescript
+[
+  {
+    box_id: number;           // 1-9
+    age_group: string;        // "10대" | "20대" | "30대"
+    event_description: string;
+    sequence: number;         // 1-3 (시간순)
+    selected_at: timestamp;
+  }
+]
+```
+
+**main_persona 객체 구조:**
+```typescript
+{
+  life_scenario: string;      // "구설수 → 퇴학 → 입대"
+  event_sequence: string[];   // ["구설수가 생기다", "대학교에서 퇴학당하다", "군에 입대하다"]
+  narrative_summary: string;
+}
+```
+
+**ai_matching 객체 구조:**
+```typescript
+{
+  matched_artist_id: string;   // "ARTIST_0005"
+  matched_artist_name: string;
+  similarity_score: number;   // 0-1
+  matching_reason: string;
+  generated_story: string;
+  curator_odyssey_link: string;
+}
+```
+
+**예시 데이터:**
+```javascript
+{
+  session_id: "SESSION_123456",
+  started_at: "2024-11-10T10:00:00Z",
+  ended_at: "2024-11-10T10:08:30Z",
+  balls_collected: {
+    tier_1: {
+      count: 2,
+      axis_distribution: { 제도: 1, 학술: 0, 담론: 1, 네트워크: 0 },
+      calculated_scores: {
+        radar5: { I: 7.0, F: 3.0, A: 0, M: 8.0, Sedu: 0 },
+        sunburst_l1: { 제도: 10.0, 학술: 0, 담론: 10.0, 네트워크: 0 }
+      }
+    },
+    // tier_2, tier_3 생략
+  },
+  treasure_boxes_selected: [
+    { box_id: 1, age_group: "10대", event_description: "구설수가 생기다", sequence: 1, selected_at: "2024-11-10T10:02:00Z" },
+    { box_id: 4, age_group: "20대", event_description: "대학교에서 퇴학당하다", sequence: 2, selected_at: "2024-11-10T10:05:00Z" },
+    { box_id: 7, age_group: "30대", event_description: "군에 입대하다", sequence: 3, selected_at: "2024-11-10T10:07:00Z" }
+  ],
+  calculated_metadata: {
+    radar5: { I: 25.0, F: 10.0, A: 15.0, M: 20.0, Sedu: 3.0 },
+    sunburst_l1: { 제도: 35.0, 학술: 20.0, 담론: 30.0, 네트워크: 15.0 },
+    consistency_check: { radar_sum: 73.0, sunburst_sum: 100.0, mapped_sum: 72.5, difference: 0.5, valid: true },
+    influence_score: 25.0,
+    recognition_score: 15.0,
+    artwork_price_range: "중상위",
+    final_grade: "3등급"
+  },
+  main_persona: {
+    life_scenario: "구설수 → 퇴학 → 입대",
+    event_sequence: ["구설수가 생기다", "대학교에서 퇴학당하다", "군에 입대하다"],
+    narrative_summary: "10대에 구설수가 생겼지만, 20대에 대학에서 퇴학당하고, 30대에 군에 입대한 인생"
+  },
+  ai_matching: {
+    matched_artist_id: "ARTIST_0005",
+    matched_artist_name: "헨리 마티스",
+    similarity_score: 0.85,
+    matching_reason: "유사한 인생 궤적과 작품 스타일",
+    generated_story: "AI 생성 스토리 텍스트...",
+    curator_odyssey_link: "/artist/ARTIST_0005"
+  },
+  created_at: "2024-11-10T10:00:00Z",
+  updated_at: "2024-11-10T10:08:30Z"
+}
+```
+
+#### 3.3.2 treasure_boxes (보물 상자 메타데이터)
+
+**컬렉션 이름**: `treasure_boxes`  
+**기본 키**: `box_id`  
+**설명**: 보물 상자 메타데이터 (나이대별 3개씩, 총 9개)
+
+| 필드명 | 타입 | 필수 | 설명 | 예시 |
+|--------|------|------|------|------|
+| `box_id` | integer | ✅ | 보물 상자 ID (1-9) | `1` |
+| `age_group` | string | ✅ | 나이대 구간 | `"10대"`, `"20대"`, `"30대"` |
+| `position` | integer | ✅ | 해당 나이대 내 위치 (1-3) | `1`, `2`, `3` |
+| `event_description` | string | ✅ | 이벤트 설명 | `"구설수가 생기다"` |
+| `event_type` | string | ✅ | 이벤트 유형 | `"negative"`, `"positive"`, `"neutral"` |
+| `metadata` | object | ❌ | 메타데이터 | `{category: "네트워크", impact_level: "high"}` |
+| `created_at` | timestamp | ✅ | 생성 시간 | `2024-11-10T00:00:00Z` |
+
+**metadata 객체 구조:**
+```typescript
+{
+  category?: string;        // "네트워크", "제도", "학술", "담론"
+  impact_level?: string;   // "high" | "medium" | "low"
+}
+```
+
+**예시 데이터:**
+```javascript
+// 10대 구간 보물 상자
+{ box_id: 1, age_group: "10대", position: 1, event_description: "구설수가 생기다", event_type: "negative", metadata: { category: "네트워크", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+{ box_id: 2, age_group: "10대", position: 2, event_description: "원하는 대학에 입학하다", event_type: "positive", metadata: { category: "제도", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+{ box_id: 3, age_group: "10대", position: 3, event_description: "유명 큐레이터에게 눈에 띄다", event_type: "positive", metadata: { category: "네트워크", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+
+// 20대 구간 보물 상자
+{ box_id: 4, age_group: "20대", position: 1, event_description: "대학교에서 퇴학당하다", event_type: "negative", metadata: { category: "제도", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+{ box_id: 5, age_group: "20대", position: 2, event_description: "학술제에서 인정받다", event_type: "positive", metadata: { category: "학술", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+{ box_id: 6, age_group: "20대", position: 3, event_description: "전속 계약이 해지되다", event_type: "negative", metadata: { category: "네트워크", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+
+// 30대 구간 보물 상자
+{ box_id: 7, age_group: "30대", position: 1, event_description: "군에 입대하다", event_type: "neutral", metadata: { category: "제도", impact_level: "medium" }, created_at: "2024-11-10T00:00:00Z" }
+{ box_id: 8, age_group: "30대", position: 2, event_description: "리움에서 전시하다", event_type: "positive", metadata: { category: "제도", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+{ box_id: 9, age_group: "30대", position: 3, event_description: "국제 비엔날레에 초대받다", event_type: "positive", metadata: { category: "제도", impact_level: "high" }, created_at: "2024-11-10T00:00:00Z" }
+```
+
+#### 3.3.3 treasure_box_combinations (보물 상자 조합식)
+
+**컬렉션 이름**: `treasure_box_combinations`  
+**기본 키**: `combination_id`  
+**설명**: 보물 상자 조합식 참조 데이터 (27가지 조합, 각 조합의 스토리텔링 키워드 및 유사 작가 정보)
+
+| 필드명 | 타입 | 필수 | 설명 | 예시 |
+|--------|------|------|------|------|
+| `combination_id` | string | ✅ | 조합 ID (COMBO_001 ~ COMBO_027) | `"COMBO_001"` |
+| `box_ids` | array[integer] | ✅ | 정렬된 배열 (시간순, 10대-20대-30대) | `[1, 4, 7]` |
+| `story_template` | string | ✅ | 이벤트 시퀀스 템플릿 | `"구설수 → 퇴학 → 입대"` |
+| `storytelling_keyword` | string | ✅ | 스토리텔링 키워드 | `"파격적 궤적의 순수 아웃사이더"` |
+| `similar_artists` | array[object] | ✅ | 유사 작가 배열 | `[{name_ko: "...", name_en: "...", ...}]` |
+| `rarity` | string | ❌ | 희귀도 | `"common"`, `"rare"`, `"epic"` |
+| `created_at` | timestamp | ✅ | 생성 시간 | `2024-11-10T00:00:00Z` |
+| `updated_at` | timestamp | ✅ | 업데이트 시간 | `2024-11-10T00:00:00Z` |
+
+**similar_artists 배열 구조:**
+```typescript
+[
+  {
+    name_ko: string;              // 한국명
+    name_en: string;               // 영문명
+    matching_rationale: string;   // 매칭 근거 설명
+    keywords: string[];           // 키워드 배열
+  }
+]
+```
+
+**예시 데이터:**
+```javascript
+{
+  combination_id: "COMBO_001",
+  box_ids: [1, 4, 7],  // 10대-20대-30대 순서
+  story_template: "구설수 → 퇴학 → 입대",
+  storytelling_keyword: "파격적 궤적의 순수 아웃사이더",
+  similar_artists: [
+    {
+      name_ko: "헨리 마티스",
+      name_en: "Henri Matisse",
+      matching_rationale: "초기 논란, 정규 교육 중단, 긴 경력 공백, 순수성 추구",
+      keywords: ["초기 논란", "정규 교육 중단", "긴 경력 공백", "순수성 추구"]
+    }
+    // 추가 유사 작가 가능 (향후 확장)
+  ],
+  rarity: "common",
+  created_at: "2024-11-10T00:00:00Z",
+  updated_at: "2024-11-10T00:00:00Z"
+}
+```
+
+**참고**: 27가지 조합식 전체 목록은 [BRD v1.1](../requirements/BRD.md) Section 3.7.3을 참조하세요.
+
+---
+
 ## 4. 인덱스 전략
 
 ### 4.1 Firestore Composite Index 정의
@@ -431,13 +656,6 @@ db.collection('measures')
   .where('entity_id', '==', 'ARTIST_0005')
   .where('axis', '==', '제도')
   .where('time_window', '>=', '2014-01')
-  .orderBy('time_window')
-
-// 정규화된 값 기준 조회
-db.collection('measures')
-  .where('entity_id', '==', 'ARTIST_0005')
-  .where('axis', '==', '제도')
-  .where('value_normalized', '!=', null)
   .orderBy('time_window')
 ```
 
@@ -522,6 +740,35 @@ db.collection('events')
 |-----------|----------|------|------|------|
 | `edges_src_relation_weight` | `src_id` (ASC) + `relation_type` (ASC) + `weight` (DESC) | composite | ✅ 배포됨 | 관계 네트워크 조회 |
 
+#### 4.1.8 physical_game_sessions 컬렉션 인덱스
+
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `physical_game_sessions_started` | `started_at` (DESC) | single | ✅ 자동 생성 | 최신 세션 조회 |
+| `physical_game_sessions_created` | `created_at` (DESC) | single | ✅ 자동 생성 | 생성 시간순 조회 |
+
+**예시 쿼리:**
+```javascript
+// 최신 게임 세션 조회
+db.collection('physical_game_sessions')
+  .orderBy('started_at', 'desc')
+  .limit(10)
+```
+
+#### 4.1.9 treasure_box_combinations 컬렉션 인덱스
+
+| 인덱스 이름 | 필드 조합 | 타입 | 상태 | 용도 |
+|-----------|----------|------|------|------|
+| `treasure_box_combinations_box_ids` | `box_ids` (ARRAY_CONTAINS) | single | ✅ 자동 생성 | 특정 보물 상자 조합 조회 |
+| `treasure_box_combinations_rarity` | `rarity` (ASC) | single | ✅ 자동 생성 | 희귀도별 조회 |
+
+**예시 쿼리:**
+```javascript
+// 특정 보물 상자 조합 조회 (box_ids 배열에 [1, 4, 7] 포함)
+db.collection('treasure_box_combinations')
+  .where('box_ids', 'array-contains-any', [1, 4, 7])
+```
+
 ### 4.2 인덱스 생성 방법
 
 **중요**: Firestore는 단일 필드 인덱스를 자동으로 생성하므로 `firestore.indexes.json`에 정의하지 않습니다. 단일 필드 인덱스를 명시하면 배포 오류가 발생합니다.
@@ -601,6 +848,9 @@ node scripts/firestore/validateIndexes.js --check-only
 | `edges` | 인증된 사용자만 | 관리자/데이터 관리자만 | 관계 데이터 |
 | `sources` | 인증된 사용자만 | 관리자/데이터 관리자만 | 출처 메타데이터 |
 | `snapshots` | 관리자/분석가만 | 관리자/배치 함수만 | 스냅샷 데이터 |
+| `physical_game_sessions` | 공개 (`allow read: if true`) | 피지컬 게임 백엔드/관리자만 | 게임 세션 데이터 |
+| `treasure_boxes` | 공개 (`allow read: if true`) | 관리자만 | 보물 상자 메타데이터 (읽기 전용) |
+| `treasure_box_combinations` | 공개 (`allow read: if true`) | 관리자만 | 보물 상자 조합식 참조 데이터 (읽기 전용) |
 
 ### 5.3 보안 함수 정의
 
@@ -1133,6 +1383,7 @@ if (failedValidations.length > 0) {
 |------|------|----------|
 | v1.0 | 2024-10-16 | 초기 스키마 설계 (Dr. Sarah Kim) |
 | v1.1 | 2024-11-01 | `is_temporary` 필드 추가 (P1/P2 구분) |
+| v1.1 | 2025-11-10 | 피지컬 컴퓨팅 아트워크 컬렉션 3개 추가 (`physical_game_sessions`, `treasure_boxes`, `treasure_box_combinations`) |
 
 ### 스키마 변경 프로세스
 
@@ -1147,5 +1398,6 @@ if (failedValidations.length > 0) {
 
 **문서 버전 관리:**
 - v1.0 (2025-01-XX): 초기 작성
-- 향후 업데이트: ETL 파이프라인 구현 완료 시 v1.1 업데이트 예정
+- v1.1 (2025-11-10): 피지컬 컴퓨팅 아트워크 컬렉션 추가, BRD v1.1과 동기화
+- 향후 업데이트: ETL 파이프라인 구현 완료 시 v1.2 업데이트 예정
 

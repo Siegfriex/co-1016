@@ -78,10 +78,194 @@ const ReportTypeSelector = ({ artistData, onReportGenerated }) => {
         result = await aiService.generateComprehensiveReport(artistData);
       } else {
         // Executive, Investment 보고서는 커스텀 프롬프트 사용
-        result = await aiService.callOpenAI ? 
-          { 
+        if (aiService.callOpenAI) {
+          result = { 
             success: true, 
             report: await aiService.callOpenAI(customPrompt),
             model: 'gpt-4-custom'
-          } : 
-          await aiService.generatePhase1Insights(artistData);\n      }\n\n      if (result.success) {\n        const reportData = {\n          type: selectedType,\n          content: result.report || result.insights,\n          model: result.model,\n          timestamp: result.timestamp || new Date().toISOString(),\n          artist: artistData.name\n        };\n        \n        setGeneratedReport(reportData);\n        \n        if (onReportGenerated) {\n          onReportGenerated(reportData);\n        }\n      } else {\n        throw new Error('보고서 생성에 실패했습니다.');\n      }\n      \n    } catch (error) {\n      console.error('보고서 생성 오류:', error);\n      \n      // 폴백 보고서 생성\n      const fallbackReport = generateFallbackReport(artistData, selectedType);\n      setGeneratedReport(fallbackReport);\n    } finally {\n      setIsGenerating(false);\n    }\n  };\n\n  const buildCustomPrompt = (artistData, reportConfig) => {\n    const baseData = `**작가**: ${artistData.name}\n**5축 데이터**: I${artistData.radar5.I} F${artistData.radar5.F} A${artistData.radar5.A} M${artistData.radar5.M} S${artistData.radar5.Sedu}\n**4축 기반**: 제도${artistData.sunburst_l1.제도} 학술${artistData.sunburst_l1.학술} 담론${artistData.sunburst_l1.담론} 네트워크${artistData.sunburst_l1.네트워크}`;\n\n    switch (reportConfig.id) {\n      case 'executive':\n        return `CuratorOdyssey Executive Summary 생성:\n\n${baseData}\n\n**요구사항**:\n- 경영진 대상 5분 내 읽기 가능한 요약\n- 핵심 성과 지표 3-4개 선별 제시\n- 시장 내 포지셔닝 명확한 평가\n- 주요 리스크 및 기회 요인 식별\n- 실행 가능한 전략적 권고 3개 제시\n- 총 800-1000자, 구조화된 마크다운\n\n마크다운 형식으로 작성:`;\n        \n      case 'investment':\n        return `CuratorOdyssey Investment Briefing 생성:\n\n${baseData}\n\n**요구사항**:\n- 투자자 관점의 가치 평가 중심\n- ROI 잠재력 및 성장성 분석\n- 시장 리스크 vs 수익률 매트릭스\n- 포트폴리오 내 포지션 권장\n- 투자 타이밍 및 전략 제시\n- 경쟁 작가 대비 우위 요소 강조\n- 총 1000-1200자, 투자 용어 활용\n\n마크다운 형식으로 작성:`;\n        \n      default:\n        return `CuratorOdyssey ${reportConfig.title} 생성:\n\n${baseData}\n\n전문적인 분석 보고서를 마크다운 형식으로 작성해주세요.`;\n    }\n  };\n\n  const generateFallbackReport = (artistData, reportType) => {\n    const avgScore = Object.values(artistData.radar5).reduce((a, b) => a + b, 0) / 5;\n    \n    const reportContent = `# ${reportTypes.find(t => t.id === reportType)?.title} - ${artistData.name}\n\n## Executive Summary\n\n현재 평균 점수 ${avgScore.toFixed(1)}점으로 ${avgScore >= 85 ? '글로벌 톱티어' : avgScore >= 70 ? '아시아 주요 작가' : '신진 유망 작가'} 수준의 성과를 보이고 있습니다.\n\n## 주요 지표\n\n- **최고 성과 영역**: ${Object.entries(artistData.radar5).sort((a,b) => b[1]-a[1])[0][0] === 'I' ? '기관전시' : '특정 영역'} (${Math.max(...Object.values(artistData.radar5))}점)\n- **개선 영역**: ${Object.entries(artistData.radar5).sort((a,b) => a[1]-b[1])[0][0] === 'Sedu' ? '교육' : '특정 영역'} (${Math.min(...Object.values(artistData.radar5))}점)\n- **종합 균형도**: ${Math.max(...Object.values(artistData.radar5)) - Math.min(...Object.values(artistData.radar5)) > 50 ? '전문화형' : '균형형'}\n\n## ${reportType === 'investment' ? '투자 권고' : '전략적 제언'}\n\n${reportType === 'investment' ? \n  '중장기 성장 잠재력이 높은 포지션으로 평가되며, 리스크 대비 수익률이 양호한 투자 대상입니다.' : \n  '현재 강점 영역을 중심으로 한 집중 전략과 약점 영역의 단계적 보완을 권장합니다.'}\n\n---\n*생성 시각: ${new Date().toLocaleString('ko-KR')} | 분석 모델: 통계 기반*`;\n\n    return {\n      type: reportType,\n      content: reportContent,\n      model: 'fallback',\n      timestamp: new Date().toISOString(),\n      artist: artistData.name,\n      fallback: true\n    };\n  };\n\n  if (generatedReport) {\n    return (\n      <div className=\"generated-report-container\">\n        <div className=\"report-nav\">\n          <button \n            onClick={() => setGeneratedReport(null)}\n            className=\"back-to-selector-button\"\n          >\n            ← 다른 보고서 생성\n          </button>\n          <div className=\"report-nav-info\">\n            <span className=\"current-report-type\">\n              {reportTypes.find(t => t.id === generatedReport.type)?.title}\n            </span>\n            <span className=\"report-model\">\n              Model: {generatedReport.model}\n            </span>\n          </div>\n        </div>\n        \n        <AdvancedMarkdownRenderer \n          content={generatedReport.content}\n          theme=\"professional\"\n          enableCharts={true}\n          enablePrint={true}\n          reportType={generatedReport.type}\n        />\n      </div>\n    );\n  }\n\n  return (\n    <div className=\"report-type-selector\">\n      <div className=\"report-selector-header\">\n        <h2 className=\"report-selector-title\">\n          📊 AI 보고서 생성\n        </h2>\n        <p className=\"report-selector-subtitle\">\n          {artistData?.name}에 대한 전문적인 분석 보고서를 선택하세요\n        </p>\n      </div>\n\n      <div className=\"report-options\">\n        {reportTypes.map(type => (\n          <div \n            key={type.id}\n            className={`report-option ${selectedType === type.id ? 'selected' : ''}`}\n            onClick={() => handleTypeSelection(type.id)}\n            style={{\n              '--option-color': type.color\n            }}\n          >\n            <div className=\"report-option-header\">\n              <div className=\"report-option-title\">\n                <span>{type.icon}</span>\n                {type.title}\n              </div>\n              <span className=\"report-option-duration\">\n                {type.duration}\n              </span>\n            </div>\n            \n            <p className=\"report-option-description\">\n              {type.description}\n            </p>\n            \n            <ul className=\"report-option-features\">\n              {type.features.map((feature, index) => (\n                <li key={index}>{feature}</li>\n              ))}\n            </ul>\n          </div>\n        ))}\n      </div>\n\n      <div className=\"report-generation-controls\">\n        <button\n          onClick={generateReport}\n          disabled={isGenerating || !selectedType}\n          className=\"generate-report-button\"\n        >\n          {isGenerating ? (\n            <>\n              <div className=\"curator-spinner\" style={{width: '16px', height: '16px'}}></div>\n              보고서 생성 중...\n            </>\n          ) : (\n            <>\n              🚀 보고서 생성\n            </>\n          )}\n        </button>\n        \n        <button\n          onClick={() => setShowPreview(!showPreview)}\n          className=\"preview-button\"\n        >\n          👁️ 미리보기\n        </button>\n      </div>\n\n      {showPreview && (\n        <div className=\"preview-section\">\n          <h3>🔍 {reportTypes.find(t => t.id === selectedType)?.title} 미리보기</h3>\n          <div className=\"preview-content\">\n            <p>이 보고서는 다음과 같은 섹션으로 구성됩니다:</p>\n            <ul>\n              {reportTypes.find(t => t.id === selectedType)?.features.map((feature, index) => (\n                <li key={index}>{feature}</li>\n              ))}\n            </ul>\n          </div>\n        </div>\n      )}\n    </div>\n  );\n};\n\nexport default ReportTypeSelector;
+          };
+        } else {
+          result = await aiService.generatePhase1Insights(artistData);
+        }
+      }
+
+      if (result.success) {
+        const reportData = {
+          type: selectedType,
+          content: result.report || result.insights,
+          model: result.model,
+          timestamp: result.timestamp || new Date().toISOString(),
+          artist: artistData.name
+        };
+        
+        setGeneratedReport(reportData);
+        
+        if (onReportGenerated) {
+          onReportGenerated(reportData);
+        }
+      } else {
+        throw new Error('보고서 생성에 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('보고서 생성 오류:', error);
+      
+      // 폴백 보고서 생성
+      const fallbackReport = generateFallbackReport(artistData, selectedType);
+      setGeneratedReport(fallbackReport);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const buildCustomPrompt = (artistData, reportConfig) => {
+    const baseData = `**작가**: ${artistData.name}\n**5축 데이터**: I${artistData.radar5.I} F${artistData.radar5.F} A${artistData.radar5.A} M${artistData.radar5.M} S${artistData.radar5.Sedu}\n**4축 기반**: 제도${artistData.sunburst_l1.제도} 학술${artistData.sunburst_l1.학술} 담론${artistData.sunburst_l1.담론} 네트워크${artistData.sunburst_l1.네트워크}`;
+
+    switch (reportConfig.id) {
+      case 'executive':
+        return `CuratorOdyssey Executive Summary 생성:\n\n${baseData}\n\n**요구사항**:\n- 경영진 대상 5분 내 읽기 가능한 요약\n- 핵심 성과 지표 3-4개 선별 제시\n- 시장 내 포지셔닝 명확한 평가\n- 주요 리스크 및 기회 요인 식별\n- 실행 가능한 전략적 권고 3개 제시\n- 총 800-1000자, 구조화된 마크다운\n\n마크다운 형식으로 작성:`;
+        
+      case 'investment':
+        return `CuratorOdyssey Investment Briefing 생성:\n\n${baseData}\n\n**요구사항**:\n- 투자자 관점의 가치 평가 중심\n- ROI 잠재력 및 성장성 분석\n- 시장 리스크 vs 수익률 매트릭스\n- 포트폴리오 내 포지션 권장\n- 투자 타이밍 및 전략 제시\n- 경쟁 작가 대비 우위 요소 강조\n- 총 1000-1200자, 투자 용어 활용\n\n마크다운 형식으로 작성:`;
+        
+      default:
+        return `CuratorOdyssey ${reportConfig.title} 생성:\n\n${baseData}\n\n전문적인 분석 보고서를 마크다운 형식으로 작성해주세요.`;
+    }
+  };
+
+  const generateFallbackReport = (artistData, reportType) => {
+    const avgScore = Object.values(artistData.radar5).reduce((a, b) => a + b, 0) / 5;
+    
+    const reportContent = `# ${reportTypes.find(t => t.id === reportType)?.title} - ${artistData.name}\n\n## Executive Summary\n\n현재 평균 점수 ${avgScore.toFixed(1)}점으로 ${avgScore >= 85 ? '글로벌 톱티어' : avgScore >= 70 ? '아시아 주요 작가' : '신진 유망 작가'} 수준의 성과를 보이고 있습니다.\n\n## 주요 지표\n\n- **최고 성과 영역**: ${Object.entries(artistData.radar5).sort((a,b) => b[1]-a[1])[0][0] === 'I' ? '기관전시' : '특정 영역'} (${Math.max(...Object.values(artistData.radar5))}점)\n- **개선 영역**: ${Object.entries(artistData.radar5).sort((a,b) => a[1]-b[1])[0][0] === 'Sedu' ? '교육' : '특정 영역'} (${Math.min(...Object.values(artistData.radar5))}점)\n- **종합 균형도**: ${Math.max(...Object.values(artistData.radar5)) - Math.min(...Object.values(artistData.radar5)) > 50 ? '전문화형' : '균형형'}\n\n## ${reportType === 'investment' ? '투자 권고' : '전략적 제언'}\n\n${reportType === 'investment' ? 
+      '중장기 성장 잠재력이 높은 포지션으로 평가되며, 리스크 대비 수익률이 양호한 투자 대상입니다.' : 
+      '현재 강점 영역을 중심으로 한 집중 전략과 약점 영역의 단계적 보완을 권장합니다.'}\n\n---\n*생성 시각: ${new Date().toLocaleString('ko-KR')} | 분석 모델: 통계 기반*`;
+
+    return {
+      type: reportType,
+      content: reportContent,
+      model: 'fallback',
+      timestamp: new Date().toISOString(),
+      artist: artistData.name,
+      fallback: true
+    };
+  };
+
+  if (generatedReport) {
+    return (
+      <div className="generated-report-container">
+        <div className="report-nav">
+          <button 
+            onClick={() => setGeneratedReport(null)}
+            className="back-to-selector-button"
+          >
+            ← 다른 보고서 생성
+          </button>
+          <div className="report-nav-info">
+            <span className="current-report-type">
+              {reportTypes.find(t => t.id === generatedReport.type)?.title}
+            </span>
+            <span className="report-model">
+              Model: {generatedReport.model}
+            </span>
+          </div>
+        </div>
+        
+        <AdvancedMarkdownRenderer 
+          content={generatedReport.content}
+          theme="professional"
+          enableCharts={true}
+          enablePrint={true}
+          reportType={generatedReport.type}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="report-type-selector">
+      <div className="report-selector-header">
+        <h2 className="report-selector-title">
+          📊 AI 보고서 생성
+        </h2>
+        <p className="report-selector-subtitle">
+          {artistData?.name}에 대한 전문적인 분석 보고서를 선택하세요
+        </p>
+      </div>
+
+      <div className="report-options">
+        {reportTypes.map(type => (
+          <div 
+            key={type.id}
+            className={`report-option ${selectedType === type.id ? 'selected' : ''}`}
+            onClick={() => handleTypeSelection(type.id)}
+            style={{
+              '--option-color': type.color
+            }}
+          >
+            <div className="report-option-header">
+              <div className="report-option-title">
+                <span>{type.icon}</span>
+                {type.title}
+              </div>
+              <span className="report-option-duration">
+                {type.duration}
+              </span>
+            </div>
+            
+            <p className="report-option-description">
+              {type.description}
+            </p>
+            
+            <ul className="report-option-features">
+              {type.features.map((feature, index) => (
+                <li key={index}>{feature}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="report-generation-controls">
+        <button
+          onClick={generateReport}
+          disabled={isGenerating || !selectedType}
+          className="generate-report-button"
+        >
+          {isGenerating ? (
+            <>
+              <div className="curator-spinner" style={{width: '16px', height: '16px'}}></div>
+              보고서 생성 중...
+            </>
+          ) : (
+            <>
+              🚀 보고서 생성
+            </>
+          )}
+        </button>
+        
+        <button
+          onClick={() => setShowPreview(!showPreview)}
+          className="preview-button"
+        >
+          👁️ 미리보기
+        </button>
+      </div>
+
+      {showPreview && (
+        <div className="preview-section">
+          <h3>🔍 {reportTypes.find(t => t.id === selectedType)?.title} 미리보기</h3>
+          <div className="preview-content">
+            <p>이 보고서는 다음과 같은 섹션으로 구성됩니다:</p>
+            <ul>
+              {reportTypes.find(t => t.id === selectedType)?.features.map((feature, index) => (
+                <li key={index}>{feature}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ReportTypeSelector;

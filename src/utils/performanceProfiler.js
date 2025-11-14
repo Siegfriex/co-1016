@@ -5,6 +5,10 @@
  * Chrome DevTools 기반 실측 성능 지표 수집
  */
 
+/* eslint-env browser */
+/* eslint-disable react/react-in-jsx-scope */
+import React from 'react';
+
 class PerformanceProfiler {
   constructor() {
     this.metrics = {};

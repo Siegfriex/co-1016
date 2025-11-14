@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CuratorOdyssey - 예술가의 경력 궤적을 데이터로 분석하다">
+  <title>CuratorOdyssey</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <!-- Header Navigation -->
+  <nav class="header-nav" role="navigation" aria-label="메인 네비게이션">
+    <div class="container">
+      <ul class="nav-links">
+        <li><a href="#hero" class="nav-link active">홈</a></li>
+        <li><a href="#features" class="nav-link">기능</a></li>
+        <li><a href="#about" class="nav-link">소개</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="hero" class="hero-section" aria-label="Hero 섹션">
+    <div class="hero-logo">
+      <img src="../ref/4.svg" alt="CuratorOdyssey 로고" width="200" height="200">
+    </div>
+    
+    <h1 class="hero-title">CuratorOdyssey</h1>
+    <p class="hero-subtitle">예술가의 경력 궤적을 데이터로 분석하다</p>
+    
+    <div class="hero-cta">
+      <button class="btn btn-cta" onclick="startAnalysis()">분석 시작하기</button>
+    </div>
+  </section>
+
+  <!-- Feature Cards Section -->
+  <section id="features" class="section" aria-label="기능 소개">
+    <div class="container">
+      <h2 class="section-title">주요 기능</h2>
+      
+      <div class="grid grid-landing grid-feature-cards">
+        <div class="feature-card stagger-item">
+          <h3 class="feature-card-title">Phase 1: 현재 가치 분석</h3>
+          <p class="feature-card-body">레이더 차트와 선버스트 차트로 아티스트의 현재 가치를 시각화합니다.</p>
+        </div>
+        
+        <div class="feature-card stagger-item">
+          <h3 class="feature-card-title">Phase 2: 커리어 궤적 분석</h3>
+          <p class="feature-card-body">시계열 데이터로 아티스트의 커리어 발전 과정을 추적합니다.</p>
+        </div>
+        
+        <div class="feature-card stagger-item">
+          <h3 class="feature-card-title">Phase 3: 비교 분석</h3>
+          <p class="feature-card-body">두 아티스트를 비교하여 유사점과 차이점을 분석합니다.</p>
+        </div>
+        
+        <div class="feature-card stagger-item">
+          <h3 class="feature-card-title">Phase 4: AI 보고서</h3>
+          <p class="feature-card-body">AI가 생성한 종합 분석 보고서를 확인합니다.</p>
+        </div>
+        
+        <div class="feature-card stagger-item">
+          <h3 class="feature-card-title">피지컬 게임</h3>
+          <p class="feature-card-body">인터랙티브 게임을 통해 나의 예술가 유형을 발견합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Artist ID Input Section -->
+  <section id="input" class="section" aria-label="아티스트 ID 입력">
+    <div class="container">
+      <h2 class="section-title">아티스트 분석 시작하기</h2>
+      
+      <form id="artist-form" onsubmit="handleArtistSubmit(event)">
+        <div class="input-group">
+          <label for="artist-id" class="sr-only">아티스트 ID</label>
+          <input 
+            type="text" 
+            id="artist-id" 
+            class="input" 
+            placeholder="ARTIST_0005"
+            pattern="^ARTIST_\d{4}$"
+            required
+            aria-label="아티스트 ID 입력 (형식: ARTIST_0005)"
+          >
+          <button type="submit" class="btn btn-primary">분석하기</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/api-mock.js"></script>
+  <script src="js/navigation.js"></script>
+  
+  <script>
+    // 네비게이션 스크롤 효과
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('.header-nav');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // 분석 시작 함수
+    function startAnalysis() {
+      document.getElementById('input').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 아티스트 ID 제출 처리
+    function handleArtistSubmit(event) {
+      event.preventDefault();
+      const artistId = document.getElementById('artist-id').value.trim();
+      
+      if (!/^ARTIST_\d{4}$/.test(artistId)) {
+        alert('올바른 아티스트 ID 형식을 입력해주세요. (예: ARTIST_0005)');
+        return;
+      }
+      
+      // Phase 1 페이지로 이동
+      window.location.href = `artist.html?id=${artistId}`;
+    }
+  </script>
+</body>
+</html>
+

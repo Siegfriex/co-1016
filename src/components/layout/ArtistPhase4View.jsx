@@ -10,7 +10,7 @@ import LoadingSkeleton from '../charts/LoadingSkeleton';
 import useRobustAPIConnection from '../../hooks/useRobustAPIConnection';
 import { mockArtistSummary, mockSunburstData, mockTimeseriesData, mockCareerEvents } from '../../utils/mockData';
 
-const ArtistPhase4View = React.memo(({ artistId = "ARTIST_0005", onBackToPhase1 }) => {
+const ArtistPhase4View = ({ artistId = "ARTIST_0005", onBackToPhase1 }) => {
   const [artistData, setArtistData] = useState(null);
   const [sunburstData, setSunburstData] = useState(null);
   const [timeseriesData, setTimeseriesData] = useState(null);
@@ -363,4 +363,4 @@ const ArtistPhase4View = React.memo(({ artistId = "ARTIST_0005", onBackToPhase1 
   );
 };
 
-export default ArtistPhase4View;
+export default React.memo(ArtistPhase4View);

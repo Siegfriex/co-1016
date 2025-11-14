@@ -8,7 +8,7 @@ const ArtistRadarChart = ({ data, onAxisHover }) => {
   useEffect(() => {
     if (!data || !svgRef.current) return;
 
-    // 차트 기본 설정 (DYSS 디자인 시스템 적용)
+    // 차트 기본 설정 (VID v2.0 디자인 시스템 적용)
     const width = 450;
     const height = 450;
     const margin = { top: 60, right: 60, bottom: 60, left: 60 };
@@ -25,9 +25,15 @@ const ArtistRadarChart = ({ data, onAxisHover }) => {
 
     const angleSlice = (Math.PI * 2) / axes.length;
 
-    // DYSS 컬러 적용
-    const primaryColor = '#8B5CF6';
-    const secondaryColor = '#A78BFA';
+    // VID v2.0 Primary 팔레트 적용 (Section 5.4.1 참조)
+    const primaryColor = '#F28317C'; // Primary 500 (주 컬러)
+    const axisColors = {
+      'I': '#F28317C',    // Primary 500
+      'F': '#FFA333',     // Primary 400
+      'A': '#D66A0F',     // Primary 600
+      'M': '#BA510C',     // Primary 700
+      'Sedu': '#9E3809'   // Primary 800
+    };
 
     // 스케일 정의
     const rScale = d3.scaleLinear().range([0, radius]).domain([0, 100]);
@@ -47,7 +53,7 @@ const ArtistRadarChart = ({ data, onAxisHover }) => {
     // 툴팁 설정
     const tooltip = d3.select(tooltipRef.current);
 
-    // 배경 그리드 렌더링 (DYSS 스타일)
+    // 배경 그리드 렌더링 (VID v2.0 스타일)
     const gridLevels = 5;
     const gridWrapper = g.append('g').attr('class', 'grid-wrapper');
 
@@ -98,8 +104,10 @@ const ArtistRadarChart = ({ data, onAxisHover }) => {
       .text(d => d.label)
       .on('mouseover', (event, d) => {
         // 호버 효과
+        const axisKey = axes.find(a => a.label === d.label)?.key || 'I';
+        const hoverColor = axisColors[axisKey] || primaryColor;
         d3.select(event.currentTarget)
-          .style('fill', primaryColor)
+          .style('fill', hoverColor)
           .style('font-size', '16px');
         
         // 상위 컴포넌트에 호버 축 알림 (선버스트 하이라이트용)
@@ -141,9 +149,8 @@ const ArtistRadarChart = ({ data, onAxisHover }) => {
       .datum(dataValues)
       .attr('class', 'data-area')
       .attr('d', lineGenerator)
-      .style('fill', primaryColor)
-      .style('fill-opacity', 0.3)
-      .style('stroke', primaryColor)
+      .style('fill', 'rgba(242, 131, 23, 0.2)') // Primary 500, 20% 투명도
+      .style('stroke', '#F28317C') // Primary 500
       .style('stroke-width', '3px')
       .style('stroke-linejoin', 'round');
 
@@ -162,11 +169,13 @@ const ArtistRadarChart = ({ data, onAxisHover }) => {
       .style('cursor', 'pointer')
       .on('mouseover', (event, d) => {
         // 점 확대 효과
+        const axisKey = axes.find(a => a.label === d.axis)?.key || 'I';
+        const hoverColor = axisColors[axisKey] || primaryColor;
         d3.select(event.currentTarget)
           .transition()
           .duration(200)
           .attr('r', 8)
-          .style('fill', secondaryColor);
+          .style('fill', hoverColor);
 
         tooltip.style('display', 'block')
               .html(`<strong>${d.fullName}</strong><br/>Score: ${d.value.toFixed(1)}`);
