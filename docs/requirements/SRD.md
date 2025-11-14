@@ -4,11 +4,11 @@
 
 **문서명**: CO-1016 CURATOR ODYSSEY Software Requirements Document (SRD) v1.0
 
-**버전**: 1.0
+**버전**: 1.1
 
 **상태**: Draft (초안, TSD v1.0 기반)
 
-**최종 수정**: 2025-11-02
+**최종 수정**: 2025-11-10
 
 **소유자**: NEO GOD (Director)
 
@@ -16,6 +16,7 @@
 
 **개정 이력**:
 - v1.0 (2025-11-02): TSD 및 보완 문서 스위트 기반 요구사항 식별 및 템플릿화
+- v1.1 (2025-11-10): 문서 동기화 및 참조 관계 확정
 
 **배포 범위**: 내부 개발팀 (FE/BE/Data/QA/Ops)
 
@@ -38,9 +39,10 @@ CO-1016 CURATOR ODYSSEY의 로컬 프로토타입(v0.8)을 프로덕션(v1.0)으
 ### 1.3 범위 내
 
 - **Phase 1-4 기능**: 현재 가치 분석, 커리어 궤적, 비교 분석, AI 보고서 생성
-- **Firestore 데이터 관리**: 12개 컬렉션 관리, ETL 파이프라인
+- **Firestore 데이터 관리**: 15개 컬렉션 관리 (기존 12개 + 피지컬 컴퓨팅 3개), ETL 파이프라인
 - **Vertex AI 통합**: Gemini 1.5 Pro 호출, 폴백 메커니즘
 - **CI/CD 배포**: Cloud Build 파이프라인, 자동화된 배포 및 롤백
+- **웹앱 통합 기능**: 피지컬 컴퓨팅 아트워크와의 통합 (WebSocket 클라이언트, 게임 결과 표시, CuratorOdyssey API 연동)
 
 ### 1.4 범위 외
 
@@ -138,15 +140,34 @@ CO-1016 CURATOR ODYSSEY의 로컬 프로토타입(v0.8)을 프로덕션(v1.0)으
 
 ## 4. 참조 문서 (References)
 
+- **[BRD v1.1](BRD.md)** - Business Requirements Document, 비즈니스 요구사항 및 프로젝트 비전 (웹앱 통합 포함)
+- **[FRD v1.1](FRD.md)** - Functional Requirements Document, SRD FR을 API 엔드포인트와 매핑한 상세 명세
+- **[TSD v1.1](../TSD.md)** - Technical Design Document, 시스템 아키텍처 및 구현 전략
+- **[API Specification v1.1](../api/API_SPECIFICATION.md)** - RESTful API 엔드포인트 정의, JSON Schema
+- **[VID v2.0](../design/VID.md)** - Visual Interaction Design Document, 디자인 시스템, 컴포넌트 스펙, 색상/타이포그래피/그리드 시스템, 애니메이션 스펙
+- **[FR ID 매핑 테이블](../FR_ID_MAPPING.md)** - SRD FR ID와 FRD FR ID 간 매핑 관계
+- **[피지컬 컴퓨팅 TSD](../physical-computing/PHYSICAL_COMPUTING_TSD.md)** - 피지컬 컴퓨팅 아트워크 기술 설계 문서
+- **[피지컬 컴퓨팅 API Spec](../physical-computing/PHYSICAL_COMPUTING_API_SPEC.md)** - 피지컬 컴퓨팅 아트워크 API 명세서
+
 ### 4.1 핵심 설계 문서
 
-- **[TSD.md](../TSD.md)** (v1.0) - 기술 설계 문서 (본 SRD의 기반)
+- **[TSD v1.1](../TSD.md)** - Technical Design Document, 시스템 아키텍처 및 구현 전략
+- **[FRD v1.1](FRD.md)** - Functional Requirements Document, SRD FR을 API 엔드포인트와 매핑한 상세 명세
+- **[VID v2.0](../design/VID.md)** - Visual Interaction Design Document, 디자인 시스템 및 컴포넌트 스펙
+  - [Section 2](../design/VID.md#2-컴포넌트-스펙-component-specifications) - 컴포넌트 스펙 (Phase 1-4, 랜딩 페이지, 피지컬 게임 결과 화면)
+  - [Section 4](../design/VID.md#4-접근성-가이드-accessibility-guide) - 접근성 가이드 (WCAG 2.1 AA, ARIA, 키보드 네비게이션)
+  - [Section 5](../design/VID.md#5-색상-시스템-color-system) - 색상 시스템 (Primary/Secondary 팔레트, 데이터 시각화 색상 매핑)
+  - [Section 6](../design/VID.md#6-애니메이션-스펙-animation-specifications) - 애니메이션 스펙 (섹션 전환, 스태거, 차트 애니메이션)
+  - [Section 7](../design/VID.md#7-그리드-시스템-및-반응형-레이아웃-grid-system--responsive-layout) - 그리드 시스템 및 반응형 레이아웃 (랜딩 페이지, 결과 화면)
+  - [Section 9.2](../design/VID.md#92-타이포그래피-typography) - 타이포그래피 (Zen Maru Gothic, Nanum Square Round)
+- **[FR ID 매핑 테이블](../FR_ID_MAPPING.md)** - SRD FR ID와 FRD FR ID 간 매핑 관계
 - **[아키텍처 상세 설계 문서](architecture/ARCHITECTURE_DETAIL.md)** - 시스템 컴포넌트 상호작용, Phase별 데이터 흐름 Sequence Diagram
 - **[데이터 모델 명세서](data/DATA_MODEL_SPECIFICATION.md)** - ER 다이어그램, 스키마 상세, 인덱스 전략, ±0.5p 검증 공식
 - **[비즈니스 로직 명세서](business/BUSINESS_LOGIC_SPECIFICATION.md)** - Time Window Rules, Universal Data Adapter, AI 프롬프트 템플릿
 
 ### 4.2 API 및 통합 문서
 
+- **[API Specification v1.1](api/API_SPECIFICATION.md)** - RESTful API 엔드포인트 정의, JSON Schema, FR ID 매핑
 - **[API 통합 가이드](api/API_INTEGRATION_GUIDE.md)** - OpenAPI 스펙, 인증/오류 처리, React Query 통합
 - **[OpenAPI 스펙](api/OPENAPI_SPECIFICATION.yaml)** - 완전한 API 스펙 및 예시 응답
 
@@ -461,6 +482,8 @@ graph TB
 
 **설명**: 사용자는 아티스트 ID 입력 시 `artist_summary` 컬렉션에서 radar5와 sunburst_l1 데이터를 조회할 수 있어야 하며, Firestore 쿼리가 인덱스 히트해야 한다.
 
+**FRD 연계**: [FR-P1-SUM-001](FRD.md#fr-p1-sum-001-아티스트-요약-데이터-조회) (아티스트 요약 데이터 조회), [FR-P1-SUN-001](FRD.md#fr-p1-sun-001-sunburst-상세-데이터-조회) (Sunburst 상세 데이터 조회)
+
 **수용 기준**: [AC-P1-DQ-001]
 - **Given**: 아티스트 ID (예: ARTIST_0005)
 - **When**: GET `/api/artist/:id/summary` 호출
@@ -551,6 +574,8 @@ graph TB
 
 **설명**: 사용자는 아티스트 ID와 축 입력 시 `timeseries` 컬렉션에서 `bins[{t,v}]` 데이터를 쿼리할 수 있어야 하며, 복합 인덱스 (artist_id, axis) 사용.
 
+**FRD 연계**: [FR-P2-TIM-001](FRD.md#fr-p2-tim-001-시계열-데이터-조회) (시계열 데이터 조회), [FR-P2-BAT-001](FRD.md#fr-p2-bat-001-배치-시계열-데이터-조회) (배치 시계열 데이터 조회)
+
 **수용 기준**: [AC-P2-DQ-001]
 - **Given**: 아티스트 ID 및 축 (예: ARTIST_0005, "제도")
 - **When**: GET `/api/artist/:id/timeseries/:axis` 호출
@@ -623,6 +648,8 @@ graph TB
 
 **설명**: 사용자는 timeseries와 events를 조인해 영향도 (e.g., 전시 이벤트 v 스파이크) 표시할 수 있어야 함.
 
+**FRD 연계**: [FR-P2-EVT-001](FRD.md#fr-p2-evt-001-이벤트-영향-분석) (이벤트 영향 분석)
+
 **수용 기준**: [AC-P2-DQ-002]
 - **Given**: timeseries 및 events 데이터
 - **When**: 영향도 분석 실행
@@ -641,6 +668,8 @@ graph TB
 #### FR-P3-DQ-001: 비교 데이터 조회
 
 **설명**: 사용자는 두 아티스트 ID 입력 시 `compare_pairs`에서 사전 계산 데이터 또는 실시간 계산 결과를 쿼리할 수 있어야 함.
+
+**FRD 연계**: [FR-P3-CMP-001](FRD.md#fr-p3-cmp-001-두-아티스트-비교-데이터-조회) (두 아티스트 비교 데이터 조회)
 
 **수용 기준**: [AC-P3-DQ-001]
 - **Given**: 아티스트 A/B ID 및 축 (예: ARTIST_0005, ARTIST_0010, "제도")
@@ -747,6 +776,8 @@ graph TB
 
 **설명**: 시스템은 `vertexAIDataAdapter`로 압축 데이터를 Gemini 1.5 Pro에 프롬프트 전송해야 함.
 
+**FRD 연계**: [FR-P4-RPT-001](FRD.md#fr-p4-rpt-001-ai-보고서-생성) (AI 보고서 생성)
+
 **수용 기준**: [AC-P4-RP-001]
 - **Given**: prompt_data (압축된 데이터)
 - **When**: Vertex AI 호출
@@ -814,7 +845,177 @@ graph TB
 **설계 아티팩트**: [아키텍처 상세 설계 문서 Section 2.4](architecture/ARCHITECTURE_DETAIL.md#24-phase-4-ai-보고서-생성-흐름)  
 **구현 모듈**: `src/components/ui/MarkdownReportDisplay.jsx`
 
-### 9.5 Data Requirements (데이터 요구사항)
+### 9.5 웹앱 통합 기능 요구사항 (Web App Integration Requirements)
+
+본 섹션은 CuratorOdyssey 웹앱이 피지컬 컴퓨팅 아트워크와 통합되는 기능 요구사항을 다룹니다. 피지컬 컴퓨팅 아트워크 자체의 기능 요구사항은 [BRD v1.1](BRD.md) Section 3을 참조하세요.
+
+#### FR-WEB-001: 모니터 자동 켜기
+
+**설명**: 웹앱은 WebSocket으로 배 감지 신호(`treasure_box_detected`)를 수신하면 모니터를 자동으로 켜고 전체화면 모드로 전환해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.1](BRD.md#81-fr-web-001-모니터-자동-켜기)
+
+**FRD 연계**: [FR-WEB-001](FRD.md#fr-web-001-모니터-자동-켜기)
+
+**수용 기준**: [AC-WEB-001]
+
+- **Given**: 웹앱 실행 중, WebSocket 연결 수립 완료, 브라우저 전체화면 API 지원
+- **When**: WebSocket 메시지 `treasure_box_detected` 수신
+- **Then**: 
+  - 모니터 자동 켜기 완료 (HDMI CEC 또는 전체화면)
+  - 전체화면 모드 활성화
+  - 결과 화면으로 자동 전환
+- **KPI**: 
+  - 모니터 켜기 지연 < 2초
+  - 전체화면 전환 성공률 ≥ 95%
+- **테스트 케이스**: TC-WEB-001 (모니터 자동 제어)
+
+**설계 아티팩트**: [TSD Section 13.2](../TSD.md#132-websocket-클라이언트-구현)  
+**구현 모듈**: `src/hooks/usePhysicalGameWebSocket.js`
+
+---
+
+#### FR-WEB-002: 게임 결과 표시
+
+**설명**: 웹앱은 게임 세션 데이터를 받아 주 페르소나, 노력 스펙, CuratorOdyssey 레이더/선버스트 차트, AI 매칭 결과를 표시해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.2](BRD.md#82-fr-web-002-게임-결과-표시)
+
+**FRD 연계**: [FR-WEB-002](FRD.md#fr-web-002-게임-결과-표시)
+
+**수용 기준**: [AC-WEB-002]
+
+- **Given**: 게임 세션 완료, 세션 데이터 Firestore 저장 완료 (`physical_game_sessions` 컬렉션), CuratorOdyssey API 접근 가능
+- **When**: WebSocket 메시지 `game_end` 수신 또는 세션 데이터 조회
+- **Then**: 
+  - 결과 화면 렌더링 완료
+  - 주 페르소나 표시 완료 (`main_persona.life_scenario`, `main_persona.event_sequence`)
+  - 레이더 차트 표시 완료 (`calculated_metadata.radar5`)
+  - 선버스트 차트 표시 완료 (`calculated_metadata.sunburst_l1`)
+  - 매칭 작가 정보 표시 완료 (`ai_matching.matched_artist_name`, `ai_matching.similarity_score`)
+  - CuratorOdyssey 링크 클릭 가능 (`ai_matching.curator_odyssey_link`)
+  - 레이아웃 수용 기준:
+    - 가로 스크롤 레이아웃 동작 확인
+    - 마우스 휠 → 가로 스크롤 변환 확인
+    - 키보드 네비게이션 (← →) 동작 확인
+    - 하단 점 네비게이션 동작 확인
+  - 디자인 수용 기준:
+    - 색상 시스템 적용 확인 ([VID Section 5](../design/VID.md#5-색상-시스템-color-system))
+    - 그리드 시스템 적용 확인 ([VID Section 7.3](../design/VID.md#73-결과-화면-그리드-시스템))
+    - 애니메이션 동작 확인 ([VID Section 6](../design/VID.md#6-애니메이션-스펙-animation-specifications))
+  - 컴포넌트 구조 수용 기준:
+    - 5개 독립 컴포넌트 렌더링 확인 (PhysicalGameResultView, MainPersonaSection, EffortResultSection, MatchedArtistSection, ComparisonChartSection)
+    - 각 컴포넌트의 역할 확인
+- **KPI**: 
+  - 결과 화면 로딩 시간 < 2초
+  - 차트 렌더링 시간 < 1초
+- **테스트 케이스**: TC-WEB-002 (결과 화면 표시)
+
+**설계 아티팩트**: [TSD Section 13.3](../TSD.md#133-게임-결과-화면-컴포넌트-설계)  
+**구현 모듈**: `src/components/physical-game/PhysicalGameResultView.jsx`
+
+---
+
+#### FR-WEB-003: CuratorOdyssey 작가 데이터 조회
+
+**설명**: 웹앱은 매칭된 작가의 Phase 1-4 데이터를 CuratorOdyssey API를 통해 조회하여 비교 차트를 표시해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.3](BRD.md#83-fr-web-003-curatorodyssey-작가-데이터-조회)
+
+**FRD 연계**: [FR-WEB-003](FRD.md#fr-web-003-curatorodyssey-작가-데이터-조회)
+
+**수용 기준**: [AC-WEB-003]
+
+- **Given**: 매칭 작가 ID 존재 (`ai_matching.matched_artist_id`), CuratorOdyssey API 접근 가능, 플레이어 세션 데이터 존재 (`physical_game_sessions` 컬렉션)
+- **When**: 매칭 작가 데이터 조회 요청
+- **Then**: 
+  - Phase 1 데이터 조회 완료 (`GET /api/artist/{id}/summary`)
+  - Phase 2 데이터 조회 완료 (`POST /api/batch/timeseries`)
+  - Phase 3 비교 데이터 조회 완료 (`GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis}`)
+  - 비교 차트 렌더링 완료
+- **KPI**: 
+  - API 호출 시간 < 2초
+  - 비교 차트 렌더링 시간 < 1초
+  - 데이터 정확도 100% (플레이어 세션 데이터와 작가 데이터 일치)
+- **테스트 케이스**: TC-WEB-003 (CuratorOdyssey API 연동)
+
+**설계 아티팩트**: [TSD Section 13.4](../TSD.md#134-curatorodyssey-api-통합)  
+**구현 모듈**: `src/hooks/useArtistData.js`, `src/api/curatorOdyssey.js`
+
+---
+
+#### FR-WEB-004: 비교 차트 표시 (플레이어 vs 매칭 작가)
+
+**설명**: 웹앱은 플레이어의 게임 결과와 매칭된 작가의 실제 데이터를 비교하여 차트로 표시해야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.4](BRD.md#84-fr-web-004-비교-차트-표시-플레이어-vs-매칭-작가)
+
+**FRD 연계**: [FR-WEB-004](FRD.md#fr-web-004-비교-차트-표시-플레이어-vs-매칭-작가)
+
+**수용 기준**: [AC-WEB-004]
+
+- **Given**: 플레이어 세션 데이터 존재 (`physical_game_sessions` 컬렉션), 매칭 작가 데이터 존재 (`artist_summary`, `timeseries` 컬렉션), 비교 API 확장 완료
+- **When**: 비교 차트 표시 요청
+- **Then**: 
+  - 레이더 5축 비교 차트 렌더링 완료 (플레이어 vs 작가)
+  - 선버스트 4축 비교 차트 렌더링 완료 (플레이어 vs 작가)
+  - 유사도 점수 계산 완료 (축별 유사도)
+  - 시계열 궤적 비교 (Phase 2 데이터, 향후 확장)
+  - 색상 수용 기준:
+    - 플레이어 색상 (`#F28317C`) 적용 확인
+    - 작가 색상 (`#F1F0EC`) 적용 확인
+    - 차이 음영 (`rgba(242, 131, 23, 0.15)`) 적용 확인
+  - 차트 스타일 수용 기준:
+    - 오버레이 스타일 적용 확인
+    - 축별 토글 인터랙션 동작 확인
+- **KPI**: 
+  - 비교 차트 렌더링 시간 < 1초
+  - 플레이어 vs 작가 데이터 정확도 100%
+  - 유사도 점수 계산 정확도 100%
+- **테스트 케이스**: TC-WEB-004 (비교 차트 표시)
+
+**설계 아티팩트**: [TSD Section 13.4.2](../TSD.md#1342-비교-api-확장)  
+**구현 모듈**: `src/components/charts/ComparisonAreaChart.jsx`, `functions/src/api/compare.js` (확장)
+
+---
+
+### 9.6 랜딩 페이지 기능 요구사항 (Landing Page Requirements)
+
+본 섹션은 CuratorOdyssey 웹앱의 랜딩 페이지 기능 요구사항을 다룹니다.
+
+#### FR-WEB-005: 랜딩 페이지 표시
+
+**설명**: 사용자는 랜딩 페이지에서 Hero 섹션, Feature Cards, 네비게이션을 볼 수 있어야 하며, CTA 버튼 클릭 시 결과 화면으로 전환할 수 있어야 한다.
+
+**BRD 연계**: [BRD v1.1 Section 8.5](BRD.md#85-fr-web-005-랜딩-페이지-표시) (추가 필요 시)
+
+**FRD 연계**: [FR-WEB-005](FRD.md#fr-web-005-랜딩-페이지-표시)
+
+**수용 기준**: [AC-WEB-005]
+
+- **Given**: 랜딩 페이지 접속
+- **When**: 페이지 로드 완료
+- **Then**: 
+  - Hero 섹션 표시
+  - WebGL 배경 렌더링 (또는 폴백 표시)
+  - CTA 버튼 클릭 가능
+  - Feature Cards 그리드 표시
+  - 카드 호버 효과 확인
+  - 네비게이션 메뉴 표시
+  - 디자인 수용 기준:
+    - 색상 시스템 적용 확인 ([VID Section 5](../design/VID.md#5-색상-시스템-color-system))
+    - 타이포그래피 적용 확인 ([VID Section 9.2](../design/VID.md#92-타이포그래피-typography))
+    - 그리드 시스템 적용 확인 ([VID Section 7.2](../design/VID.md#72-랜딩-페이지-그리드-시스템))
+    - 애니메이션 동작 확인 ([VID Section 6](../design/VID.md#6-애니메이션-스펙-animation-specifications))
+- **KPI**: 
+  - 랜딩 페이지 로딩 시간 < 2초
+  - WebGL 배경 렌더링 성공률 ≥ 90% (또는 폴백 표시)
+- **테스트 케이스**: TC-WEB-005 (랜딩 페이지 표시)
+
+**설계 아티팩트**: [VID Section 2.5](../design/VID.md#25-랜딩-페이지-컴포넌트)  
+**구현 모듈**: `src/components/layout/LandingPage.jsx`, `src/components/layout/LandingPageHero.jsx`, `src/components/layout/FeatureCards.jsx`, `src/components/layout/LandingPageNavigation.jsx`
+
+### 9.6 Data Requirements (데이터 요구사항)
 
 #### FR-DATA-001: Firestore Collection Schema
 
@@ -1026,6 +1227,42 @@ graph TB
 **Design Artifact**: [Data Model Specification Section 4](data/DATA_MODEL_SPECIFICATION.md#4-인덱스-전략)  
 **Implementation Module**: `firestore.indexes.json`
 
+### 10.6.1 User Interface (사용자 인터페이스)
+
+#### NFR-UI-001: 사용자 인터페이스 요구사항
+
+**Description**: 시스템은 VID v2.0에 정의된 디자인 시스템을 준수해야 한다.
+
+**Acceptance Criteria**: [AC-NFR-UI-001]
+- **Given**: UI 컴포넌트 렌더링
+- **When**: 디자인 시스템 적용
+- **Then**: 
+  - 색상 시스템 적용 확인:
+    - 주 컬러: `#F28317C` (Primary 500)
+    - 세컨더리: `#F1F0EC` (Secondary 100)
+    - 데이터 시각화 색상 매핑 적용 ([VID Section 5.4](../design/VID.md#54-데이터-시각화-색상-매핑))
+  - 그리드 시스템 적용 확인:
+    - 랜딩 페이지: [VID Section 7.2](../design/VID.md#72-랜딩-페이지-그리드-시스템) 참조
+    - 결과 화면: [VID Section 7.3](../design/VID.md#73-결과-화면-그리드-시스템) 참조
+  - 타이포그래피 적용 확인:
+    - Heading: `Zen Maru Gothic`
+    - Body: `Nanum Square Round`
+    - 반응형 폰트 크기 (`clamp()` 사용)
+  - 애니메이션 적용 확인:
+    - 섹션 전환: 0.8s ease-out
+    - 스태거 애니메이션: 200ms 간격
+    - 성능 최적화: GPU 가속, `prefers-reduced-motion` 지원
+- **KPI**: 디자인 시스템 준수율 100%
+- **Measurement**: 디자인 시스템 검증 도구 (Lighthouse, axe DevTools)
+
+**Design Artifact**: 
+- [VID v2.0 Section 5](../design/VID.md#5-색상-시스템-color-system) - 색상 시스템
+- [VID v2.0 Section 6](../design/VID.md#6-애니메이션-스펙-animation-specifications) - 애니메이션 스펙
+- [VID v2.0 Section 7](../design/VID.md#7-그리드-시스템-및-반응형-레이아웃-grid-system--responsive-layout) - 그리드 시스템
+- [VID v2.0 Section 9.2](../design/VID.md#92-타이포그래피-typography) - 타이포그래피
+
+**Implementation Module**: `src/components/**/*.jsx`, `src/styles/**/*.css`
+
 ### 10.7 Accessibility (접근성)
 
 #### NFR-ACC-001: WCAG 2.1 AA Compliance
@@ -1037,13 +1274,24 @@ graph TB
 - **When**: Accessibility audit
 - **Then**: 
   - ARIA labels present
-  - Keyboard navigation support
-  - Screen reader compatibility
-  - Color contrast ratio ≥ 4.5:1
+  - Keyboard navigation support:
+    - 화살표 키로 섹션 이동 (결과 화면)
+    - Tab 키로 포커스 이동
+    - Home/End 키로 첫/마지막 섹션 이동
+  - Screen reader compatibility:
+    - 섹션별 `aria-label` 제공
+    - 차트에 `role="img"` 및 `aria-label` 제공
+    - 로딩 상태 `aria-live` 제공
+  - Color contrast ratio ≥ 4.5:1:
+    - 차트 색상 대비 검증 ([VID Section 4.3](../design/VID.md#43-색상-대비-color-contrast) 참조)
+    - 링크 밑줄 또는 호버 시 색상 변경
 - **KPI**: WCAG 2.1 AA compliance score ≥ 90%
 - **Measurement**: Accessibility audit tools (axe-core, Lighthouse)
 
-**Design Artifact**: [Architecture Detail Section 3](architecture/ARCHITECTURE_DETAIL.md#3-프론트엔드-아키텍처)  
+**Design Artifact**: 
+- [VID v2.0 Section 4](../design/VID.md#4-접근성-가이드-accessibility-guide) - 접근성 가이드
+- [VID v2.0 Section 4.3](../design/VID.md#43-색상-대비-color-contrast) - 색상 대비 검증
+- [Architecture Detail Section 3](architecture/ARCHITECTURE_DETAIL.md#3-프론트엔드-아키텍처)  
 **Implementation Module**: `src/components/**/*.jsx`
 
 ### 10.8 Usability (사용성)

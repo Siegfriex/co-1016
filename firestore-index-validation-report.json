@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-11-02T06:54:33.978Z",
+  "summary": {
+    "totalCurrentIndexes": 13,
+    "totalCodePatterns": 7,
+    "totalDocSpecs": 8,
+    "missingIndexes": 2,
+    "singleFieldIndexes": 0,
+    "missingByPriority": {
+      "HIGH": 1,
+      "MEDIUM": 0,
+      "LOW": 0
+    }
+  },
+  "singleFieldIndexes": [],
+  "missingIndexes": [
+    {
+      "collection": "measures",
+      "fields": [
+        {
+          "fieldPath": "entity_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "time_window",
+          "order": "ASCENDING"
+        }
+      ],
+      "source": "CODE",
+      "usage": "fnBatchTimeseries, timeWindowRules.js",
+      "indexString": "measures: [entity_id(ASCENDING), axis(ASCENDING), time_window(ASCENDING)]"
+    },
+    {
+      "collection": "measures",
+      "fields": [
+        {
+          "fieldPath": "entity_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "axis",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "time_window",
+          "order": "ASCENDING"
+        }
+      ],
+      "source": "DOCUMENTATION",
+      "priority": "HIGH",
+      "usage": "docs/data/DATA_MODEL_SPECIFICATION.md Section 4.1.1",
+      "indexString": "measures: [entity_id(ASCENDING), axis(ASCENDING), time_window(ASCENDING)]"
+    }
+  ],
+  "recommendations": {
+    "highPriority": [
+      {
+        "collection": "measures",
+        "indexString": "measures: [entity_id(ASCENDING), axis(ASCENDING), time_window(ASCENDING)]",
+        "reason": "docs/data/DATA_MODEL_SPECIFICATION.md Section 4.1.1"
+      }
+    ],
+    "mediumPriority": [],
+    "removeSingleFieldIndexes": null
+  }
+}

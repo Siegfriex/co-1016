@@ -9,15 +9,48 @@ const SunburstChart = ({ data, highlightedAxis, onSegmentHover, onSegmentClick }
   useEffect(() => {
     if (!data || !svgRef.current) return;
 
-    // 차트 기본 설정 (DYSS 디자인 시스템 적용)
+    // 차트 기본 설정 (VID v2.0 디자인 시스템 적용)
     const width = 500;
     const height = 500;
     const radius = Math.min(width, height) / 6;
 
-    // DYSS 컬러 시스템 적용
-    const colorScale = d3.scaleOrdinal()
-      .domain(['제도', '학술', '담론', '네트워크'])
-      .range(['#8B5CF6', '#7C3AED', '#6D28D9', '#5B21B6']); // DYSS primary colors
+    // VID v2.0 Primary 팔레트 적용 (Section 5.4.2 참조)
+    const colorPalette = {
+      '제도': {
+        L1: '#F28317C',   // Primary 500
+        L2: '#FFA333',    // Primary 400
+        L3: '#FFBA66'     // Primary 300
+      },
+      '학술': {
+        L1: '#D66A0F',    // Primary 600
+        L2: '#FFA333',    // Primary 400
+        L3: '#FFD199'     // Primary 200
+      },
+      '담론': {
+        L1: '#BA510C',    // Primary 700
+        L2: '#D66A0F',    // Primary 600
+        L3: '#FFA333'     // Primary 400
+      },
+      '네트워크': {
+        L1: '#9E3809',    // Primary 800
+        L2: '#BA510C',    // Primary 700
+        L3: '#D66A0F'     // Primary 600
+      }
+    };
+
+    // 색상 선택 함수 (depth에 따라 L1/L2/L3 선택)
+    const getColor = (d) => {
+      const rootAxis = d.ancestors().find(a => a.depth === 1);
+      if (!rootAxis) return '#F28317C'; // 기본 색상
+      
+      const axisName = rootAxis.data.name;
+      const depth = d.depth;
+      const palette = colorPalette[axisName] || colorPalette['제도'];
+      
+      if (depth === 1) return palette.L1;
+      if (depth === 2) return palette.L2;
+      return palette.L3;
+    };
 
     // 계층적 데이터 구조화
     const root = d3.hierarchy(data)
@@ -54,10 +87,7 @@ const SunburstChart = ({ data, highlightedAxis, onSegmentHover, onSegmentClick }
       .selectAll('path')
       .data(root.descendants().slice(1))
       .join('path')
-      .attr('fill', d => {
-        while (d.depth > 1) d = d.parent;
-        return colorScale(d.data.name);
-      })
+      .attr('fill', d => getColor(d))
       .attr('fill-opacity', d => {
         const isHighlighted = highlightedAxis && 
           d.ancestors().some(ancestor => ancestor.data.name === highlightedAxis);

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CuratorOdyssey - Phase 1: 현재 가치 분석">
+  <title>현재 가치 분석 - CuratorOdyssey</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <!-- Header Navigation -->
+  <nav class="header-nav" role="navigation" aria-label="메인 네비게이션">
+    <div class="container">
+      <a href="index.html" class="nav-link">CuratorOdyssey</a>
+      <ul class="nav-links">
+        <li><a href="#phase1" class="nav-link active">Phase 1</a></li>
+        <li><a href="#phase2" class="nav-link">Phase 2</a></li>
+        <li><a href="#phase3" class="nav-link">Phase 3</a></li>
+        <li><a href="#phase4" class="nav-link">Phase 4</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main" aria-label="Phase 1: 현재 가치 분석">
+    <!-- 아티스트 정보 헤더 -->
+    <section class="section" id="artist-header" aria-label="아티스트 정보">
+      <div class="container">
+        <div class="artist-info">
+          <h1 id="artist-name">아티스트: <span id="artist-name-value">로딩 중...</span></h1>
+          <p id="artist-id">ID: <span id="artist-id-value">-</span></p>
+          <p id="data-freshness">데이터 신선도: <span id="data-freshness-value">-</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 차트 영역 -->
+    <section class="section" id="charts-section" aria-label="차트 영역">
+      <div class="container">
+        <div class="grid grid-landing" style="grid-template-columns: repeat(2, 1fr); gap: 48px;">
+          <!-- 레이더 차트 -->
+          <div class="chart-container radar-chart-container" id="radar-chart" aria-label="레이더 차트"></div>
+          
+          <!-- 선버스트 차트 -->
+          <div class="chart-container sunburst-chart-container" id="sunburst-chart" aria-label="선버스트 차트"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 일관성 검증 표시 -->
+    <section class="section" id="consistency-section" aria-label="일관성 검증">
+      <div class="container">
+        <div class="consistency-check" id="consistency-check">
+          <p>데이터 일관성: <span id="consistency-status">검증 중...</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 네비게이션 버튼 -->
+    <section class="section" id="navigation-section" aria-label="네비게이션">
+      <div class="container">
+        <button class="btn btn-primary" onclick="goToPhase2()">Phase 2: 커리어 궤적 보기</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <p>CuratorOdyssey v1.0</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/api-mock.js"></script>
+  <script src="js/charts/radar-chart.js"></script>
+  <script src="js/charts/sunburst-chart.js"></script>
+  
+  <script>
+    // URL 파라미터에서 아티스트 ID 가져오기
+    function getArtistIdFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') || 'ARTIST_0005'; // 기본값
+    }
+
+    // Phase 2로 이동
+    function goToPhase2() {
+      const artistId = getArtistIdFromURL();
+      window.location.href = `trajectory.html?id=${artistId}`;
+    }
+
+    // 페이지 로드 시 데이터 로드 및 차트 렌더링
+    document.addEventListener('DOMContentLoaded', async () => {
+      const artistId = getArtistIdFromURL();
+      
+      try {
+        // 아티스트 요약 데이터 로드
+        const summaryData = await apiMock.getArtistSummary(artistId);
+        const data = summaryData.data;
+
+        // 아티스트 정보 표시
+        document.getElementById('artist-name-value').textContent = data.name || artistId;
+        document.getElementById('artist-id-value').textContent = data.artist_id;
+        document.getElementById('data-freshness-value').textContent = 
+          new Date(data.updated_at).toLocaleDateString('ko-KR');
+
+        // 일관성 검증 표시
+        if (data.consistency_check) {
+          const check = data.consistency_check;
+          const statusEl = document.getElementById('consistency-status');
+          if (check.passed) {
+            statusEl.textContent = `✅ ±0.5p 준수 (차이: ${check.error.toFixed(2)}p)`;
+            statusEl.style.color = 'var(--color-success)';
+          } else {
+            statusEl.textContent = `⚠️ ±0.5p 초과 (차이: ${check.error.toFixed(2)}p)`;
+            statusEl.style.color = 'var(--color-warning)';
+          }
+        }
+
+        // 레이더 차트 렌더링
+        const radarChart = new RadarChart('#radar-chart', {
+          width: 400,
+          height: 400
+        });
+        radarChart.render(data.radar5);
+
+        // 선버스트 상세 데이터 로드
+        const sunburstData = await apiMock.getArtistSunburst(artistId);
+        
+        // 선버스트 차트 렌더링
+        const sunburstChart = new SunburstChart('#sunburst-chart', {
+          width: 400,
+          height: 400
+        });
+        sunburstChart.render(sunburstData.data.sunburst);
+
+        // 선버스트-레이더 상호작용 (선버스트 섹터 클릭 시 레이더 축 하이라이트)
+        // TODO: 구현 필요
+
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        document.getElementById('consistency-status').textContent = '데이터 로드 실패';
+        document.getElementById('consistency-status').style.color = 'var(--color-error)';
+      }
+    });
+  </script>
+</body>
+</html>
+

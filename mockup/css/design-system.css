@@ -1,0 +1,341 @@
+/* CO-1016 CURATOR ODYSSEY: Design System CSS
+ * Based on VID v2.0 Section 5, 7, 9.2
+ */
+
+/* ============================================
+   1. CSS 변수 정의 (Color System)
+   ============================================ */
+
+:root {
+  /* Primary Colors - 주 컬러 (#F28317C) */
+  --color-primary-50: #FFF4E6;
+  --color-primary-100: #FFE8CC;
+  --color-primary-200: #FFD199;
+  --color-primary-300: #FFBA66;
+  --color-primary-400: #FFA333;
+  --color-primary-500: #F28317C; /* 주 컬러 */
+  --color-primary-600: #D66A0F;
+  --color-primary-700: #BA510C;
+  --color-primary-800: #9E3809;
+  --color-primary-900: #821F06;
+
+  /* Secondary Colors - 세컨더리 (#F1F0EC) */
+  --color-secondary-50: #F9F8F6;
+  --color-secondary-100: #F1F0EC; /* 세컨더리 기본 */
+  --color-secondary-200: #E8E7E2;
+  --color-secondary-300: #DEDDD6;
+  --color-secondary-400: #C4C3BA;
+  --color-secondary-500: #A9A89E;
+  --color-secondary-600: #8E8D82;
+  --color-secondary-700: #6B6A60;
+  --color-secondary-800: #4A4942;
+  --color-secondary-900: #3D3C39;
+
+  /* Text Colors */
+  --color-text-primary: var(--color-secondary-900);
+  --color-text-secondary: var(--color-secondary-700);
+  --color-text-tertiary: var(--color-secondary-500);
+  --color-text-placeholder: var(--color-secondary-400);
+  --color-text-link: var(--color-primary-500);
+  --color-text-link-hover: var(--color-primary-600);
+
+  /* Background Colors */
+  --color-bg-primary: #FFFFFF;
+  --color-bg-secondary: var(--color-secondary-100);
+  --color-bg-tertiary: var(--color-secondary-50);
+  --color-overlay: rgba(61, 60, 57, 0.8);
+
+  /* Accent Colors */
+  --color-accent-primary: var(--color-primary-500);
+  --color-accent-hover: var(--color-primary-600);
+  --color-accent-active: var(--color-primary-700);
+  --color-accent-light: var(--color-primary-50);
+
+  /* Status Colors */
+  --color-success: #22C55E;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+
+  /* Data Visualization Colors - Radar Chart */
+  --color-radar-I: var(--color-primary-500);
+  --color-radar-F: var(--color-primary-400);
+  --color-radar-A: var(--color-primary-600);
+  --color-radar-M: var(--color-primary-700);
+  --color-radar-Sedu: var(--color-primary-800);
+
+  /* Data Visualization Colors - Sunburst Chart */
+  --color-sunburst-제도-l1: var(--color-primary-500);
+  --color-sunburst-제도-l2: var(--color-primary-400);
+  --color-sunburst-제도-l3: var(--color-primary-300);
+  --color-sunburst-학술-l1: var(--color-primary-600);
+  --color-sunburst-학술-l2: var(--color-primary-400);
+  --color-sunburst-학술-l3: var(--color-primary-200);
+  --color-sunburst-담론-l1: var(--color-primary-700);
+  --color-sunburst-담론-l2: var(--color-primary-600);
+  --color-sunburst-담론-l3: var(--color-primary-400);
+  --color-sunburst-네트워크-l1: var(--color-primary-800);
+  --color-sunburst-네트워크-l2: var(--color-primary-700);
+  --color-sunburst-네트워크-l3: var(--color-primary-600);
+
+  /* Data Visualization Colors - Comparison Chart */
+  --color-compare-player: var(--color-primary-500);
+  --color-compare-artist: var(--color-secondary-100);
+  --color-compare-diff: rgba(242, 131, 23, 0.15);
+
+  /* ============================================
+     2. 그리드 시스템 (Grid System)
+     ============================================ */
+
+  /* 랜딩 페이지 그리드 */
+  --landing-container-max-width: 1440px;
+  --landing-container-padding-mobile: 24px;
+  --landing-container-padding-tablet: 40px;
+  --landing-container-padding-desktop: 80px;
+  
+  --landing-section-margin-mobile: 80px;
+  --landing-section-margin-tablet: 120px;
+  --landing-section-margin-desktop: 160px;
+  
+  --landing-grid-cols-mobile: 4;
+  --landing-grid-cols-tablet: 8;
+  --landing-grid-cols-desktop: 12;
+  
+  --landing-grid-gutter-mobile: 16px;
+  --landing-grid-gutter-tablet: 24px;
+  --landing-grid-gutter-desktop: 32px;
+
+  /* 결과 화면 그리드 */
+  --result-section-width: 100vw;
+  --result-section-height: 100vh;
+  --result-section-height-safe: 100svh;
+  
+  --result-base-margin: 120px;
+  --result-grid-cols: 12;
+  --result-grid-gutter: auto;
+
+  /* ============================================
+     3. 타이포그래피 (Typography)
+     ============================================ */
+
+  /* Font Families */
+  --font-heading: 'Zen Maru Gothic', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-secondary: 'Nanum Square Round', sans-serif;
+  --font-code: 'Roboto Mono', 'Consolas', monospace;
+
+  /* Font Sizes - 반응형 (clamp 사용) */
+  --font-size-h1: clamp(24px, 5vw, 48px);
+  --font-size-h2: clamp(20px, 4vw, 36px);
+  --font-size-h3: clamp(18px, 3vw, 24px);
+  --font-size-body: clamp(14px, 1.5vw, 16px);
+  --font-size-small: clamp(12px, 1.2vw, 14px);
+  --font-size-code: clamp(12px, 1.2vw, 14px);
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ============================================
+     4. 마진/패딩 시스템 (Spacing System)
+     ============================================ */
+
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  --spacing-xl: 48px;
+  --spacing-2xl: 64px;
+  --spacing-3xl: 80px;
+  --spacing-4xl: 120px;
+
+  /* 섹션 마진 */
+  --section-margin-landing: 80px;
+  --section-margin-result: 120px;
+
+  /* 컴포넌트 패딩 */
+  --padding-xs: 8px;
+  --padding-sm: 16px;
+  --padding-md: 24px;
+  --padding-lg: 32px;
+  --padding-xl: 48px;
+
+  /* ============================================
+     5. 애니메이션 타이밍 (Animation Timing)
+     ============================================ */
+
+  --transition-fast: 0.15s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.6s;
+  --transition-slower: 0.8s;
+
+  --easing-ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+  --easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ============================================
+     6. 브레이크포인트 (Breakpoints)
+     ============================================ */
+
+  --breakpoint-mobile: 768px;
+  --breakpoint-tablet: 1024px;
+  --breakpoint-desktop: 1440px;
+}
+
+/* ============================================
+   7. 리셋 스타일 (Reset Styles)
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   8. 기본 타이포그래피 스타일
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+}
+
+p {
+  margin: 0;
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: color var(--transition-normal) var(--easing-ease-out);
+}
+
+a:hover {
+  color: var(--color-text-link-hover);
+}
+
+a:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+button:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   9. 반응형 브레이크포인트 미디어 쿼리
+   ============================================ */
+
+/* 모바일 */
+@media (max-width: 767px) {
+  :root {
+    --landing-container-padding: var(--landing-container-padding-mobile);
+    --landing-section-margin: var(--landing-section-margin-mobile);
+    --landing-grid-cols: var(--landing-grid-cols-mobile);
+    --landing-grid-gutter: var(--landing-grid-gutter-mobile);
+  }
+}
+
+/* 태블릿 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --landing-container-padding: var(--landing-container-padding-tablet);
+    --landing-section-margin: var(--landing-section-margin-tablet);
+    --landing-grid-cols: var(--landing-grid-cols-tablet);
+    --landing-grid-gutter: var(--landing-grid-gutter-tablet);
+  }
+}
+
+/* 데스크톱 */
+@media (min-width: 1024px) {
+  :root {
+    --landing-container-padding: var(--landing-container-padding-desktop);
+    --landing-section-margin: var(--landing-section-margin-desktop);
+    --landing-grid-cols: var(--landing-grid-cols-desktop);
+    --landing-grid-gutter: var(--landing-grid-gutter-desktop);
+  }
+}
+
+/* ============================================
+   10. 접근성 (Accessibility)
+   ============================================ */
+
+/* 스크린 리더 전용 텍스트 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 애니메이션 비활성화 옵션 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* 포커스 표시기 */
+:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+

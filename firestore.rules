@@ -30,6 +30,24 @@ service cloud.firestore {
       allow write: if isAuthorizedBatchFunction() || isAdmin();
     }
     
+    // Phase 1: 선버스트 상세 데이터 (공개 읽기, 검증된 쓰기)
+    match /artist_sunburst/{artistId} {
+      allow read: if true; // 공개 접근 (Phase 1 시각화)
+      allow write: if isAuthorizedBatchFunction() || isAdmin();
+    }
+    
+    // Phase 4: AI 보고서 캐싱 (인증 필요 읽기, 관리자/배치 함수 쓰기)
+    match /ai_reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isAuthorizedBatchFunction();
+    }
+    
+    // 시스템 헬스체크 (인증 필요 읽기, 관리자/배치 함수 쓰기)
+    match /system_health/{healthId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isAuthorizedBatchFunction();
+    }
+    
     // =====================================================
     // 보호된 원천 데이터 (관리자 전용)
     // =====================================================
@@ -82,6 +100,28 @@ service cloud.firestore {
     match /snapshots/{snapshotId} {
       allow read: if isAdmin() || isAuthorizedAnalyst();
       allow write: if isAdmin() || isAuthorizedBatchFunction();
+    }
+    
+    // =====================================================
+    // 피지컬 컴퓨팅 아트워크 컬렉션
+    // =====================================================
+    
+    // 게임 세션 (인증 필요 읽기/쓰기)
+    match /physical_game_sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // 게임 세션 생성
+    }
+    
+    // 보물 상자 메타데이터 (공개 읽기, 관리자 쓰기)
+    match /treasure_boxes/{boxId} {
+      allow read: if true; // 공개 읽기
+      allow write: if isAdmin();
+    }
+    
+    // 보물 상자 조합식 (공개 읽기, 관리자 쓰기)
+    match /treasure_box_combinations/{comboId} {
+      allow read: if true; // 공개 읽기
+      allow write: if isAdmin();
     }
     
     // =====================================================

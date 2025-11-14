@@ -1,8 +1,31 @@
 # CO-1016 CURATOR ODYSSEY: 비즈니스 로직 명세서
 
-버전: 1.0  
-최종 수정: 2025-01-XX  
-작성자: Dr. Sarah Kim (Data Architect)  
+## 문서 메타데이터 (Document Metadata)
+
+**문서명**: CO-1016 CURATOR ODYSSEY 비즈니스 로직 명세서
+
+**버전**: 1.0
+
+**상태**: Draft (초안)
+
+**최종 수정**: 2025-11-10
+
+**소유자**: Dr. Sarah Kim (Data Architect)
+
+**승인자**: NEO GOD (Director)
+
+**개정 이력**:
+- v1.0 (2025-11-10): 초기 작성
+
+**배포 범위**: Data Team, Backend Development Team, AI Team
+
+**변경 관리 프로세스**: GitHub Issues/PR 워크플로, 변경 시 FRD/SRD 동시 업데이트
+
+**참조 문서 (References)**:
+- **[FRD v1.1](../requirements/FRD.md)** - Functional Requirements Document, 기능 요구사항 및 API 엔드포인트 매핑
+- **[SRD v1.1](../requirements/SRD.md)** - Software Requirements Document, 기능 요구사항 및 수용 기준
+- **[TSD v1.1](../TSD.md)** - Technical Design Document, 기술 설계 및 API 구현
+- **[Data Model Specification](../data/DATA_MODEL_SPECIFICATION.md)** - Firestore 스키마 상세, ER 다이어그램  
 
 ## 목차
 
@@ -623,21 +646,50 @@ END FUNCTION
 
 ## 5. AI 보고서 프롬프트 템플릿
 
-### 5.1 프롬프트 구조
+### 5.1 프롬프트 구조 표준
 
-**템플릿 변수:**
-- `{artist_name}`: 작가 이름
+**Vertex AI Gemini 1.5 Pro 프롬프트 형식:**
+
+프롬프트는 다음 구조를 따라야 합니다:
+
+1. **시스템 역할 정의** (Role Definition)
+2. **작가 정보** (Artist Information)
+3. **Phase 1 데이터** (Current Value Analysis)
+4. **Phase 2 데이터** (Career Trajectory Analysis)
+5. **Phase 3 데이터** (Comparison Analysis, 선택적)
+6. **출력 형식 지침** (Output Format Guidelines)
+7. **품질 요구사항** (Quality Requirements)
+
+### 5.2 템플릿 변수 정의
+
+**필수 변수:**
+- `{artist_name}`: 작가 이름 (한글/영문)
 - `{debut_year}`: 데뷔년도
-- `{radar5}`: 레이더 5축 데이터
-- `{sunburst_l1}`: 선버스트 4축 데이터
-- `{timeseries_summary}`: 시계열 요약
-- `{growth_patterns}`: 성장 패턴
-- `{event_impacts}`: 이벤트 영향도
+- `{career_duration}`: 커리어 기간 (년)
+- `{radar5}`: 레이더 5축 데이터 객체
+  - `I`: Institution (기관전시)
+  - `F`: Fair (아트페어)
+  - `A`: Award (시상)
+  - `M`: Media (미디어)
+  - `Sedu`: Seduction (교육)
+- `{sunburst_l1}`: 선버스트 4축 L1 데이터 객체
+  - `제도`: 제도 축 점수
+  - `학술`: 학술 축 점수
+  - `담론`: 담론 축 점수
+  - `네트워크`: 네트워크 축 점수
 
-**프롬프트 예시:**
+**선택적 변수:**
+- `{timeseries_summary}`: 시계열 요약 (Phase 2)
+- `{growth_patterns}`: 성장 패턴 분석
+- `{event_impacts}`: 주요 이벤트 영향도
+- `{comparison_data}`: 비교 분석 데이터 (Phase 3)
+
+### 5.3 표준 프롬프트 템플릿
+
+**전체 템플릿:**
 
 ```
-당신은 예술가 커리어 분석 전문가입니다. 다음 데이터를 바탕으로 종합 분석 보고서를 작성해주세요.
+당신은 예술가 커리어 분석 전문가입니다. 다음 데이터를 바탕으로 종합 분석 보고서를 마크다운 형식으로 작성해주세요.
 
 ## 작가 정보
 - 이름: {artist_name}
@@ -645,6 +697,7 @@ END FUNCTION
 - 커리어 기간: {career_duration}년
 
 ## 현재 가치 분석 (Phase 1)
+
 ### 5축 레이더 차트
 - Institution (기관전시): {radar5.I}
 - Fair (아트페어): {radar5.F}
@@ -667,12 +720,47 @@ END FUNCTION
 ## 주요 이벤트 영향도
 {event_impacts}
 
+{comparison_data}
+
 ## 보고서 작성 지침
-1. 작가의 강점과 특징을 분석하세요.
-2. 커리어 궤적의 주요 변곡점을 설명하세요.
-3. 미래 잠재력을 평가하세요.
-4. 마크다운 형식으로 작성하세요.
+
+### 구조 요구사항
+1. **Introduction**: 작가 소개 및 전체적인 평가
+2. **Analysis**: 현재 가치 분석, 커리어 궤적 분석, 성장 패턴 분석
+3. **Prediction**: 미래 잠재력 평가 및 예측
+
+### 내용 요구사항
+1. 작가의 강점과 특징을 데이터 기반으로 분석하세요.
+2. 커리어 궤적의 주요 변곡점을 구체적으로 설명하세요.
+3. 미래 잠재력을 객관적으로 평가하세요.
+4. 데이터의 신뢰도와 한계를 명시하세요.
+
+### 형식 요구사항
+1. 마크다운 형식으로 작성하세요.
+2. 섹션별 제목은 H2 (##)를 사용하세요.
+3. 중요 내용은 강조 표시를 사용하세요.
+4. 숫자 데이터는 표 형식으로 정리하세요.
+
+### 품질 요구사항
+1. 객관적이고 데이터 기반 분석을 제공하세요.
+2. 추측이나 가정을 명시하세요.
+3. 전문 용어를 적절히 사용하되, 일반 독자도 이해할 수 있도록 설명하세요.
+4. 최소 500자 이상의 상세한 분석을 제공하세요.
 ```
+
+### 5.4 Phase별 프롬프트 변형
+
+**Phase 1만 사용 시:**
+- `{timeseries_summary}`, `{growth_patterns}`, `{event_impacts}` 제거
+- 현재 가치 분석에 집중
+
+**Phase 1 + Phase 2 사용 시:**
+- `{comparison_data}` 제거
+- 현재 가치와 커리어 궤적 분석에 집중
+
+**Phase 1 + Phase 2 + Phase 3 사용 시:**
+- 전체 템플릿 사용
+- 비교 분석 섹션 추가
 
 ### 5.2 토큰 최적화 로직
 

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CuratorOdyssey - Phase 4: AI 보고서">
+  <title>AI 보고서 - CuratorOdyssey</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- Markdown 렌더링을 위한 라이브러리 (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <!-- Header Navigation -->
+  <nav class="header-nav" role="navigation" aria-label="메인 네비게이션">
+    <div class="container">
+      <a href="index.html" class="nav-link">CuratorOdyssey</a>
+      <ul class="nav-links">
+        <li><a href="#phase1" class="nav-link">Phase 1</a></li>
+        <li><a href="#phase2" class="nav-link">Phase 2</a></li>
+        <li><a href="#phase3" class="nav-link">Phase 3</a></li>
+        <li><a href="#phase4" class="nav-link active">Phase 4</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main" aria-label="Phase 4: AI 보고서">
+    <!-- 보고서 헤더 -->
+    <section class="section" id="report-header" aria-label="보고서 헤더">
+      <div class="container">
+        <div class="report-header">
+          <h1 id="artist-name">아티스트: <span id="artist-name-value">로딩 중...</span></h1>
+          <p id="report-meta">
+            생성 시간: <span id="generated-at">-</span> | 
+            모델: <span id="model-used">-</span> | 
+            토큰 사용량: <span id="token-usage">-</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 보고서 생성 버튼 -->
+    <section class="section" id="generate-section" aria-label="보고서 생성">
+      <div class="container">
+        <button class="btn btn-primary" id="generate-btn" onclick="generateReport()">
+          🔄 AI 보고서 생성
+        </button>
+        <p class="help-text">(최대 30초 소요)</p>
+      </div>
+    </section>
+
+    <!-- 섹션 네비게이션 (고정) -->
+    <section class="section" id="section-nav" aria-label="섹션 네비게이션">
+      <div class="container">
+        <div class="section-nav" style="position: sticky; top: 80px; background: white; padding: 16px 0; z-index: 100;">
+          <button class="btn btn-secondary" onclick="scrollToSection('introduction')">Introduction</button>
+          <button class="btn btn-secondary" onclick="scrollToSection('analysis')">Analysis</button>
+          <button class="btn btn-secondary" onclick="scrollToSection('prediction')">Prediction</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Markdown 보고서 본문 -->
+    <section class="section" id="report-content" aria-label="보고서 본문">
+      <div class="container">
+        <div class="report-content" id="report-markdown" style="max-width: 800px; margin: 0 auto;">
+          <div class="loading-spinner" id="loading-spinner" style="display: none;"></div>
+          <div id="report-text" style="font-family: var(--font-body); line-height: var(--line-height-relaxed);">
+            <p>보고서를 생성하려면 위의 "AI 보고서 생성" 버튼을 클릭하세요.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 액션 버튼 -->
+    <section class="section" id="actions-section" aria-label="액션 버튼">
+      <div class="container">
+        <div class="action-buttons">
+          <button class="btn btn-secondary" onclick="downloadReport()">📥 다운로드 (PDF)</button>
+          <button class="btn btn-secondary" onclick="shareReport()">🔗 공유</button>
+          <button class="btn btn-secondary" onclick="goToPhase1()">← 돌아가기</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <p>CuratorOdyssey v1.0</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/api-mock.js"></script>
+  
+  <script>
+    let artistId = 'ARTIST_0005';
+    let reportData = null;
+
+    // URL 파라미터에서 아티스트 ID 가져오기
+    function getArtistIdFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') || 'ARTIST_0005';
+    }
+
+    // 섹션으로 스크롤
+    function scrollToSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // AI 보고서 생성
+    async function generateReport() {
+      const btn = document.getElementById('generate-btn');
+      const spinner = document.getElementById('loading-spinner');
+      const reportText = document.getElementById('report-text');
+
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      reportText.innerHTML = '<p>보고서 생성 중... (최대 30초 소요)</p>';
+
+      try {
+        // TODO: API 호출 구현 (현재는 목업 데이터 사용)
+        // const reportData = await apiMock.generateReport(artistId);
+        
+        // 목업 보고서 데이터
+        const mockReport = `# Introduction
+
+양혜규는 2010년 데뷔한 현대 미술가로, 제도적 성취와 학술적 활동에서 뛰어난 성과를 보여주고 있습니다.
+
+## 주요 성과
+- 제도 축: 91.2점 (상위 5%)
+- 학술 축: 88.0점 (상위 10%)
+- 담론 축: 86.0점 (상위 15%)
+- 네트워크 축: 90.0점 (상위 10%)
+
+# Analysis
+
+## 커리어 궤적 분석
+시계열 분석 결과, 양혜규는 지속적인 성장 패턴을 보여주고 있습니다. 특히 최근 5년간 제도 축에서 급격한 상승세를 보였습니다.
+
+## 주요 이벤트
+- 2015년: 첫 국제 전시 참여
+- 2017년: 비평가 주목
+- 2020년: 국제 협업 프로젝트
+
+# Prediction
+
+## 향후 5년간 예상 성장률
+현재 추세를 기반으로 할 때, 향후 5년간 지속적인 성장이 예상됩니다. 특히 네트워크 축에서의 성장이 두드러질 것으로 예측됩니다.`;
+
+        // Markdown 렌더링
+        reportText.innerHTML = marked.parse(mockReport);
+        reportData = mockReport;
+
+        // 메타 정보 업데이트
+        document.getElementById('generated-at').textContent = new Date().toLocaleString('ko-KR');
+        document.getElementById('model-used').textContent = 'Gemini 1.5 Pro';
+        document.getElementById('token-usage').textContent = '38,245 / 50,000';
+
+        spinner.style.display = 'none';
+        btn.disabled = false;
+
+      } catch (error) {
+        console.error('Failed to generate report:', error);
+        reportText.innerHTML = '<p style="color: var(--color-error);">보고서 생성에 실패했습니다. 다시 시도해주세요.</p>';
+        spinner.style.display = 'none';
+        btn.disabled = false;
+      }
+    }
+
+    // 보고서 다운로드
+    function downloadReport() {
+      if (!reportData) {
+        alert('먼저 보고서를 생성해주세요.');
+        return;
+      }
+      // TODO: PDF 다운로드 구현
+      console.log('Download report:', reportData);
+    }
+
+    // 보고서 공유
+    function shareReport() {
+      if (!reportData) {
+        alert('먼저 보고서를 생성해주세요.');
+        return;
+      }
+      // URL 클립보드 복사
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('링크가 클립보드에 복사되었습니다.');
+      });
+    }
+
+    // Phase 1로 이동
+    function goToPhase1() {
+      window.location.href = `artist.html?id=${artistId}`;
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', async () => {
+      artistId = getArtistIdFromURL();
+      
+      try {
+        // 아티스트 정보 로드
+        const summaryData = await apiMock.getArtistSummary(artistId);
+        document.getElementById('artist-name-value').textContent = summaryData.data.name || artistId;
+      } catch (error) {
+        console.error('Failed to load artist data:', error);
+      }
+    });
+  </script>
+</body>
+</html>
+
