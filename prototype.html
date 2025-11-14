@@ -1,0 +1,5367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CuratorOdyssey - 아티스트 경력 분석 플랫폼</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <!-- Marked.js for Markdown rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <style>
+    /* ============================================
+       마스터 디자인 CSS 변수 시스템
+       ============================================ */
+    :root {
+      /* 그리드 변수 */
+      --dyss-grid-columns: 12;
+      --dyss-grid-gap: 1.6rem;
+      --dyss-container-padding: 2rem;
+      --dyss-container-max-width: 1200px;
+      --dyss-grid-columns-advanced: 24;
+      --dyss-grid-gap-advanced: 2rem;
+      
+      /* 반응형 브레이크포인트 */
+      --dyss-breakpoint-xs: 480px;
+      --dyss-breakpoint-sm: 768px;
+      --dyss-breakpoint-md: 1024px;
+      --dyss-breakpoint-lg: 1200px;
+      --dyss-breakpoint-xl: 1440px;
+      
+      /* 스페이싱 변수 (8px 기반) */
+      --dyss-space-0: 0px;
+      --dyss-space-1: 0.4rem;   /* 4px */
+      --dyss-space-2: 0.8rem;   /* 8px */
+      --dyss-space-3: 1.2rem;   /* 12px */
+      --dyss-space-4: 1.6rem;   /* 16px */
+      --dyss-space-5: 2.0rem;   /* 20px */
+      --dyss-space-6: 2.4rem;   /* 24px */
+      --dyss-space-8: 3.2rem;   /* 32px */
+      --dyss-space-10: 4.0rem;  /* 40px */
+      --dyss-space-12: 4.8rem;  /* 48px */
+      --dyss-space-16: 6.4rem;  /* 64px */
+      --dyss-space-20: 8.0rem;  /* 80px */
+      --dyss-space-24: 9.6rem;  /* 96px */
+      --dyss-space-32: 12.8rem; /* 128px */
+      
+      /* 시맨틱 스페이싱 */
+      --dyss-space-xs: var(--dyss-space-2);
+      --dyss-space-sm: var(--dyss-space-3);
+      --dyss-space-md: var(--dyss-space-4);
+      --dyss-space-lg: var(--dyss-space-6);
+      --dyss-space-xl: var(--dyss-space-8);
+      --dyss-space-2xl: var(--dyss-space-12);
+      --dyss-space-3xl: var(--dyss-space-16);
+      
+      /* 트랜지션 시스템 */
+      --dyss-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+      --dyss-transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      --dyss-transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+      --dyss-ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+      
+      /* 컬러 시스템 */
+      --dyss-color-text-primary: #28317C;
+      --dyss-color-text-secondary: #4B5563;
+      --dyss-color-text-tertiary: #9CA3AF;
+      --dyss-color-bg-main: #F1F0EC;
+      --dyss-color-bg-primary: #FFFFFF;
+      --dyss-color-bg-secondary: #F1F0EC;
+      --dyss-color-bg-tertiary: #F9FAFB;
+      
+      /* 차트용 컬러 */
+      --dyss-color-primary: #8B5CF6;
+      --dyss-color-primary-50: #F5F3FF;
+      --dyss-color-primary-100: #EDE9FE;
+      --dyss-color-primary-200: #DDD6FE;
+      --dyss-color-primary-300: #C4B5FD;
+      --dyss-color-primary-400: #A78BFA;
+      --dyss-color-primary-500: #8B5CF6;
+      --dyss-color-primary-600: #7C3AED;
+      --dyss-color-primary-700: #6D28D9;
+      --dyss-color-primary-800: #5B21B6;
+      --dyss-color-primary-900: #4C1D95;
+      
+      /* 그레이 스케일 */
+      --dyss-color-gray-50: #F9FAFB;
+      --dyss-color-gray-100: #F3F4F6;
+      --dyss-color-gray-200: #E5E7EB;
+      --dyss-color-gray-300: #D1D5DB;
+      --dyss-color-gray-400: #9CA3AF;
+      --dyss-color-gray-500: #6B7280;
+      --dyss-color-gray-600: #4B5563;
+      --dyss-color-gray-700: #374151;
+      --dyss-color-gray-800: #1F2937;
+      --dyss-color-gray-900: #111827;
+      
+      /* Phase 색상 */
+      --dyss-color-phase-1: #3B82F6;
+      --dyss-color-phase-2: #22C55E;
+      --dyss-color-phase-3: #F97316;
+      --dyss-color-phase-4: #A855F7;
+      
+      /* 폰트 크기 */
+      --dyss-font-size-xs: 0.75rem;    /* 12px */
+      --dyss-font-size-sm: 0.875rem;   /* 14px */
+      --dyss-font-size-base: 1rem;     /* 16px */
+      --dyss-font-size-lg: 1.125rem;   /* 18px */
+      --dyss-font-size-xl: 1.25rem;    /* 20px */
+      --dyss-font-size-2xl: 1.5rem;    /* 24px */
+      --dyss-font-size-3xl: 1.875rem;  /* 30px */
+      --dyss-font-size-4xl: 2.25rem;   /* 36px */
+      --dyss-font-size-5xl: 3rem;      /* 48px */
+      --dyss-font-size-6xl: 3.75rem;   /* 60px */
+      
+      /* 라인 높이 */
+      --dyss-line-height-none: 1;
+      --dyss-line-height-tight: 1.25;
+      --dyss-line-height-snug: 1.375;
+      --dyss-line-height-normal: 1.5;
+      --dyss-line-height-relaxed: 1.625;
+      --dyss-line-height-loose: 2;
+      
+      /* Letter Spacing */
+      --dyss-letter-spacing-tighter: -0.05em;
+      --dyss-letter-spacing-tight: -0.025em;
+      --dyss-letter-spacing-normal: 0em;
+      --dyss-letter-spacing-wide: 0.025em;
+      --dyss-letter-spacing-wider: 0.05em;
+      --dyss-letter-spacing-widest: 0.1em;
+      
+      /* 반경 */
+      --dyss-radius-sm: 0.25rem;
+      --dyss-radius-md: 0.5rem;
+      --dyss-radius-lg: 0.75rem;
+      --dyss-radius-xl: 1rem;
+      --dyss-radius-2xl: 1.5rem;
+      --dyss-radius-full: 9999px;
+      
+      /* 그림자 */
+      --dyss-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --dyss-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --dyss-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --dyss-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --dyss-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* ============================================
+       타이포그래피 시스템 (대항해시대 느낌)
+       ============================================ */
+    body {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-base);
+      line-height: var(--dyss-line-height-relaxed);
+      color: var(--dyss-color-text-primary);
+      background-color: var(--dyss-color-bg-main);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* 그레인 효과 (양피지 느낌) */
+      background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E"),
+        linear-gradient(to bottom, #F1F0EC, #F1F0EC);
+      background-attachment: fixed;
+      position: relative;
+    }
+    
+    /* 그레인 오버레이 (추가 텍스처) */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    /* 모든 컨텐츠가 그레인 위에 표시되도록 */
+    main, header, footer {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* 차트 컨테이너에 그레인 효과 */
+    .chart-container {
+      position: relative;
+    }
+    
+    .chart-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.6;
+      border-radius: var(--dyss-radius-lg);
+    }
+    
+    h1, .dyss-h1 {
+      font-family: 'Cormorant Garamond', 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-5xl);
+      font-weight: 700;
+      color: var(--dyss-color-text-primary);
+      line-height: var(--dyss-line-height-tight);
+      letter-spacing: var(--dyss-letter-spacing-tight);
+      margin: 0 0 var(--dyss-space-6) 0;
+    }
+    
+    h2, .dyss-h2 {
+      font-family: 'Cormorant Garamond', 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-4xl);
+      font-weight: 600;
+      color: var(--dyss-color-text-primary);
+      line-height: var(--dyss-line-height-tight);
+      margin: 0 0 var(--dyss-space-5) 0;
+    }
+    
+    h3, .dyss-h3 {
+      font-family: 'Cormorant Garamond', 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-3xl);
+      font-weight: 600;
+      color: var(--dyss-color-text-primary);
+      line-height: var(--dyss-line-height-snug);
+      margin: 0 0 var(--dyss-space-4) 0;
+    }
+    
+    h4, .dyss-h4 {
+      font-family: 'Cormorant Garamond', 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-2xl);
+      font-weight: 600;
+      color: var(--dyss-color-text-primary);
+      margin: 0 0 var(--dyss-space-4) 0;
+    }
+    
+    p, .dyss-body {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-base);
+      color: var(--dyss-color-text-primary);
+      line-height: var(--dyss-line-height-relaxed);
+      margin: 0 0 var(--dyss-space-4) 0;
+    }
+    
+    .dyss-body-large {
+      font-size: var(--dyss-font-size-lg);
+      line-height: var(--dyss-line-height-relaxed);
+    }
+    
+    .dyss-body-small {
+      font-size: var(--dyss-font-size-sm);
+      line-height: var(--dyss-line-height-normal);
+    }
+    
+    .dyss-caption {
+      font-size: var(--dyss-font-size-xs);
+      color: var(--dyss-color-text-tertiary);
+      line-height: var(--dyss-line-height-normal);
+    }
+    
+    /* ============================================
+       24컬럼 그리드 시스템
+       ============================================ */
+    .dyss-container {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--dyss-space-3);
+      max-width: var(--dyss-container-max-width);
+      margin: 0 auto;
+      padding: 0 var(--dyss-space-4);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    @media (min-width: 768px) {
+      .dyss-container {
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: var(--dyss-grid-gap);
+        padding: 0 var(--dyss-container-padding);
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .dyss-container {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: var(--dyss-grid-gap);
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .dyss-container--advanced {
+        grid-template-columns: repeat(24, minmax(0, 1fr));
+        gap: var(--dyss-grid-gap-advanced);
+        max-width: 1440px;
+        padding: 0 4rem;
+      }
+    }
+    
+    /* ============================================
+       헤더 레이아웃
+       ============================================ */
+    .curator-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: var(--dyss-color-bg-primary);
+      border-bottom: 1px solid var(--dyss-color-gray-200);
+      z-index: 1000;
+      padding: var(--dyss-space-4) 0;
+      box-shadow: var(--dyss-shadow-sm);
+    }
+    
+    .curator-header__content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      grid-column: span 4;
+    }
+    
+    @media (min-width: 768px) {
+      .curator-header__content {
+        grid-column: span 8;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .curator-header__content {
+        grid-column: span 12;
+      }
+    }
+    
+    .curator-header__nav {
+      display: flex;
+      align-items: center;
+      gap: var(--dyss-space-2);
+      margin-left: auto;
+    }
+    
+    .phase-nav-tab {
+      padding: var(--dyss-space-2) var(--dyss-space-4);
+      background: transparent;
+      border: none;
+      border-radius: var(--dyss-radius-md);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-sm);
+      color: var(--dyss-color-text-secondary);
+      cursor: pointer;
+      transition: all var(--dyss-transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .phase-nav-tab::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+    
+    .phase-nav-tab:active::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .phase-nav-tab:hover {
+      color: var(--dyss-color-text-primary);
+      background: var(--dyss-color-bg-secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(139, 92, 246, 0.15);
+    }
+    
+    .phase-nav-tab.active {
+      color: var(--dyss-color-text-primary);
+      font-weight: 600;
+    }
+    
+    .phase-nav-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 2px;
+      background: var(--dyss-color-primary);
+      box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+    }
+    
+    .phase-nav-tab:focus {
+      outline: 2px solid var(--dyss-color-primary);
+      outline-offset: 2px;
+    }
+    
+    @media (max-width: 767px) {
+      .phase-nav-tab {
+        display: none;
+      }
+      
+      .curator-header__nav {
+        gap: var(--dyss-space-1);
+      }
+    }
+    
+    .curator-logo {
+      display: flex;
+      align-items: center;
+      gap: var(--dyss-space-2);
+      text-decoration: none;
+      color: var(--dyss-color-text-primary);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: var(--dyss-font-size-xl);
+      font-weight: 700;
+      transition: all var(--dyss-transition-normal);
+    }
+    
+    .curator-logo:hover {
+      opacity: 0.8;
+      transform: translateY(-1px);
+    }
+    
+    .curator-logo img {
+      height: 72px;
+      width: auto;
+      aspect-ratio: auto;
+      object-fit: contain;
+      display: block;
+    }
+    
+    .curator-logo .logo-text {
+      display: none;
+    }
+    
+    .curator-logo img[style*="display: none"] ~ .logo-text {
+      display: block;
+    }
+    
+    .sitemap-trigger {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: var(--dyss-space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity var(--dyss-transition-fast);
+    }
+    
+    .sitemap-trigger:hover {
+      opacity: 0.7;
+    }
+    
+    .sitemap-trigger svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--dyss-color-text-primary);
+    }
+    
+    /* ============================================
+       로딩 오버레이 및 선박 휠 인디케이터
+       ============================================ */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(40, 49, 124, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity var(--dyss-transition-normal);
+    }
+    
+    .loading-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+    
+    .loading-content {
+      text-align: center;
+      color: var(--dyss-color-bg-primary);
+    }
+    
+    .loading-wheel {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--dyss-space-4);
+      animation: rotate-wheel 2s linear infinite;
+    }
+    
+    @keyframes rotate-wheel {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .loading-message {
+      font-family: 'Cormorant Garamond', 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-xl);
+      font-weight: 500;
+    }
+    
+    /* ============================================
+       메인 콘텐츠 영역
+       ============================================ */
+    main {
+      margin-top: 80px; /* 헤더 높이만큼 여백 */
+    }
+    
+    section {
+      padding: var(--dyss-space-20) 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* ============================================
+       홈페이지 랜딩 섹션
+       ============================================ */
+    .homepage-hero {
+      background: var(--dyss-color-bg-main);
+      padding: var(--dyss-space-20) 0;
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+    }
+    
+    .hero-content {
+      grid-column: span 4;
+      text-align: center;
+    }
+    
+    @media (min-width: 768px) {
+      .hero-content {
+        grid-column: span 8;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .hero-content {
+        grid-column: span 12;
+      }
+    }
+    
+    .hero-title {
+      font-size: var(--dyss-font-size-6xl);
+      margin-bottom: var(--dyss-space-6);
+      animation: fade-in-up 1s var(--dyss-ease-out-quart);
+    }
+    
+    .hero-subtitle {
+      font-size: var(--dyss-font-size-xl);
+      color: var(--dyss-color-text-secondary);
+      margin-bottom: var(--dyss-space-10);
+      animation: fade-in-up 1s var(--dyss-ease-out-quart) 0.2s backwards;
+    }
+    
+    .artist-input-group {
+      max-width: 500px;
+      margin: 0 auto var(--dyss-space-8);
+      animation: fade-in-up 1s var(--dyss-ease-out-quart) 0.4s backwards;
+    }
+    
+    .artist-input {
+      width: 100%;
+      padding: var(--dyss-space-4) var(--dyss-space-5);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-base);
+      border: 2px solid var(--dyss-color-gray-300);
+      border-radius: var(--dyss-radius-md);
+      background: var(--dyss-color-bg-primary);
+      color: var(--dyss-color-text-primary);
+      transition: all var(--dyss-transition-normal);
+    }
+    
+    .artist-input:focus {
+      outline: none;
+      border-color: var(--dyss-color-primary);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    
+    .phase-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--dyss-space-6);
+      margin-top: var(--dyss-space-12);
+      animation: fade-in-up 1s var(--dyss-ease-out-quart) 0.6s backwards;
+    }
+    
+    @media (min-width: 768px) {
+      .phase-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--dyss-space-8);
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .phase-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 800px;
+        margin: var(--dyss-space-12) auto 0;
+      }
+    }
+    
+    .phase-card {
+      background: #F5F5DC; /* 양피지 느낌의 배경색 */
+      border-radius: var(--dyss-radius-xl);
+      padding: var(--dyss-space-8);
+      box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.1),
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      transition: all var(--dyss-transition-normal);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transform: perspective(1000px) rotateX(0deg);
+      transform-origin: center bottom;
+      transform-style: preserve-3d;
+    }
+    
+    .phase-card:hover {
+      transform: perspective(1000px) rotateX(-2deg) translateY(-4px) scale(1.02);
+      box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.15),
+        0 16px 48px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+    
+    /* 레이저 효과 제거, 양피지 펼쳐지는 효과만 유지 */
+    .phase-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(to bottom, rgba(241, 240, 236, 0.3) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--dyss-transition-normal);
+    }
+    
+    .phase-card:hover::before {
+      opacity: 1;
+    }
+    
+    .phase-card.phase-1 {
+      --phase-color: var(--dyss-color-phase-1);
+    }
+    
+    .phase-card.phase-2 {
+      --phase-color: var(--dyss-color-phase-2);
+    }
+    
+    .phase-card.phase-3 {
+      --phase-color: var(--dyss-color-phase-3);
+    }
+    
+    .phase-card.phase-4 {
+      --phase-color: var(--dyss-color-phase-4);
+    }
+    
+    .phase-card-title {
+      font-size: var(--dyss-font-size-2xl);
+      margin-bottom: var(--dyss-space-2);
+      color: var(--phase-color);
+    }
+    
+    .phase-card-description {
+      font-size: var(--dyss-font-size-sm);
+      color: var(--dyss-color-text-secondary);
+      line-height: var(--dyss-line-height-relaxed);
+    }
+    
+    /* ============================================
+       Phase 섹션 공통 스타일
+       ============================================ */
+    .phase-section {
+      background: var(--dyss-color-bg-main);
+      padding: var(--dyss-space-20) 0;
+    }
+    
+    .phase-section__header {
+      grid-column: span 4;
+      text-align: center;
+      margin-bottom: var(--dyss-space-12);
+    }
+    
+    @media (min-width: 768px) {
+      .phase-section__header {
+        grid-column: span 8;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .phase-section__header {
+        grid-column: span 12;
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .phase-section__header {
+        grid-column: span 24;
+      }
+    }
+    
+    .phase-section__title {
+      font-size: var(--dyss-font-size-5xl);
+      margin-bottom: var(--dyss-space-4);
+    }
+    
+    .phase-section__subtitle {
+      font-size: var(--dyss-font-size-xl);
+      color: var(--dyss-color-text-secondary);
+    }
+    
+    .phase-content {
+      grid-column: span 4;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--dyss-space-3);
+      background: var(--dyss-color-bg-primary);
+      border-radius: var(--dyss-radius-xl);
+      padding: var(--dyss-space-8);
+      box-shadow: var(--dyss-shadow-md);
+    }
+    
+    @media (min-width: 768px) {
+      .phase-content {
+        grid-column: span 8;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: var(--dyss-grid-gap);
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .phase-content {
+        grid-column: span 12;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: var(--dyss-grid-gap);
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .phase-content {
+        grid-column: span 24;
+        grid-template-columns: repeat(24, minmax(0, 1fr));
+        gap: var(--dyss-grid-gap-advanced);
+      }
+    }
+    
+    .chart-container {
+      margin: var(--dyss-space-6) 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      grid-column: span 4;
+      width: 100%;
+    }
+    
+    @media (min-width: 768px) {
+      .chart-container {
+        grid-column: span 8;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      .chart-container {
+        grid-column: span 12;
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .chart-container {
+        grid-column: span 12;
+      }
+    }
+    
+    .chart-container svg {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      display: block;
+    }
+    
+    /* Phase 1 차트 특별 스타일 */
+    #radarChart,
+    #sunburstChart {
+      width: 100%;
+      height: auto;
+      max-width: 500px;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto; /* 중앙 정렬 */
+      display: block;
+    }
+    
+    /* Phase 2, 3 차트 특별 스타일 */
+    #stackedAreaChart,
+    #eventTimeline,
+    #comparisonChart {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+    }
+    
+    #stackedAreaChart {
+      aspect-ratio: 2 / 1;
+    }
+    
+    #eventTimeline {
+      aspect-ratio: 8 / 1;
+    }
+    
+    #comparisonChart {
+      aspect-ratio: 2 / 1;
+    }
+    
+    /* ============================================
+       애니메이션
+       ============================================ */
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fade-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fade-in-down {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* ============================================
+       고급 UX/UI 인터랙션
+       ============================================ */
+    
+    /* 스크롤 기반 애니메이션 */
+    .phase-section {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    
+    .phase-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Phase 카드 호버 효과 강화 */
+    .phase-card {
+      transition: all var(--dyss-transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    
+    /* 차트 요소 호버 효과 */
+    .chart-container svg path,
+    .chart-container svg circle,
+    .chart-container svg polygon {
+      transition: all var(--dyss-transition-fast);
+    }
+    
+    .chart-container svg path:hover,
+    .chart-container svg circle:hover {
+      filter: brightness(1.1) drop-shadow(0 2px 4px rgba(139, 92, 246, 0.3));
+    }
+    
+    /* 스켈레톤 UI (로딩 상태) */
+    .skeleton {
+      background: linear-gradient(90deg, 
+        var(--dyss-color-gray-200) 0%, 
+        var(--dyss-color-gray-100) 50%, 
+        var(--dyss-color-gray-200) 100%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s ease-in-out infinite;
+      border-radius: var(--dyss-radius-md);
+    }
+    
+    @keyframes skeleton-loading {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+    
+    /* 진행률 바 애니메이션 */
+    .progress-bar {
+      height: 4px;
+      background: var(--dyss-color-gray-200);
+      border-radius: var(--dyss-radius-full);
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, 
+        var(--dyss-color-primary), 
+        var(--dyss-color-primary-400));
+      border-radius: var(--dyss-radius-full);
+      transition: width 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent);
+      animation: progress-shimmer 2s infinite;
+    }
+    
+    @keyframes progress-shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
+    }
+    
+    /* ============================================
+       사이트맵 모달
+       ============================================ */
+    .sitemap-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--dyss-transition-normal);
+    }
+    
+    .sitemap-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+    
+    .sitemap-modal-content {
+      background: var(--dyss-color-bg-primary);
+      border-radius: var(--dyss-radius-xl);
+      padding: var(--dyss-space-8);
+      max-width: 800px;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: fade-in-up 0.3s var(--dyss-ease-out-quart);
+    }
+    
+    .sitemap-close {
+      position: absolute;
+      top: var(--dyss-space-4);
+      right: var(--dyss-space-4);
+      background: none;
+      border: none;
+      font-size: var(--dyss-font-size-2xl);
+      cursor: pointer;
+      color: var(--dyss-color-text-secondary);
+      transition: color var(--dyss-transition-fast);
+    }
+    
+    .sitemap-close:hover {
+      color: var(--dyss-color-text-primary);
+    }
+    
+    /* ============================================
+       레이더 차트 팝업 모달
+       ============================================ */
+    .radar-popup-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--dyss-transition-normal);
+    }
+    
+    .radar-popup-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+    
+    .radar-popup-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      cursor: pointer;
+    }
+    
+    .radar-popup-content {
+      position: relative;
+      background: var(--dyss-color-bg-primary);
+      border-radius: var(--dyss-radius-2xl);
+      padding: var(--dyss-space-8);
+      max-width: 95vw;
+      max-height: 95vh;
+      width: 900px;
+      height: 900px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: scale-in 0.4s var(--dyss-ease-out-quart);
+      box-shadow: var(--dyss-shadow-2xl);
+    }
+    
+    @keyframes scale-in {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    .radar-popup-header {
+      margin-bottom: var(--dyss-space-6);
+      padding-bottom: var(--dyss-space-4);
+      border-bottom: 1px solid var(--dyss-color-gray-200);
+    }
+    
+    .radar-popup-close {
+      position: absolute;
+      top: var(--dyss-space-4);
+      right: var(--dyss-space-4);
+      background: none;
+      border: none;
+      font-size: var(--dyss-font-size-3xl);
+      cursor: pointer;
+      color: var(--dyss-color-text-secondary);
+      transition: all var(--dyss-transition-fast);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--dyss-radius-full);
+      z-index: 10;
+    }
+    
+    .radar-popup-close:hover {
+      color: var(--dyss-color-text-primary);
+      background: var(--dyss-color-gray-100);
+      transform: rotate(90deg);
+    }
+    
+    .radar-popup-chart-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 0;
+    }
+    
+    #radarPopupSunburst {
+      width: 100%;
+      height: 100%;
+      max-width: 800px;
+      max-height: 800px;
+    }
+    
+    .radar-popup-controls {
+      position: absolute;
+      bottom: var(--dyss-space-6);
+      right: var(--dyss-space-6);
+      display: flex;
+      gap: var(--dyss-space-2);
+      z-index: 10;
+    }
+    
+    .popup-control-btn {
+      padding: var(--dyss-space-2) var(--dyss-space-4);
+      background: rgba(40, 49, 124, 0.9);
+      color: white;
+      border: none;
+      border-radius: var(--dyss-radius-md);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-sm);
+      cursor: pointer;
+      transition: all var(--dyss-transition-normal);
+      backdrop-filter: blur(4px);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .popup-control-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.4s ease, height 0.4s ease;
+    }
+    
+    .popup-control-btn:active::before {
+      width: 200px;
+      height: 200px;
+    }
+    
+    .popup-control-btn:hover {
+      background: rgba(40, 49, 124, 1);
+      transform: translateY(-2px);
+      box-shadow: var(--dyss-shadow-md);
+    }
+    
+    .popup-control-btn:focus {
+      outline: 2px solid rgba(255, 255, 255, 0.5);
+      outline-offset: 2px;
+    }
+    
+    /* ============================================
+       Phase 2, 3 UI 요소
+       ============================================ */
+    .axis-tab {
+      padding: var(--dyss-space-2) var(--dyss-space-4);
+      background: var(--dyss-color-bg-secondary);
+      border: 1px solid var(--dyss-color-gray-300);
+      border-radius: var(--dyss-radius-md);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-sm);
+      color: var(--dyss-color-text-primary);
+      cursor: pointer;
+      transition: all var(--dyss-transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .axis-tab::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.4s ease, height 0.4s ease;
+    }
+    
+    .axis-tab:active::before {
+      width: 200px;
+      height: 200px;
+    }
+    
+    .axis-tab:hover {
+      background: var(--dyss-color-gray-100);
+      border-color: var(--dyss-color-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    }
+    
+    .axis-tab.active {
+      background: var(--dyss-color-primary);
+      color: white;
+      border-color: var(--dyss-color-primary);
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+    }
+    
+    .axis-tab:focus {
+      outline: 2px solid var(--dyss-color-primary);
+      outline-offset: 2px;
+    }
+    
+    .section-nav-btn {
+      padding: var(--dyss-space-2) var(--dyss-space-4);
+      background: var(--dyss-color-bg-secondary);
+      border: 1px solid var(--dyss-color-gray-300);
+      border-radius: var(--dyss-radius-md);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-sm);
+      color: var(--dyss-color-text-primary);
+      cursor: pointer;
+      transition: all var(--dyss-transition-normal);
+    }
+    
+    .section-nav-btn:hover {
+      background: var(--dyss-color-gray-100);
+      border-color: var(--dyss-color-primary);
+    }
+    
+    /* ============================================
+       툴팁 스타일
+       ============================================ */
+    .chart-tooltip {
+      position: absolute;
+      background: rgba(40, 49, 124, 0.95);
+      color: white;
+      padding: var(--dyss-space-2) var(--dyss-space-3);
+      border-radius: var(--dyss-radius-md);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: var(--dyss-font-size-sm);
+      pointer-events: none;
+      z-index: 10000;
+      opacity: 0;
+      transform: translate(-50%, -100%) translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+      max-width: 250px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .chart-tooltip.show {
+      opacity: 1;
+      transform: translate(-50%, -100%) translateY(-4px);
+    }
+    
+    .chart-tooltip::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      border: 6px solid transparent;
+      border-top-color: rgba(40, 49, 124, 0.95);
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+    
+    /* ============================================
+       에러 메시지 스타일
+       ============================================ */
+    .error-message {
+      padding: var(--dyss-space-4);
+      background: #FEE2E2;
+      border: 1px solid #EF4444;
+      border-radius: var(--dyss-radius-md);
+      color: #991B1B;
+      font-family: 'Nanum Myeongjo', serif;
+      margin: var(--dyss-space-4) 0;
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+      animation: fade-in-up 0.3s var(--dyss-ease-out-quart);
+    }
+    
+    /* ============================================
+       유틸리티 클래스
+       ============================================ */
+    .text-center {
+      text-align: center;
+    }
+    
+    .mb-0 {
+      margin-bottom: 0;
+    }
+    
+    .mt-0 {
+      margin-top: 0;
+    }
+    
+    /* ============================================
+       Markdown 스타일링
+       ============================================ */
+    #markdownReport h1 {
+      margin-top: var(--dyss-space-8);
+      margin-bottom: var(--dyss-space-6);
+      padding-bottom: var(--dyss-space-4);
+      border-bottom: 2px solid var(--dyss-color-gray-200);
+      scroll-margin-top: 100px;
+    }
+    
+    #markdownReport h2 {
+      margin-top: var(--dyss-space-6);
+      margin-bottom: var(--dyss-space-4);
+      scroll-margin-top: 100px;
+    }
+    
+    #markdownReport h3 {
+      margin-top: var(--dyss-space-4);
+      margin-bottom: var(--dyss-space-3);
+    }
+    
+    #markdownReport ul, #markdownReport ol {
+      margin-left: var(--dyss-space-6);
+      margin-bottom: var(--dyss-space-4);
+    }
+    
+    #markdownReport li {
+      margin-bottom: var(--dyss-space-2);
+    }
+    
+    #markdownReport p {
+      margin-bottom: var(--dyss-space-4);
+    }
+    
+    #markdownReport code {
+      background: var(--dyss-color-bg-secondary);
+      padding: 0.2em 0.4em;
+      border-radius: var(--dyss-radius-sm);
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    
+    #markdownReport pre {
+      background: var(--dyss-color-bg-secondary);
+      padding: var(--dyss-space-4);
+      border-radius: var(--dyss-radius-md);
+      overflow-x: auto;
+      margin-bottom: var(--dyss-space-4);
+    }
+    
+    #markdownReport pre code {
+      background: none;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- 로딩 오버레이 -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <svg class="loading-wheel" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- 선박 휠 SVG 구조 -->
+        <circle cx="50" cy="50" r="45" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+        <circle cx="50" cy="50" r="8" fill="#FFFFFF"/>
+        <g stroke="#FFFFFF" stroke-width="2.5">
+          <line x1="50" y1="10" x2="50" y2="42"/>
+          <line x1="50" y1="58" x2="50" y2="90"/>
+          <line x1="10" y1="50" x2="42" y2="50"/>
+          <line x1="58" y1="50" x2="90" y2="50"/>
+          <line x1="25" y1="25" x2="43" y2="43"/>
+          <line x1="57" y1="57" x2="75" y2="75"/>
+          <line x1="75" y1="25" x2="57" y2="43"/>
+          <line x1="43" y1="57" x2="25" y2="75"/>
+        </g>
+        <circle cx="50" cy="10" r="6" fill="#FFFFFF"/>
+        <circle cx="50" cy="90" r="6" fill="#FFFFFF"/>
+        <circle cx="10" cy="50" r="6" fill="#FFFFFF"/>
+        <circle cx="90" cy="50" r="6" fill="#FFFFFF"/>
+        <circle cx="25" cy="25" r="6" fill="#FFFFFF"/>
+        <circle cx="75" cy="75" r="6" fill="#FFFFFF"/>
+        <circle cx="75" cy="25" r="6" fill="#FFFFFF"/>
+        <circle cx="25" cy="75" r="6" fill="#FFFFFF"/>
+      </svg>
+      <div class="loading-message">데이터를 불러오는 중...</div>
+    </div>
+  </div>
+  
+  <!-- 헤더 -->
+  <header class="curator-header">
+    <div class="dyss-container">
+      <div class="curator-header__content">
+        <a href="#" class="curator-logo" onclick="scrollToTop(); return false;">
+          <img src="ref/DOT.svg" alt="CuratorOdyssey Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <span class="logo-text" style="display:none; font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 700; color: #28317C;">CuratorOdyssey</span>
+        </a>
+        <nav class="curator-header__nav">
+          <button class="phase-nav-tab" data-phase="phase1" onclick="scrollToPhase('phase1'); return false;">Phase 1</button>
+          <button class="phase-nav-tab" data-phase="phase2" onclick="scrollToPhase('phase2'); return false;">Phase 2</button>
+          <button class="phase-nav-tab" data-phase="phase3" onclick="scrollToPhase('phase3'); return false;">Phase 3</button>
+          <button class="phase-nav-tab" data-phase="phase4" onclick="scrollToPhase('phase4'); return false;">Phase 4</button>
+          <button class="sitemap-trigger" id="gnb_sitemap" aria-label="사이트맵 열기">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6.06543" y="6.25" width="19.3846" height="2.5" fill="currentColor"></rect>
+              <rect x="6.06543" y="14.75" width="19.3846" height="2.5" fill="currentColor"></rect>
+              <rect x="6.06543" y="23.25" width="19.3846" height="2.5" fill="currentColor"></rect>
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <!-- 메인 콘텐츠 -->
+  <main>
+    <!-- 홈페이지 랜딩 섹션 -->
+    <section class="homepage-hero" id="home">
+      <div class="dyss-container">
+        <div class="hero-content">
+          <h1 class="hero-title">CuratorOdyssey</h1>
+          <p class="hero-subtitle">데이터로 가치의 지도를 그립니다</p>
+          
+          <div class="artist-input-group">
+            <div style="display: flex; gap: var(--dyss-space-2); align-items: center;">
+              <input 
+                type="text" 
+                class="artist-input" 
+                id="artistIdInput" 
+                placeholder="아티스트 ID를 입력하세요 (예: ARTIST_0005)"
+                pattern="^ARTIST_\d{4}$"
+                style="flex: 1;"
+              >
+              <button onclick="loadArtist()" style="padding: var(--dyss-space-4) var(--dyss-space-6); background: var(--dyss-color-primary); color: white; border: none; border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal); white-space: nowrap;" onmouseover="this.style.background='#7C3AED'" onmouseout="this.style.background='#8B5CF6'">
+                로드
+              </button>
+            </div>
+            <p style="margin-top: var(--dyss-space-2); font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary); text-align: center;">
+              예시: ARTIST_0005, ARTIST_0003
+            </p>
+          </div>
+          
+          <div class="phase-cards-grid">
+            <div class="phase-card phase-1" onclick="scrollToPhase('phase1')">
+              <h3 class="phase-card-title">Phase 1</h3>
+              <p class="phase-card-description">현재 가치 분석 - 5축 레이더 차트와 4축 선버스트 차트로 아티스트의 현재 가치를 시각화합니다.</p>
+            </div>
+            <div class="phase-card phase-2" onclick="scrollToPhase('phase2')">
+              <h3 class="phase-card-title">Phase 2</h3>
+              <p class="phase-card-description">커리어 궤적 분석 - 시계열 데이터와 이벤트 타임라인으로 아티스트의 성장 궤적을 추적합니다.</p>
+            </div>
+            <div class="phase-card phase-3" onclick="scrollToPhase('phase3')">
+              <h3 class="phase-card-title">Phase 3</h3>
+              <p class="phase-card-description">비교 분석 - 두 아티스트를 비교하여 상관관계와 차이점을 분석합니다.</p>
+            </div>
+            <div class="phase-card phase-4" onclick="scrollToPhase('phase4')">
+              <h3 class="phase-card-title">Phase 4</h3>
+              <p class="phase-card-description">AI 보고서 - AI 기반 종합 보고서를 생성하여 의사결정을 지원합니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Phase 1 섹션 -->
+    <section class="phase-section" id="phase1">
+      <div class="dyss-container dyss-container--advanced">
+        <div class="phase-section__header">
+          <h2 class="phase-section__title">Phase 1: 현재 가치 분석</h2>
+          <p class="phase-section__subtitle">성공은 어떤 모습인가?</p>
+        </div>
+        
+        <div class="phase-content">
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6); padding: var(--dyss-space-4); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg);">
+            <div style="display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: var(--dyss-grid-gap-advanced); align-items: center;">
+              <div style="grid-column: span 6;">
+                <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">아티스트</div>
+                <div style="font-size: var(--dyss-font-size-xl); font-weight: 600;">양혜규 (ARTIST_0005)</div>
+              </div>
+              <div style="grid-column: span 6;">
+                <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">데뷔년</div>
+                <div style="font-size: var(--dyss-font-size-base);">2010</div>
+              </div>
+              <div style="grid-column: span 6;">
+                <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">데이터 신선도</div>
+                <div style="font-size: var(--dyss-font-size-base);">최신 (2025-11-02)</div>
+              </div>
+              <div style="grid-column: span 6;">
+                <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">일관성 검증</div>
+                <div style="font-size: var(--dyss-font-size-base); color: #10B981;">±0.5p 준수 (차이: 0.2p)</div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: var(--dyss-grid-gap-advanced); min-height: 60vh; align-items: center;">
+            <div class="chart-container" style="grid-column: span 24; display: flex; justify-content: center; align-items: center;">
+              <svg id="radarChart" viewBox="0 0 450 450" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-top: var(--dyss-space-8); text-align: center;">
+            <button onclick="scrollToPhase('phase2')" style="padding: var(--dyss-space-4) var(--dyss-space-8); background: var(--dyss-color-primary); color: white; border: none; border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.background='#7C3AED'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#8B5CF6'; this.style.transform='translateY(0)'">
+              Phase 2: 커리어 궤적 보기 →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Phase 2 섹션 -->
+    <section class="phase-section" id="phase2">
+      <div class="dyss-container dyss-container--advanced">
+        <div class="phase-section__header">
+          <h2 class="phase-section__title">Phase 2: 커리어 궤적 분석</h2>
+          <p class="phase-section__subtitle">시간의 흐름 속에서</p>
+        </div>
+        
+        <div class="phase-content">
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6);">
+            <div style="display: flex; gap: var(--dyss-space-2); flex-wrap: wrap; justify-content: center;">
+              <button class="axis-tab active" data-axis="all">전체</button>
+              <button class="axis-tab" data-axis="제도">제도</button>
+              <button class="axis-tab" data-axis="학술">학술</button>
+              <button class="axis-tab" data-axis="담론">담론</button>
+              <button class="axis-tab" data-axis="네트워크">네트워크</button>
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6);">
+            <div class="chart-container" style="grid-column: span 24; margin: 0;">
+              <svg id="stackedAreaChart" width="800" height="400"></svg>
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6);">
+            <div class="chart-container" style="grid-column: span 24; margin: 0;">
+              <svg id="eventTimeline" width="800" height="100"></svg>
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-top: var(--dyss-space-6); padding: var(--dyss-space-6); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg);">
+            <h4 style="margin-bottom: var(--dyss-space-4);">분석 인사이트</h4>
+            <ul id="phase2Insights" style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin-bottom: var(--dyss-space-2);">성장 패턴: 지속적 상승 (최근 5년)</li>
+              <li style="margin-bottom: var(--dyss-space-2);">주요 이벤트: 2015년 전시 (스파이크)</li>
+              <li style="margin-bottom: var(--dyss-space-2);">상관계수: 제도-학술 0.85</li>
+            </ul>
+            <div style="margin-top: var(--dyss-space-4); padding-top: var(--dyss-space-4); border-top: 1px solid var(--dyss-color-gray-200); font-size: var(--dyss-font-size-xs); color: var(--dyss-color-text-tertiary);">
+              <strong>출처:</strong> CuratorOdyssey 시계열 분석 엔진 (FR-P2-BAT-001), 이벤트 영향 분석 (FR-P2-EVT-001) | 데이터 기준: 2025-11-02
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-top: var(--dyss-space-8); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--dyss-space-4);">
+            <button onclick="scrollToPhase('phase1')" style="padding: var(--dyss-space-3) var(--dyss-space-6); background: transparent; color: var(--dyss-color-text-primary); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.borderColor='var(--dyss-color-primary)'; this.style.color='var(--dyss-color-primary)'" onmouseout="this.style.borderColor='var(--dyss-color-gray-300)'; this.style.color='var(--dyss-color-text-primary)'">
+              ← Phase 1로 돌아가기
+            </button>
+            <button onclick="scrollToPhase('phase3')" style="padding: var(--dyss-space-4) var(--dyss-space-8); background: var(--dyss-color-primary); color: white; border: none; border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.background='#7C3AED'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#8B5CF6'; this.style.transform='translateY(0)'">
+              Phase 3: 비교 분석 보기 →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Phase 3 섹션 -->
+    <section class="phase-section" id="phase3">
+      <div class="dyss-container dyss-container--advanced">
+        <div class="phase-section__header">
+          <h2 class="phase-section__title">Phase 3: 비교 분석</h2>
+          <p class="phase-section__subtitle">두 아티스트를 비교하여</p>
+        </div>
+        
+        <div class="phase-content">
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6); display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: var(--dyss-grid-gap-advanced);">
+            <div style="grid-column: span 12;">
+              <label style="display: block; margin-bottom: var(--dyss-space-2); font-weight: 600;">아티스트 A</label>
+              <select id="artistASelect" style="width: 100%; padding: var(--dyss-space-2); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif;">
+                <option value="ARTIST_0005">ARTIST_0005 (양혜규)</option>
+                <option value="ARTIST_0010">ARTIST_0010 (이우환)</option>
+              </select>
+            </div>
+            <div style="grid-column: span 12;">
+              <label style="display: block; margin-bottom: var(--dyss-space-2); font-weight: 600;">아티스트 B</label>
+              <select id="artistBSelect" style="width: 100%; padding: var(--dyss-space-2); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif;">
+                <option value="ARTIST_0010">ARTIST_0010 (이우환)</option>
+                <option value="ARTIST_0005">ARTIST_0005 (양혜규)</option>
+              </select>
+            </div>
+          </div>
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-4);">
+            <label style="display: block; margin-bottom: var(--dyss-space-2); font-weight: 600;">축 선택</label>
+            <div style="display: flex; gap: var(--dyss-space-2); flex-wrap: wrap;">
+              <button class="axis-tab active" data-comp-axis="제도">제도</button>
+              <button class="axis-tab" data-comp-axis="학술">학술</button>
+              <button class="axis-tab" data-comp-axis="담론">담론</button>
+              <button class="axis-tab" data-comp-axis="네트워크">네트워크</button>
+            </div>
+          </div>
+          <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6);">
+            <div class="chart-container" style="grid-column: span 24; margin: 0;">
+              <svg id="comparisonChart" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+          </div>
+          <div id="phase3Metrics" style="grid-column: span 24; margin-top: var(--dyss-space-6); display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: var(--dyss-grid-gap-advanced);">
+            <div style="grid-column: span 6; padding: var(--dyss-space-4); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg); text-align: center;">
+              <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary); margin-bottom: var(--dyss-space-2);">상관계수</div>
+              <div class="correlation-value" style="font-size: var(--dyss-font-size-3xl); font-weight: 700; color: var(--dyss-color-text-primary);">0.85</div>
+              <div style="font-size: var(--dyss-font-size-xs); color: var(--dyss-color-text-secondary); margin-top: var(--dyss-space-1);">유사</div>
+            </div>
+            <div style="grid-column: span 6; padding: var(--dyss-space-4); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg); text-align: center;">
+              <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary); margin-bottom: var(--dyss-space-2);">절대 차이 합계</div>
+              <div class="diff-sum-value" style="font-size: var(--dyss-font-size-3xl); font-weight: 700; color: var(--dyss-color-text-primary);">125.7</div>
+              <div style="font-size: var(--dyss-font-size-xs); color: var(--dyss-color-text-secondary); margin-top: var(--dyss-space-1);">차이 있음</div>
+            </div>
+            <div style="grid-column: span 6; padding: var(--dyss-space-4); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg); text-align: center;">
+              <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary); margin-bottom: var(--dyss-space-2);">AUC (아티스트 A)</div>
+              <div class="auc-a-value" style="font-size: var(--dyss-font-size-3xl); font-weight: 700; color: var(--dyss-color-text-primary);">450.2</div>
+              <div style="font-size: var(--dyss-font-size-xs); color: var(--dyss-color-text-secondary); margin-top: var(--dyss-space-1);">면적</div>
+            </div>
+            <div style="grid-column: span 6; padding: var(--dyss-space-4); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg); text-align: center;">
+              <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary); margin-bottom: var(--dyss-space-2);">AUC (아티스트 B)</div>
+              <div class="auc-b-value" style="font-size: var(--dyss-font-size-3xl); font-weight: 700; color: var(--dyss-color-text-primary);">387.5</div>
+              <div style="font-size: var(--dyss-font-size-xs); color: var(--dyss-color-text-secondary); margin-top: var(--dyss-space-1);">면적</div>
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-top: var(--dyss-space-6); padding: var(--dyss-space-6); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg);">
+            <h4 style="margin-bottom: var(--dyss-space-4);">비교 분석 인사이트</h4>
+            <ul id="phase3Insights" style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin-bottom: var(--dyss-space-2);">상관계수: 0.85 (높은 유사성)</li>
+              <li style="margin-bottom: var(--dyss-space-2);">성장 패턴: 두 아티스트 모두 지속적 상승 곡선</li>
+              <li style="margin-bottom: var(--dyss-space-2);">차이점: 아티스트 A가 후반부 역전 (2020년 이후)</li>
+              <li style="margin-bottom: var(--dyss-space-2);">인사이트: 제도적 성취는 후반부 집중이 효과적</li>
+            </ul>
+            <div style="margin-top: var(--dyss-space-4); padding-top: var(--dyss-space-4); border-top: 1px solid var(--dyss-color-gray-200); font-size: var(--dyss-font-size-xs); color: var(--dyss-color-text-tertiary);">
+              <strong>출처:</strong> CuratorOdyssey 비교 분석 엔진 (FR-P3-COMP-001) | 데이터 기준: 2025-11-02
+            </div>
+          </div>
+          
+          <div style="grid-column: span 24; margin-top: var(--dyss-space-8); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--dyss-space-4);">
+            <button onclick="scrollToPhase('phase2')" style="padding: var(--dyss-space-3) var(--dyss-space-6); background: transparent; color: var(--dyss-color-text-primary); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.borderColor='var(--dyss-color-primary)'; this.style.color='var(--dyss-color-primary)'" onmouseout="this.style.borderColor='var(--dyss-color-gray-300)'; this.style.color='var(--dyss-color-text-primary)'">
+              ← Phase 2로 돌아가기
+            </button>
+            <button onclick="scrollToPhase('phase4')" style="padding: var(--dyss-space-4) var(--dyss-space-8); background: var(--dyss-color-primary); color: white; border: none; border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.background='#7C3AED'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#8B5CF6'; this.style.transform='translateY(0)'">
+              Phase 4: AI 보고서 보기 →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Phase 4 섹션 -->
+    <section class="phase-section" id="phase4">
+      <div class="dyss-container dyss-container--advanced">
+        <div class="phase-section__header">
+          <h2 class="phase-section__title">Phase 4: AI 보고서</h2>
+          <p class="phase-section__subtitle">종합 분석 보고서</p>
+        </div>
+        
+        <div class="phase-content">
+          <div id="reportContent" style="grid-column: span 24;">
+            <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6); text-align: center;">
+              <button onclick="generateReport()" style="padding: 1rem 2rem; background: #8B5CF6; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Nanum Myeongjo', serif; font-size: 1rem; transition: all var(--dyss-transition-normal);" onmouseover="this.style.background='#7C3AED'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#8B5CF6'; this.style.transform='translateY(0)'">
+                AI 보고서 생성
+              </button>
+            </div>
+            <div id="reportHeader" style="grid-column: span 24; display: none; margin-bottom: var(--dyss-space-6); padding: var(--dyss-space-4); background: var(--dyss-color-bg-secondary); border-radius: var(--dyss-radius-lg);">
+              <div style="display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: var(--dyss-grid-gap-advanced); align-items: center;">
+                <div style="grid-column: span 8;">
+                  <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">생성 시간</div>
+                  <div id="reportGeneratedAt"></div>
+                </div>
+                <div style="grid-column: span 8;">
+                  <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">모델</div>
+                  <div id="reportModel"></div>
+                </div>
+                <div style="grid-column: span 8;">
+                  <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">토큰 사용량</div>
+                  <div id="reportTokenUsage"></div>
+                </div>
+              </div>
+            </div>
+            <div style="grid-column: span 24; margin-bottom: var(--dyss-space-6); display: none;" id="reportNavigation">
+              <div style="display: flex; gap: var(--dyss-space-2); flex-wrap: wrap; justify-content: center;">
+                <button class="section-nav-btn" data-section="introduction">Introduction</button>
+                <button class="section-nav-btn" data-section="analysis">Analysis</button>
+                <button class="section-nav-btn" data-section="prediction">Prediction</button>
+              </div>
+            </div>
+            <div id="markdownReport" style="grid-column: span 24; font-family: 'Nanum Myeongjo', serif; line-height: var(--dyss-line-height-relaxed);"></div>
+            
+            <div style="grid-column: span 24; margin-top: var(--dyss-space-8); display: none; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--dyss-space-4);" id="reportActions">
+              <button onclick="scrollToPhase('phase3')" style="padding: var(--dyss-space-3) var(--dyss-space-6); background: transparent; color: var(--dyss-color-text-primary); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.borderColor='var(--dyss-color-primary)'; this.style.color='var(--dyss-color-primary)'" onmouseout="this.style.borderColor='var(--dyss-color-gray-300)'; this.style.color='var(--dyss-color-text-primary)'">
+                ← 돌아가기
+              </button>
+              <div style="display: flex; gap: var(--dyss-space-2);">
+                <button onclick="downloadReport('pdf')" style="padding: var(--dyss-space-3) var(--dyss-space-6); background: var(--dyss-color-bg-secondary); color: var(--dyss-color-text-primary); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.borderColor='var(--dyss-color-primary)'; this.style.backgroundColor='var(--dyss-color-gray-100)'" onmouseout="this.style.borderColor='var(--dyss-color-gray-300)'; this.style.backgroundColor='var(--dyss-color-bg-secondary)'">
+                  📥 다운로드 (PDF)
+                </button>
+                <button onclick="shareReport()" style="padding: var(--dyss-space-3) var(--dyss-space-6); background: var(--dyss-color-bg-secondary); color: var(--dyss-color-text-primary); border: 1px solid var(--dyss-color-gray-300); border-radius: var(--dyss-radius-md); font-family: 'Nanum Myeongjo', serif; font-size: var(--dyss-font-size-base); cursor: pointer; transition: all var(--dyss-transition-normal);" onmouseover="this.style.borderColor='var(--dyss-color-primary)'; this.style.backgroundColor='var(--dyss-color-gray-100)'" onmouseout="this.style.borderColor='var(--dyss-color-gray-300)'; this.style.backgroundColor='var(--dyss-color-bg-secondary)'">
+                  🔗 공유
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Footer -->
+  <footer style="background: var(--dyss-color-bg-primary); border-top: 1px solid var(--dyss-color-gray-200); padding: var(--dyss-space-8) 0; margin-top: var(--dyss-space-16);">
+    <div class="dyss-container dyss-container--advanced">
+      <div style="grid-column: span 24; display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: var(--dyss-grid-gap-advanced); margin-bottom: var(--dyss-space-6);">
+        <div style="grid-column: span 12;">
+          <h4 style="margin-bottom: var(--dyss-space-4);">시스템 상태</h4>
+          <div style="display: flex; align-items: center; gap: var(--dyss-space-2); margin-bottom: var(--dyss-space-2);">
+            <span style="display: inline-block; width: 8px; height: 8px; background: #10B981; border-radius: 50%;"></span>
+            <span style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-secondary);">서비스 정상 운영 중</span>
+          </div>
+          <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">
+            API 응답 시간: < 200ms
+          </div>
+        </div>
+        <div style="grid-column: span 12;">
+          <h4 style="margin-bottom: var(--dyss-space-4);">버전 정보</h4>
+          <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-secondary); margin-bottom: var(--dyss-space-2);">
+            CuratorOdyssey v1.0.0
+          </div>
+          <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">
+            최종 업데이트: 2025-11-02
+          </div>
+        </div>
+      </div>
+      <div style="grid-column: span 24; text-align: center; padding-top: var(--dyss-space-6); border-top: 1px solid var(--dyss-color-gray-200); font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-tertiary);">
+        <p>© 2025 CuratorOdyssey. 모든 권리 보유.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- 사이트맵 모달 -->
+  <div class="sitemap-modal" id="sitemapModal">
+    <div class="sitemap-modal-content">
+      <button class="sitemap-close" onclick="closeSitemap()">&times;</button>
+      <h2 style="margin-bottom: var(--dyss-space-6);">사이트맵</h2>
+      <div style="margin-bottom: var(--dyss-space-6);">
+        <h3 style="margin-bottom: var(--dyss-space-2);">Phase 1: 현재 가치 분석</h3>
+        <p style="margin-bottom: var(--dyss-space-2); color: var(--dyss-color-text-secondary);">5축 레이더 차트와 4축 선버스트 차트</p>
+        <a href="#" onclick="closeSitemap(); scrollToPhase('phase1'); return false;" style="color: var(--dyss-color-primary); text-decoration: none;">이동 →</a>
+      </div>
+      <div style="margin-bottom: var(--dyss-space-6);">
+        <h3 style="margin-bottom: var(--dyss-space-2);">Phase 2: 커리어 궤적 분석</h3>
+        <p style="margin-bottom: var(--dyss-space-2); color: var(--dyss-color-text-secondary);">시계열 데이터와 이벤트 타임라인</p>
+        <a href="#" onclick="closeSitemap(); scrollToPhase('phase2'); return false;" style="color: var(--dyss-color-primary); text-decoration: none;">이동 →</a>
+      </div>
+      <div style="margin-bottom: var(--dyss-space-6);">
+        <h3 style="margin-bottom: var(--dyss-space-2);">Phase 3: 비교 분석</h3>
+        <p style="margin-bottom: var(--dyss-space-2); color: var(--dyss-color-text-secondary);">두 아티스트 비교 분석</p>
+        <a href="#" onclick="closeSitemap(); scrollToPhase('phase3'); return false;" style="color: var(--dyss-color-primary); text-decoration: none;">이동 →</a>
+      </div>
+      <div style="margin-bottom: var(--dyss-space-6);">
+        <h3 style="margin-bottom: var(--dyss-space-2);">Phase 4: AI 보고서</h3>
+        <p style="margin-bottom: var(--dyss-space-2); color: var(--dyss-color-text-secondary);">AI 기반 종합 보고서</p>
+        <a href="#" onclick="closeSitemap(); scrollToPhase('phase4'); return false;" style="color: var(--dyss-color-primary); text-decoration: none;">이동 →</a>
+      </div>
+      <div style="margin-top: var(--dyss-space-8); padding-top: var(--dyss-space-6); border-top: 1px solid var(--dyss-color-gray-200);">
+        <h4 style="margin-bottom: var(--dyss-space-4);">분석 활용 설명</h4>
+        <div style="font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-secondary); line-height: var(--dyss-line-height-relaxed);">
+          <p>CuratorOdyssey는 데이터 기반 아티스트 경력 분석 플랫폼입니다. Phase 1-4를 통해 현재 가치 평가, 궤적 시각화, 비교 분석, AI 보고서를 제공하여 큐레이터의 의사결정을 지원합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 레이더 차트 팝업 모달 -->
+  <div id="radarPopupModal" class="radar-popup-modal">
+    <div class="radar-popup-backdrop" onclick="closeRadarPopup()"></div>
+    <div class="radar-popup-content">
+      <button class="radar-popup-close" onclick="closeRadarPopup()" aria-label="닫기">&times;</button>
+      <div class="radar-popup-header">
+        <h3 id="radarPopupTitle" style="margin: 0; font-size: var(--dyss-font-size-2xl); color: #28317C;">상세 분석</h3>
+        <p id="radarPopupSubtitle" style="margin: var(--dyss-space-2) 0 0 0; font-size: var(--dyss-font-size-sm); color: var(--dyss-color-text-secondary);">레이더 차트 축을 클릭하여 위계 구조를 탐색하세요</p>
+      </div>
+      <div class="radar-popup-chart-container">
+        <svg id="radarPopupSunburst" width="800" height="800"></svg>
+        <div class="radar-popup-controls">
+          <button class="popup-control-btn" onclick="resetSunburstZoom()" aria-label="줌 리셋">⟲ 리셋</button>
+          <button class="popup-control-btn" onclick="closeRadarPopup()" aria-label="닫기">✕ 닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // ============================================
+    // 목업 데이터 정의
+    // ============================================
+    const mockData = {
+      artistSummary: {
+        artist_id: "ARTIST_0005",
+        name: "양혜규",
+        debut_year: 2010,
+        radar5: { I: 97.5, F: 90.0, A: 92.0, M: 86.0, Sedu: 9.8 },
+        sunburst_l1: { 제도: 0.912, 학술: 0.880, 담론: 0.860, 네트워크: 0.900 },
+        weights_version: "AHP_v1",
+        updated_at: "2025-11-02T00:00:00Z",
+        consistency_check: { passed: true, error: 0.2 },
+        // 레이더 차트 축별 위계 데이터 (L1~L5)
+        sunburstHierarchy: {
+          // 기관전시 (I) → 제도 축 위계
+          I: {
+            name: "기관전시",
+            axis: "제도",
+            value: 97.5,
+            children: [
+              {
+                name: "Tier-S 기관전시",
+                value: 65.0,
+                children: [
+                  {
+                    name: "국제 주요 기관",
+                    value: 42.5,
+                    children: [
+                      {
+                        name: "MoMA 개인전",
+                        value: 25.0,
+                        children: [
+                          { name: "2020 MoMA 개인전 'The Space Between'", value: 25.0 },
+                          { name: "2018 MoMA 기획전 참여", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Tate Modern 기획전",
+                        value: 17.5,
+                        children: [
+                          { name: "2019 Tate Modern 'Future Now' 기획전", value: 17.5 },
+                          { name: "2017 Tate Modern 컬렉션 전시", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Centre Pompidou",
+                        value: 12.0,
+                        children: [
+                          { name: "2021 Centre Pompidou 개인전", value: 12.0 },
+                          { name: "2019 Centre Pompidou 기획전", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Guggenheim Museum",
+                        value: 8.5,
+                        children: [
+                          { name: "2022 Guggenheim 기획전 참여", value: 8.5 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "국내 주요 기관",
+                    value: 22.5,
+                    children: [
+                      {
+                        name: "국립현대미술관",
+                        value: 12.5,
+                        children: [
+                          { name: "2018 국립현대미술관 개인전 '시간의 층위'", value: 12.5 },
+                          { name: "2015 국립현대미술관 기획전 참여", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "서울시립미술관",
+                        value: 10.0,
+                        children: [
+                          { name: "2017 서울시립미술관 기획전 '현대적 전환'", value: 10.0 },
+                          { name: "2014 서울시립미술관 신진작가전", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "문화역서울284",
+                        value: 5.5,
+                        children: [
+                          { name: "2016 문화역서울284 개인전", value: 5.5 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "Tier-A 기관전시",
+                value: 32.5,
+                children: [
+                  {
+                    name: "대학 미술관",
+                    value: 20.0,
+                    children: [
+                      {
+                        name: "홍익대 미술관",
+                        value: 12.0,
+                        children: [
+                          { name: "2016 홍익대 미술관 개인전 '물질과 정신'", value: 12.0 },
+                          { name: "2014 홍익대 미술관 기획전", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "이화여대 미술관",
+                        value: 8.0,
+                        children: [
+                          { name: "2015 이화여대 미술관 기획전 '여성과 현대미술'", value: 8.0 }
+                        ]
+                      },
+                      {
+                        name: "한국예술종합학교",
+                        value: 6.5,
+                        children: [
+                          { name: "2013 한국예술종합학교 미술관 전시", value: 6.5 }
+                        ]
+                      },
+                      {
+                        name: "경희대 미술관",
+                        value: 4.2,
+                        children: [
+                          { name: "2012 경희대 미술관 기획전", value: 4.2 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "지역 미술관",
+                    value: 12.5,
+                    children: [
+                      {
+                        name: "부산시립미술관",
+                        value: 7.5,
+                        children: [
+                          { name: "2014 부산시립미술관 개인전 '해안선'", value: 7.5 },
+                          { name: "2012 부산시립미술관 신진작가전", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "광주시립미술관",
+                        value: 5.0,
+                        children: [
+                          { name: "2013 광주시립미술관 기획전 '광주 비엔날레 연계전'", value: 5.0 }
+                        ]
+                      },
+                      {
+                        name: "대구미술관",
+                        value: 4.8,
+                        children: [
+                          { name: "2011 대구미술관 기획전", value: 4.8 }
+                        ]
+                      },
+                      {
+                        name: "인천아트플랫폼",
+                        value: 3.2,
+                        children: [
+                          { name: "2010 인천아트플랫폼 레지던시 전시", value: 3.2 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          // 페어 (F) → 제도 축 위계
+          F: {
+            name: "페어",
+            axis: "제도",
+            value: 90.0,
+            children: [
+              {
+                name: "Tier-S 아트페어",
+                value: 55.0,
+                children: [
+                  {
+                    name: "국제 메이저 페어",
+                    value: 38.0,
+                    children: [
+                      {
+                        name: "베니스 비엔날레",
+                        value: 20.0,
+                        children: [
+                          { name: "2022 베니스 비엔날레 한국관 대표작가", value: 20.0 },
+                          { name: "2019 베니스 비엔날레 오픈 스튜디오", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Art Basel",
+                        value: 18.0,
+                        children: [
+                          { name: "2021 Art Basel Hong Kong 갤러리 부스", value: 18.0 },
+                          { name: "2018 Art Basel Miami 참여", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Frieze Art Fair",
+                        value: 15.5,
+                        children: [
+                          { name: "2020 Frieze London", value: 15.5 },
+                          { name: "2017 Frieze New York", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Documenta",
+                        value: 12.8,
+                        children: [
+                          { name: "2022 Documenta 15 참여", value: 12.8 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "국내 메이저 페어",
+                    value: 17.0,
+                    children: [
+                      {
+                        name: "KIAF",
+                        value: 10.0,
+                        children: [
+                          { name: "2020 KIAF 서울 메인 갤러리 부스", value: 10.0 },
+                          { name: "2017 KIAF 서울 신진작가 섹션", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "서울 아트쇼",
+                        value: 7.0,
+                        children: [
+                          { name: "2019 서울 아트쇼 특별 전시", value: 7.0 },
+                          { name: "2016 서울 아트쇼 갤러리 부스", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "부산 아트페어",
+                        value: 5.2,
+                        children: [
+                          { name: "2018 부산 아트페어 기획 섹션", value: 5.2 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "Tier-A 아트페어",
+                value: 35.0,
+                children: [
+                  {
+                    name: "지역 아트페어",
+                    value: 22.0,
+                    children: [
+                      {
+                        name: "부산 아트쇼",
+                        value: 12.0,
+                        children: [
+                          { name: "2018 부산 아트쇼 메인 전시", value: 12.0 },
+                          { name: "2015 부산 아트쇼 신진작가전", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "대구 아트페어",
+                        value: 10.0,
+                        children: [
+                          { name: "2017 대구 아트페어 특별 기획", value: 10.0 }
+                        ]
+                      },
+                      {
+                        name: "광주 아트페어",
+                        value: 6.5,
+                        children: [
+                          { name: "2016 광주 아트페어 연계전", value: 6.5 }
+                        ]
+                      },
+                      {
+                        name: "인천 아트페어",
+                        value: 4.2,
+                        children: [
+                          { name: "2014 인천 아트페어 참여", value: 4.2 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "전문 아트페어",
+                    value: 13.0,
+                    children: [
+                      {
+                        name: "포토페어",
+                        value: 8.0,
+                        children: [
+                          { name: "2016 포토페어 서울 특별 전시", value: 8.0 },
+                          { name: "2013 포토페어 서울 신진작가 섹션", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "아트 코리아",
+                        value: 5.0,
+                        children: [
+                          { name: "2015 아트 코리아 메인 갤러리", value: 5.0 }
+                        ]
+                      },
+                      {
+                        name: "서울 프린트 아트페어",
+                        value: 4.8,
+                        children: [
+                          { name: "2012 서울 프린트 아트페어", value: 4.8 }
+                        ]
+                      },
+                      {
+                        name: "디자인 아트페어",
+                        value: 3.5,
+                        children: [
+                          { name: "2011 디자인 아트페어 참여", value: 3.5 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          // 시상 (A) → 학술 축 위계
+          A: {
+            name: "시상",
+            axis: "학술",
+            value: 92.0,
+            children: [
+              {
+                name: "국제 주요 시상",
+                value: 58.0,
+                children: [
+                  {
+                    name: "예술 분야 시상",
+                    value: 38.0,
+                    children: [
+                      {
+                        name: "Turner Prize",
+                        value: 20.0,
+                        children: [
+                          { name: "2021 Turner Prize 후보 (최종 4인)", value: 20.0 },
+                          { name: "2019 Turner Prize 롱리스트", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Hugo Boss Prize",
+                        value: 18.0,
+                        children: [
+                          { name: "2020 Hugo Boss Prize 후보", value: 18.0 },
+                          { name: "2018 Hugo Boss Prize 신진작가상", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Marcel Duchamp Prize",
+                        value: 15.5,
+                        children: [
+                          { name: "2022 Marcel Duchamp Prize 후보", value: 15.5 }
+                        ]
+                      },
+                      {
+                        name: "Nam June Paik Award",
+                        value: 12.8,
+                        children: [
+                          { name: "2021 Nam June Paik Award 수상", value: 12.8 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "아시아 시상",
+                    value: 20.0,
+                    children: [
+                      {
+                        name: "아시아 아트 어워드",
+                        value: 12.0,
+                        children: [
+                          { name: "2019 아시아 아트 어워드 최우수상", value: 12.0 },
+                          { name: "2017 아시아 아트 어워드 본상", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "한국 국제 아트 어워드",
+                        value: 8.0,
+                        children: [
+                          { name: "2018 한국 국제 아트 어워드 대상", value: 8.0 }
+                        ]
+                      },
+                      {
+                        name: "아시아 문화상",
+                        value: 6.5,
+                        children: [
+                          { name: "2020 아시아 문화상 예술 부문", value: 6.5 }
+                        ]
+                      },
+                      {
+                        name: "CCAA 중국 당대 아트 어워드",
+                        value: 4.2,
+                        children: [
+                          { name: "2016 CCAA 후보", value: 4.2 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "국내 주요 시상",
+                value: 34.0,
+                children: [
+                  {
+                    name: "정부 기관 시상",
+                    value: 22.0,
+                    children: [
+                      {
+                        name: "올해의 예술가상",
+                        value: 12.0,
+                        children: [
+                          { name: "2017 올해의 예술가상 (문화체육관광부)", value: 12.0 },
+                          { name: "2015 올해의 예술가상 후보", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "문화예술위원회 장관상",
+                        value: 10.0,
+                        children: [
+                          { name: "2016 문화예술위원회 장관상", value: 10.0 }
+                        ]
+                      },
+                      {
+                        name: "서울시 문화상",
+                        value: 8.5,
+                        children: [
+                          { name: "2018 서울시 문화상 미술 부문", value: 8.5 }
+                        ]
+                      },
+                      {
+                        name: "부산시 문화예술상",
+                        value: 5.2,
+                        children: [
+                          { name: "2014 부산시 문화예술상", value: 5.2 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "미술관/기관 시상",
+                    value: 12.0,
+                    children: [
+                      {
+                        name: "국립현대미술관 올해의 작가상",
+                        value: 7.0,
+                        children: [
+                          { name: "2015 국립현대미술관 올해의 작가상", value: 7.0 },
+                          { name: "2013 국립현대미술관 신진작가상", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "서울시립미술관 작가상",
+                        value: 5.0,
+                        children: [
+                          { name: "2014 서울시립미술관 작가상", value: 5.0 }
+                        ]
+                      },
+                      {
+                        name: "리움미술관 아트스펙트럼 어워드",
+                        value: 6.5,
+                        children: [
+                          { name: "2012 리움미술관 아트스펙트럼 어워드", value: 6.5 }
+                        ]
+                      },
+                      {
+                        name: "아트선재센터 신진작가상",
+                        value: 4.2,
+                        children: [
+                          { name: "2011 아트선재센터 신진작가상", value: 4.2 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          // 미디어 (M) → 담론 축 위계
+          M: {
+            name: "미디어",
+            axis: "담론",
+            value: 86.0,
+            children: [
+              {
+                name: "국제 미디어",
+                value: 52.0,
+                children: [
+                  {
+                    name: "예술 전문 매체",
+                    value: 35.0,
+                    children: [
+                      {
+                        name: "Artforum",
+                        value: 20.0,
+                        children: [
+                          { name: "2020 Artforum 리뷰 'The Space Between'", value: 20.0 },
+                          { name: "2018 Artforum 최신 작품 리뷰", value: 0 },
+                          { name: "2016 Artforum 인터뷰", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Art in America",
+                        value: 15.0,
+                        children: [
+                          { name: "2019 Art in America 커버 스토리", value: 15.0 },
+                          { name: "2017 Art in America 리뷰", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Frieze Magazine",
+                        value: 12.5,
+                        children: [
+                          { name: "2021 Frieze Magazine 특집 기사", value: 12.5 }
+                        ]
+                      },
+                      {
+                        name: "ArtReview",
+                        value: 8.2,
+                        children: [
+                          { name: "2022 ArtReview Power 100", value: 8.2 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "일반 매체",
+                    value: 17.0,
+                    children: [
+                      {
+                        name: "The New York Times",
+                        value: 10.0,
+                        children: [
+                          { name: "2021 NYT 아트 섹션 커버 스토리", value: 10.0 },
+                          { name: "2019 NYT 전시 리뷰", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "The Guardian",
+                        value: 7.0,
+                        children: [
+                          { name: "2018 The Guardian 예술 섹션", value: 7.0 }
+                        ]
+                      },
+                      {
+                        name: "Financial Times",
+                        value: 5.5,
+                        children: [
+                          { name: "2020 Financial Times 문화 섹션", value: 5.5 }
+                        ]
+                      },
+                      {
+                        name: "Le Monde",
+                        value: 4.2,
+                        children: [
+                          { name: "2017 Le Monde 문화 기사", value: 4.2 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "국내 미디어",
+                value: 34.0,
+                children: [
+                  {
+                    name: "예술 전문 매체",
+                    value: 22.0,
+                    children: [
+                      {
+                        name: "월간미술",
+                        value: 12.0,
+                        children: [
+                          { name: "2017 월간미술 커버 스토리 '현대미술의 새로운 지평'", value: 12.0 },
+                          { name: "2015 월간미술 특집 기사", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "아트인컬처",
+                        value: 10.0,
+                        children: [
+                          { name: "2016 아트인컬처 긴 인터뷰", value: 10.0 },
+                          { name: "2014 아트인컬처 작품 리뷰", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "미술세계",
+                        value: 8.5,
+                        children: [
+                          { name: "2018 미술세계 특집 기사", value: 8.5 }
+                        ]
+                      },
+                      {
+                        name: "Artnet News Korea",
+                        value: 6.2,
+                        children: [
+                          { name: "2019 Artnet News Korea 인터뷰", value: 6.2 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "일반 매체",
+                    value: 12.0,
+                    children: [
+                      {
+                        name: "조선일보",
+                        value: 7.0,
+                        children: [
+                          { name: "2015 조선일보 문화 섹션 '신진작가의 도전'", value: 7.0 },
+                          { name: "2013 조선일보 예술 섹션", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "한겨레",
+                        value: 5.0,
+                        children: [
+                          { name: "2014 한겨레 문화 기사", value: 5.0 }
+                        ]
+                      },
+                      {
+                        name: "중앙일보",
+                        value: 4.5,
+                        children: [
+                          { name: "2012 중앙일보 문화 섹션", value: 4.5 }
+                        ]
+                      },
+                      {
+                        name: "JTBC 문화 프로그램",
+                        value: 3.8,
+                        children: [
+                          { name: "2016 JTBC '문화가 있는 날' 출연", value: 3.8 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          // 교육 (Sedu) → 네트워크 축 위계
+          Sedu: {
+            name: "교육",
+            axis: "네트워크",
+            value: 9.8,
+            children: [
+              {
+                name: "대학 강의",
+                value: 5.5,
+                children: [
+                  {
+                    name: "국내 주요 대학",
+                    value: 3.5,
+                    children: [
+                      {
+                        name: "서울대학교",
+                        value: 2.0,
+                        children: [
+                          { name: "2020 서울대 미술대학 객원교수 '현대미술 이론'", value: 2.0 },
+                          { name: "2018 서울대 미술대학 특강", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "홍익대학교",
+                        value: 1.5,
+                        children: [
+                          { name: "2019 홍익대 미술대학 '현대미술 실기' 강의", value: 1.5 }
+                        ]
+                      },
+                      {
+                        name: "이화여대",
+                        value: 1.2,
+                        children: [
+                          { name: "2017 이화여대 미술대학 워크샵", value: 1.2 }
+                        ]
+                      },
+                      {
+                        name: "한국예술종합학교",
+                        value: 0.8,
+                        children: [
+                          { name: "2016 한국예술종합학교 특강", value: 0.8 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "해외 대학",
+                    value: 2.0,
+                    children: [
+                      {
+                        name: "Yale University",
+                        value: 1.2,
+                        children: [
+                          { name: "2021 Yale 예술대학 특강 'Contemporary Art Practice'", value: 1.2 }
+                        ]
+                      },
+                      {
+                        name: "Royal College of Art",
+                        value: 0.8,
+                        children: [
+                          { name: "2018 RCA 워크샵 'Global Perspectives'", value: 0.8 }
+                        ]
+                      },
+                      {
+                        name: "Columbia University",
+                        value: 0.6,
+                        children: [
+                          { name: "2019 Columbia 예술대학 게스트 강의", value: 0.6 }
+                        ]
+                      },
+                      {
+                        name: "Central Saint Martins",
+                        value: 0.5,
+                        children: [
+                          { name: "2017 Central Saint Martins 워크샵", value: 0.5 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                name: "워크샵/세미나",
+                value: 4.3,
+                children: [
+                  {
+                    name: "국제 워크샵",
+                    value: 2.5,
+                    children: [
+                      {
+                        name: "Art Basel Talks",
+                        value: 1.5,
+                        children: [
+                          { name: "2020 Art Basel Talks 패널 'Future of Art'", value: 1.5 },
+                          { name: "2018 Art Basel Conversations", value: 0 }
+                        ]
+                      },
+                      {
+                        name: "Venice Biennale Workshop",
+                        value: 1.0,
+                        children: [
+                          { name: "2019 베니스 비엔날레 워크샵 'Art and Society'", value: 1.0 }
+                        ]
+                      },
+                      {
+                        name: "Documenta Talks",
+                        value: 0.8,
+                        children: [
+                          { name: "2022 Documenta Talks 패널", value: 0.8 }
+                        ]
+                      },
+                      {
+                        name: "Frieze Talks",
+                        value: 0.6,
+                        children: [
+                          { name: "2021 Frieze Talks", value: 0.6 }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    name: "국내 워크샵",
+                    value: 1.8,
+                    children: [
+                      {
+                        name: "국립현대미술관 아카데미",
+                        value: 1.0,
+                        children: [
+                          { name: "2017 국립현대미술관 아카데미 세미나 '현대미술의 흐름'", value: 1.0 }
+                        ]
+                      },
+                      {
+                        name: "서울시립미술관 워크샵",
+                        value: 0.8,
+                        children: [
+                          { name: "2016 서울시립미술관 워크샵 '작가와의 대화'", value: 0.8 }
+                        ]
+                      },
+                      {
+                        name: "아트선재센터 세미나",
+                        value: 0.6,
+                        children: [
+                          { name: "2015 아트선재센터 세미나", value: 0.6 }
+                        ]
+                      },
+                      {
+                        name: "문화역서울284 워크샵",
+                        value: 0.5,
+                        children: [
+                          { name: "2014 문화역서울284 워크샵", value: 0.5 }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      timeseries: {
+        제도: [
+          {t: 0, v: 0.08}, {t: 1, v: 0.12}, {t: 2, v: 0.22}, {t: 3, v: 0.28}, {t: 4, v: 0.35},
+          {t: 5, v: 0.45}, {t: 6, v: 0.52}, {t: 7, v: 0.58}, {t: 8, v: 0.65}, {t: 9, v: 0.72},
+          {t: 10, v: 0.78}, {t: 11, v: 0.82}, {t: 12, v: 0.85}, {t: 13, v: 0.87}, {t: 14, v: 0.89}, {t: 15, v: 0.91}
+        ],
+        학술: [
+          {t: 0, v: 0.03}, {t: 1, v: 0.08}, {t: 2, v: 0.15}, {t: 3, v: 0.22}, {t: 4, v: 0.28},
+          {t: 5, v: 0.35}, {t: 6, v: 0.42}, {t: 7, v: 0.48}, {t: 8, v: 0.55}, {t: 9, v: 0.60},
+          {t: 10, v: 0.65}, {t: 11, v: 0.70}, {t: 12, v: 0.75}, {t: 13, v: 0.80}, {t: 14, v: 0.84}, {t: 15, v: 0.88}
+        ],
+        담론: [
+          {t: 0, v: 0.05}, {t: 1, v: 0.10}, {t: 2, v: 0.18}, {t: 3, v: 0.25}, {t: 4, v: 0.32},
+          {t: 5, v: 0.42}, {t: 6, v: 0.48}, {t: 7, v: 0.54}, {t: 8, v: 0.60}, {t: 9, v: 0.66},
+          {t: 10, v: 0.70}, {t: 11, v: 0.74}, {t: 12, v: 0.78}, {t: 13, v: 0.81}, {t: 14, v: 0.84}, {t: 15, v: 0.86}
+        ],
+        네트워크: [
+          {t: 0, v: 0.10}, {t: 1, v: 0.15}, {t: 2, v: 0.25}, {t: 3, v: 0.32}, {t: 4, v: 0.40},
+          {t: 5, v: 0.48}, {t: 6, v: 0.55}, {t: 7, v: 0.62}, {t: 8, v: 0.68}, {t: 9, v: 0.75},
+          {t: 10, v: 0.82}, {t: 11, v: 0.85}, {t: 12, v: 0.88}, {t: 13, v: 0.89}, {t: 14, v: 0.90}, {t: 15, v: 0.90}
+        ]
+      },
+      events: {
+        제도: [
+          {t: 2, delta_v: 0.08, type: "전시", event_id: "EVENT_001"},
+          {t: 5, delta_v: 0.15, type: "전시", event_id: "EVENT_009"},
+          {t: 7, delta_v: 0.10, type: "아트페어", event_id: "EVENT_005"},
+          {t: 10, delta_v: 0.12, type: "아트페어", event_id: "EVENT_010"},
+          {t: 13, delta_v: 0.08, type: "전시", event_id: "EVENT_011"}
+        ],
+        학술: [
+          {t: 3, delta_v: 0.10, type: "논문", event_id: "EVENT_002"},
+          {t: 6, delta_v: 0.12, type: "학회", event_id: "EVENT_012"},
+          {t: 8, delta_v: 0.20, type: "논문", event_id: "EVENT_013"},
+          {t: 11, delta_v: 0.15, type: "학회", event_id: "EVENT_006"},
+          {t: 14, delta_v: 0.10, type: "논문", event_id: "EVENT_014"}
+        ],
+        담론: [
+          {t: 2, delta_v: 0.08, type: "미디어", event_id: "EVENT_003"},
+          {t: 5, delta_v: 0.18, type: "미디어", event_id: "EVENT_015"},
+          {t: 8, delta_v: 0.12, type: "비평", event_id: "EVENT_016"},
+          {t: 10, delta_v: 0.10, type: "비평", event_id: "EVENT_007"},
+          {t: 12, delta_v: 0.08, type: "미디어", event_id: "EVENT_017"}
+        ],
+        네트워크: [
+          {t: 1, delta_v: 0.05, type: "협업", event_id: "EVENT_004"},
+          {t: 4, delta_v: 0.12, type: "멘토링", event_id: "EVENT_018"},
+          {t: 7, delta_v: 0.15, type: "협업", event_id: "EVENT_019"},
+          {t: 10, delta_v: 0.18, type: "협업", event_id: "EVENT_020"},
+          {t: 12, delta_v: 0.08, type: "멘토링", event_id: "EVENT_008"},
+          {t: 15, delta_v: 0.06, type: "협업", event_id: "EVENT_021"}
+        ]
+      },
+      comparison: {
+        artistA: "ARTIST_0005",
+        artistB: "ARTIST_0010",
+        axis: "제도",
+        제도: {
+          series: [
+            {t: 0, v_A: 0.08, v_B: 0.12},
+            {t: 1, v_A: 0.12, v_B: 0.18},
+            {t: 2, v_A: 0.22, v_B: 0.25},
+            {t: 3, v_A: 0.28, v_B: 0.30},
+            {t: 4, v_A: 0.35, v_B: 0.38},
+            {t: 5, v_A: 0.45, v_B: 0.50},
+            {t: 6, v_A: 0.52, v_B: 0.55},
+            {t: 7, v_A: 0.58, v_B: 0.60},
+            {t: 8, v_A: 0.65, v_B: 0.68},
+            {t: 9, v_A: 0.72, v_B: 0.70},
+            {t: 10, v_A: 0.78, v_B: 0.72},
+            {t: 11, v_A: 0.82, v_B: 0.78},
+            {t: 12, v_A: 0.85, v_B: 0.80},
+            {t: 13, v_A: 0.87, v_B: 0.83},
+            {t: 14, v_A: 0.89, v_B: 0.85},
+            {t: 15, v_A: 0.91, v_B: 0.85}
+          ],
+          metrics: {
+            correlation: 0.85,
+            abs_diff_sum: 125.7,
+            auc_A: 450.2,
+            auc_B: 387.5
+          }
+        },
+        학술: {
+          series: [
+            {t: 0, v_A: 0.10, v_B: 0.15},
+            {t: 1, v_A: 0.15, v_B: 0.22},
+            {t: 2, v_A: 0.25, v_B: 0.30},
+            {t: 3, v_A: 0.32, v_B: 0.38},
+            {t: 4, v_A: 0.40, v_B: 0.45},
+            {t: 5, v_A: 0.50, v_B: 0.55},
+            {t: 6, v_A: 0.58, v_B: 0.62},
+            {t: 7, v_A: 0.65, v_B: 0.68},
+            {t: 8, v_A: 0.72, v_B: 0.75},
+            {t: 9, v_A: 0.78, v_B: 0.82},
+            {t: 10, v_A: 0.82, v_B: 0.85},
+            {t: 11, v_A: 0.85, v_B: 0.88},
+            {t: 12, v_A: 0.87, v_B: 0.90},
+            {t: 13, v_A: 0.88, v_B: 0.92},
+            {t: 14, v_A: 0.89, v_B: 0.93},
+            {t: 15, v_A: 0.90, v_B: 0.94}
+          ],
+          metrics: {
+            correlation: 0.92,
+            abs_diff_sum: 98.5,
+            auc_A: 485.3,
+            auc_B: 510.2
+          }
+        },
+        담론: {
+          series: [
+            {t: 0, v_A: 0.05, v_B: 0.08},
+            {t: 1, v_A: 0.08, v_B: 0.12},
+            {t: 2, v_A: 0.15, v_B: 0.18},
+            {t: 3, v_A: 0.22, v_B: 0.25},
+            {t: 4, v_A: 0.30, v_B: 0.32},
+            {t: 5, v_A: 0.38, v_B: 0.40},
+            {t: 6, v_A: 0.45, v_B: 0.48},
+            {t: 7, v_A: 0.52, v_B: 0.55},
+            {t: 8, v_A: 0.58, v_B: 0.60},
+            {t: 9, v_A: 0.62, v_B: 0.65},
+            {t: 10, v_A: 0.68, v_B: 0.72},
+            {t: 11, v_A: 0.72, v_B: 0.75},
+            {t: 12, v_A: 0.75, v_B: 0.78},
+            {t: 13, v_A: 0.78, v_B: 0.80},
+            {t: 14, v_A: 0.80, v_B: 0.82},
+            {t: 15, v_A: 0.82, v_B: 0.85}
+          ],
+          metrics: {
+            correlation: 0.75,
+            abs_diff_sum: 142.3,
+            auc_A: 398.5,
+            auc_B: 415.8
+          }
+        },
+        네트워크: {
+          series: [
+            {t: 0, v_A: 0.12, v_B: 0.08},
+            {t: 1, v_A: 0.18, v_B: 0.12},
+            {t: 2, v_A: 0.25, v_B: 0.18},
+            {t: 3, v_A: 0.32, v_B: 0.25},
+            {t: 4, v_A: 0.40, v_B: 0.32},
+            {t: 5, v_A: 0.48, v_B: 0.40},
+            {t: 6, v_A: 0.55, v_B: 0.48},
+            {t: 7, v_A: 0.62, v_B: 0.55},
+            {t: 8, v_A: 0.68, v_B: 0.62},
+            {t: 9, v_A: 0.73, v_B: 0.68},
+            {t: 10, v_A: 0.78, v_B: 0.72},
+            {t: 11, v_A: 0.82, v_B: 0.76},
+            {t: 12, v_A: 0.85, v_B: 0.80},
+            {t: 13, v_A: 0.87, v_B: 0.83},
+            {t: 14, v_A: 0.89, v_B: 0.85},
+            {t: 15, v_A: 0.91, v_B: 0.87}
+          ],
+          metrics: {
+            correlation: 0.88,
+            abs_diff_sum: 112.4,
+            auc_A: 472.8,
+            auc_B: 425.6
+          }
+        }
+      },
+      report: {
+        content: `# Introduction
+
+양혜규는 2010년 데뷔한 현대 미술가로, 설치 미술과 개념 미술을 중심으로 활동하고 있습니다. 본 보고서는 데이터 기반 분석을 통해 아티스트의 현재 가치와 향후 전망을 제시합니다.
+
+## 주요 성과
+
+- **제도 축**: 91.2점 (상위 5%)
+- **학술 축**: 88.0점 (상위 10%)
+- **담론 축**: 86.0점 (상위 15%)
+- **네트워크 축**: 90.0점 (상위 8%)
+
+# Analysis
+
+## 커리어 궤적 분석
+
+시계열 분석 결과, 양혜규는 지속적인 성장 패턴을 보이고 있습니다. 특히 최근 5년간 제도적 성취와 학술적 활동에서 급격한 상승세를 보였습니다.
+
+### 주요 이벤트
+
+- 2015년: 주요 갤러리 개인전 (제도 축 +15%)
+- 2018년: 국제 학술지 논문 게재 (학술 축 +20%)
+- 2020년: 대형 미디어 프로필 (담론 축 +18%)
+
+# Prediction
+
+향후 5년간 예상 성장률은 다음과 같습니다:
+
+- **제도 축**: 연평균 8-10% 성장 예상
+- **학술 축**: 연평균 12-15% 성장 예상
+- **담론 축**: 연평균 6-8% 성장 예상
+- **네트워크 축**: 연평균 5-7% 성장 예상
+
+전반적으로 안정적인 성장 궤적을 유지할 것으로 예상됩니다.`,
+        model_used: "Gemini 1.5 Pro",
+        token_usage: { input: 38245, output: 15230 },
+        generated_at: "2025-11-02T14:30:00Z"
+      }
+    };
+    
+    // ============================================
+    // 유틸리티 함수
+    // ============================================
+    function showLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('active');
+    }
+    
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      setTimeout(() => {
+        overlay.classList.remove('active');
+      }, 500);
+    }
+    
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function scrollToPhase(phaseId) {
+      const element = document.getElementById(phaseId);
+      if (element) {
+        const headerHeight = 80;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerHeight;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+        
+        // 현재 Phase 하이라이트 업데이트
+        updateActivePhase(phaseId);
+        
+        // Phase 섹션에 visible 클래스 추가 (애니메이션 트리거)
+        setTimeout(() => {
+          element.classList.add('visible');
+        }, 100);
+      }
+    }
+    
+    // Intersection Observer로 스크롤 기반 애니메이션 구현
+    function initScrollAnimations() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, observerOptions);
+      
+      // 모든 Phase 섹션 관찰
+      document.querySelectorAll('.phase-section').forEach(section => {
+        observer.observe(section);
+      });
+      
+      // Phase 카드 관찰
+      document.querySelectorAll('.phase-card').forEach((card, index) => {
+        card.style.transitionDelay = `${index * 0.1}s`;
+        observer.observe(card);
+      });
+    }
+    
+    function updateActivePhase(phaseId) {
+      document.querySelectorAll('.phase-nav-tab').forEach(tab => {
+        const tabPhase = tab.getAttribute('data-phase');
+        if (tabPhase === phaseId) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+    }
+    
+    // 스크롤 감지로 현재 Phase 업데이트
+    let currentPhaseSection = 'home';
+    window.addEventListener('scroll', function() {
+      const sections = ['home', 'phase1', 'phase2', 'phase3', 'phase4'];
+      const scrollPosition = window.scrollY + 100;
+      
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = document.getElementById(sections[i]);
+        if (section && section.offsetTop <= scrollPosition) {
+          if (currentPhaseSection !== sections[i]) {
+            currentPhaseSection = sections[i];
+            updateActivePhase(sections[i]);
+          }
+          break;
+        }
+      }
+    });
+    
+    function openSitemap() {
+      const modal = document.getElementById('sitemapModal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeSitemap() {
+      const modal = document.getElementById('sitemapModal');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    function showError(message) {
+      let errorDiv = document.getElementById('errorMessage');
+      if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.id = 'errorMessage';
+        errorDiv.className = 'error-message';
+        const heroContent = document.querySelector('.hero-content');
+        if (heroContent) {
+          heroContent.insertBefore(errorDiv, heroContent.firstChild);
+        }
+      }
+      errorDiv.textContent = message;
+      errorDiv.classList.add('show');
+      
+      setTimeout(() => {
+        errorDiv.classList.remove('show');
+      }, 5000);
+    }
+    
+    // ============================================
+    // 툴팁 시스템 유틸리티
+    // ============================================
+    let tooltipElement = null;
+    
+    function createTooltip() {
+      if (!tooltipElement) {
+        tooltipElement = document.createElement('div');
+        tooltipElement.className = 'chart-tooltip';
+        tooltipElement.id = 'chartTooltip';
+        document.body.appendChild(tooltipElement);
+      }
+      return tooltipElement;
+    }
+    
+    function showTooltip(event, content) {
+      const tooltip = createTooltip();
+      tooltip.textContent = content;
+      tooltip.classList.add('show');
+      
+      const x = event.pageX || event.clientX + window.scrollX;
+      const y = event.pageY || event.clientY + window.scrollY;
+      
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y - 40}px`;
+      
+      // 화면 밖으로 나가지 않도록 조정
+      setTimeout(() => {
+        const rect = tooltip.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+          tooltip.style.left = `${x - rect.width}px`;
+        }
+        if (rect.top < 0) {
+          tooltip.style.top = `${y + 20}px`;
+        }
+      }, 0);
+    }
+    
+    function hideTooltip() {
+      if (tooltipElement) {
+        tooltipElement.classList.remove('show');
+      }
+    }
+    
+    // ============================================
+    // 이벤트 리스너
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+      // 사이트맵 트리거
+      const sitemapTrigger = document.getElementById('gnb_sitemap');
+      if (sitemapTrigger) {
+        sitemapTrigger.addEventListener('click', openSitemap);
+      }
+      
+      // 초기 로딩 시뮬레이션
+      showLoading();
+      
+      setTimeout(() => {
+        hideLoading();
+        // 차트 초기화를 약간 지연시켜 DOM이 완전히 렌더링된 후 실행
+        setTimeout(() => {
+          initCharts();
+          initScrollAnimations(); // 스크롤 애니메이션 초기화
+          
+          // 초기 로드 시 첫 번째 섹션은 즉시 표시
+          const firstSection = document.querySelector('.phase-section');
+          if (firstSection) {
+            firstSection.classList.add('visible');
+          }
+        }, 100);
+      }, 1000);
+      
+      // ESC 키로 모달 닫기
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const sitemapModal = document.getElementById('sitemapModal');
+          if (sitemapModal && sitemapModal.classList.contains('active')) {
+            closeSitemap();
+          }
+          const radarPopupModal = document.getElementById('radarPopupModal');
+          if (radarPopupModal && radarPopupModal.classList.contains('active')) {
+            closeRadarPopup();
+          }
+        }
+      });
+      
+      // 모달 오버레이 클릭 시 닫기
+      const modal = document.getElementById('sitemapModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeSitemap();
+          }
+        });
+      }
+      
+      // 아티스트 ID 입력
+      const artistInput = document.getElementById('artistIdInput');
+      if (artistInput) {
+        artistInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            loadArtist();
+          }
+        });
+      }
+      
+      function loadArtist() {
+        const artistId = artistInput.value.trim();
+        if (!artistId) {
+          showError('아티스트 ID를 입력하세요.');
+          return;
+        }
+        if (/^ARTIST_\d{4}$/.test(artistId)) {
+          // 404 에러 시뮬레이션 (ARTIST_9999)
+          if (artistId === 'ARTIST_9999') {
+            showError('아티스트를 찾을 수 없습니다 (404). 올바른 ID를 입력하세요.');
+            return;
+          }
+          // 400 에러 시뮬레이션 (잘못된 형식)
+          if (artistId.length < 10) {
+            showError('잘못된 형식입니다 (400). ARTIST_XXXX 형식으로 입력하세요.');
+            return;
+          }
+          showLoading();
+          setTimeout(() => {
+            hideLoading();
+            scrollToPhase('phase1');
+          }, 1500);
+        } else {
+          showError('올바른 아티스트 ID 형식을 입력하세요 (예: ARTIST_0005)');
+        }
+      }
+      
+      // 전역 함수로 노출
+      window.loadArtist = loadArtist;
+      
+      // Phase 2 축 선택 탭
+      document.querySelectorAll('.axis-tab[data-axis]').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const axis = this.getAttribute('data-axis');
+          if (axis === 'all') {
+            selectedAxis = 'all';
+          } else {
+            selectedAxis = selectedAxis === axis ? 'all' : axis;
+          }
+          initStackedAreaChart();
+          initEventTimeline();
+          updateAxisTabs();
+          updateInsights();
+        });
+      });
+      
+      // Phase 3 비교 축 선택
+      let selectedCompAxis = '제도';
+      document.querySelectorAll('.axis-tab[data-comp-axis]').forEach(tab => {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.axis-tab[data-comp-axis]').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          selectedCompAxis = this.getAttribute('data-comp-axis');
+          mockData.comparison.axis = selectedCompAxis;
+          initComparisonChart();
+          updateComparisonInsights();
+        });
+      });
+      
+      // Phase 4 섹션 네비게이션
+      document.querySelectorAll('.section-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const section = this.getAttribute('data-section');
+          const heading = document.querySelector(`#markdownReport h1, #markdownReport h2`);
+          if (heading) {
+            heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+      
+      // 초기 로딩 시뮬레이션
+      showLoading();
+      setTimeout(() => {
+        hideLoading();
+        // 차트 초기화를 약간 지연시켜 DOM 렌더링 완료 보장
+        setTimeout(() => {
+          initCharts();
+        }, 100);
+      }, 1000);
+    });
+    
+    // ============================================
+    // 차트 초기화 함수
+    // ============================================
+    function initCharts() {
+      initRadarChart();
+      // initSunburstChart(); // 초기에는 숨김, 레이더 축 클릭 시 모달로만 표시
+      initStackedAreaChart();
+      initEventTimeline();
+      // initComparisonChart(); // IntersectionObserver로 지연 로딩
+      updateInsights();
+      updateComparisonInsights();
+      
+      // Phase 3 비교 차트는 IntersectionObserver로 지연 로딩
+      const comparisonObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              initComparisonChart();
+            }, 100);
+            comparisonObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      const comparisonSection = document.getElementById('phase3');
+      if (comparisonSection) {
+        comparisonObserver.observe(comparisonSection);
+      } else {
+        // phase3 섹션이 없으면 즉시 초기화 시도
+        setTimeout(() => {
+          initComparisonChart();
+        }, 500);
+      }
+    }
+    
+    // ============================================
+    // 레이더 차트 구현 (Phase 1)
+    // ============================================
+    let radarChartAxes = null;
+    let radarChartG = null;
+    let currentHighlightedAxis = null;
+    let selectedRadarAxis = null; // 선택된 레이더 축 (I, F, A, M, Sedu)
+    
+    function initRadarChart() {
+      const svg = d3.select("#radarChart");
+      svg.selectAll("*").remove();
+      
+      // SVG 크기를 viewBox에 맞춤
+      const container = svg.node().parentElement;
+      const containerWidth = container ? container.clientWidth : 450;
+      const size = Math.min(containerWidth, 450);
+      
+      svg.attr('width', size).attr('height', size);
+      
+      const width = size;
+      const height = size;
+      const margin = { top: 60, right: 60, bottom: 60, left: 60 };
+      const radius = Math.min(width, height) / 2 - margin.top;
+      
+      const data = mockData.artistSummary.radar5;
+      const axes = [
+        { key: 'I', label: '기관전시', fullName: 'Institution', sunburstAxis: '제도' },
+        { key: 'F', label: '페어', fullName: 'Fair', sunburstAxis: '제도' },
+        { key: 'A', label: '시상', fullName: 'Award', sunburstAxis: '학술' },
+        { key: 'M', label: '미디어', fullName: 'Media', sunburstAxis: '담론' },
+        { key: 'Sedu', label: '교육', fullName: 'Seduction', sunburstAxis: '네트워크' }
+      ];
+      
+      radarChartAxes = axes;
+      
+      const angleSlice = (Math.PI * 2) / axes.length;
+      const rScale = d3.scaleLinear().range([0, radius]).domain([0, 100]);
+      
+      const g = svg.append('g')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+      
+      radarChartG = g;
+      
+      // 접근성 속성 추가
+      svg.attr('role', 'img')
+        .attr('aria-label', '아티스트 5축 레이더 차트')
+        .attr('aria-describedby', 'radar-chart-description');
+      
+      svg.append('title')
+        .text(`레이더 차트: I=${data.I}, F=${data.F}, A=${data.A}, M=${data.M}, Sedu=${data.Sedu}`);
+      
+      svg.append('desc')
+        .attr('id', 'radar-chart-description')
+        .text('5축 레이더 차트로 아티스트의 현재 가치를 시각화합니다. 각 축은 기관전시, 페어, 시상, 미디어, 교육을 나타냅니다.');
+      
+      // 배경 그리드
+      const gridLevels = 5;
+      for (let i = 1; i <= gridLevels; i++) {
+        const levelFactor = radius * (i / gridLevels);
+        const points = axes.map((axis, idx) => {
+          const x = levelFactor * Math.cos(angleSlice * idx - Math.PI / 2);
+          const y = levelFactor * Math.sin(angleSlice * idx - Math.PI / 2);
+          return `${x},${y}`;
+        }).join(' ');
+        
+        g.append('polygon')
+          .attr('points', points)
+          .style('fill', 'none')
+          .style('stroke', '#E5E7EB')
+          .style('stroke-width', '1px');
+      }
+      
+      // 축 선 (각 축에 ID 추가)
+      axes.forEach((axis, i) => {
+        const axisLine = g.append('line')
+          .attr('id', `radar-axis-${axis.key}`)
+          .attr('x1', 0)
+          .attr('y1', 0)
+          .attr('x2', rScale(100) * Math.cos(angleSlice * i - Math.PI / 2))
+          .attr('y2', rScale(100) * Math.sin(angleSlice * i - Math.PI / 2))
+          .style('stroke', '#D1D5DB')
+          .style('stroke-width', '2px')
+          .style('cursor', 'url("ref/4.svg"), pointer')
+          .on('mouseover', function() {
+            d3.select(this)
+              .transition()
+              .duration(200)
+              .style('stroke', '#8B5CF6')
+              .style('stroke-width', '4px')
+              .style('filter', 'brightness(1.3) drop-shadow(0 0 8px rgba(139, 92, 246, 0.6))');
+            highlightRadarAxis(axis.key);
+          })
+          .on('mouseout', function() {
+            if (currentHighlightedAxis !== axis.key) {
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .style('stroke', '#D1D5DB')
+                .style('stroke-width', '2px')
+                .style('filter', 'none');
+            }
+          })
+          .on('click', function() {
+            switchToSunburstAxis(axis.key);
+          });
+      });
+      
+      // 데이터 라인
+      const points = axes.map((axis, i) => {
+        const value = data[axis.key];
+        const x = rScale(value) * Math.cos(angleSlice * i - Math.PI / 2);
+        const y = rScale(value) * Math.sin(angleSlice * i - Math.PI / 2);
+        return `${x},${y}`;
+      }).join(' ');
+      
+      g.append('polygon')
+        .attr('points', points)
+        .style('fill', 'rgba(139, 92, 246, 0.2)')
+        .style('stroke', '#8B5CF6')
+        .style('stroke-width', '3px');
+      
+      // 데이터 포인트
+      axes.forEach((axis, i) => {
+        const value = data[axis.key];
+        const x = rScale(value) * Math.cos(angleSlice * i - Math.PI / 2);
+        const y = rScale(value) * Math.sin(angleSlice * i - Math.PI / 2);
+        
+        g.append('circle')
+          .attr('cx', x)
+          .attr('cy', y)
+          .attr('r', 5)
+          .style('fill', '#8B5CF6')
+          .style('cursor', 'url("ref/4.svg"), pointer')
+          .on('mouseover', function(event) {
+            d3.select(this)
+              .transition()
+              .duration(200)
+              .attr('r', 8)
+              .style('filter', 'brightness(1.3) drop-shadow(0 0 8px rgba(139, 92, 246, 0.6))');
+            showTooltip(event, `${axis.label}: ${value.toFixed(1)}`);
+            highlightRadarAxis(axis.key);
+          })
+          .on('mousemove', function(event) {
+            showTooltip(event, `${axis.label}: ${value.toFixed(1)}`);
+          })
+          .on('mouseout', function() {
+            if (currentHighlightedAxis !== axis.key) {
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('r', 5)
+                .style('filter', 'none');
+            }
+            hideTooltip();
+          })
+          .on('click', function() {
+            switchToSunburstAxis(axis.key);
+          });
+      });
+      
+      // 축 레이블
+      axes.forEach((axis, i) => {
+        g.append('text')
+          .attr('x', rScale(120) * Math.cos(angleSlice * i - Math.PI / 2))
+          .attr('y', rScale(120) * Math.sin(angleSlice * i - Math.PI / 2))
+          .attr('text-anchor', 'middle')
+          .attr('dy', '0.35em')
+          .style('font-family', 'Nanum Myeongjo, serif')
+          .style('font-size', '14px')
+          .style('font-weight', '600')
+          .style('fill', '#28317C')
+          .style('cursor', 'url("ref/4.svg"), pointer')
+          .on('mouseover', function() {
+            d3.select(this)
+              .transition()
+              .duration(200)
+              .style('font-size', '16px')
+              .style('filter', 'brightness(1.3) drop-shadow(0 0 4px rgba(139, 92, 246, 0.6))');
+            highlightRadarAxis(axis.key);
+          })
+          .on('mouseout', function() {
+            if (currentHighlightedAxis !== axis.key) {
+              d3.select(this)
+                .transition()
+                .duration(200)
+                .style('font-size', '14px')
+                .style('filter', 'none');
+            }
+          })
+          .on('click', function() {
+            switchToSunburstAxis(axis.key);
+          })
+          .text(axis.label);
+      });
+    }
+    
+    function highlightRadarAxis(axisKey) {
+      if (!radarChartG || !radarChartAxes) return;
+      
+      // 기존 하이라이트 제거
+      if (currentHighlightedAxis) {
+        radarChartG.select(`#radar-axis-${currentHighlightedAxis}`)
+          .style('stroke', '#D1D5DB')
+          .style('stroke-width', '2px');
+      }
+      
+      // 새로운 하이라이트
+      if (axisKey) {
+        radarChartG.select(`#radar-axis-${axisKey}`)
+          .transition()
+          .duration(300)
+          .style('stroke', '#8B5CF6')
+          .style('stroke-width', '4px');
+        currentHighlightedAxis = axisKey;
+      } else {
+        currentHighlightedAxis = null;
+      }
+    }
+    
+    // 레이더 축 클릭 시 선버스트 차트 전환 함수
+    function switchToSunburstAxis(radarAxisKey) {
+      // 레이더 축 하이라이트
+      highlightRadarAxis(radarAxisKey);
+      
+      // 선택된 축 저장
+      selectedRadarAxis = radarAxisKey;
+      
+      // 팝업 모달 열기
+      openRadarPopup(radarAxisKey);
+    }
+    
+    // 팝업 모달 열기
+    function openRadarPopup(radarAxisKey) {
+      const modal = document.getElementById('radarPopupModal');
+      const titleEl = document.getElementById('radarPopupTitle');
+      const subtitleEl = document.getElementById('radarPopupSubtitle');
+      
+      // 축 정보 가져오기
+      const axis = radarChartAxes.find(a => a.key === radarAxisKey);
+      if (axis) {
+        titleEl.textContent = `${axis.label} 상세 분석`;
+        subtitleEl.textContent = `${axis.fullName} 축의 위계 구조를 탐색하세요`;
+      }
+      
+      // 모달 표시
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // 배경만 어둡게 (body/main opacity 제거)
+      
+      // 해당 축의 위계 데이터로 선버스트 차트 생성
+      const hierarchyData = mockData.artistSummary.sunburstHierarchy[radarAxisKey];
+      if (hierarchyData) {
+        initPopupSunburstChart(hierarchyData);
+      }
+    }
+    
+    // 팝업 모달 닫기
+    function closeRadarPopup() {
+      const modal = document.getElementById('radarPopupModal');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      // 팝업 선버스트 차트 제거
+      d3.select("#radarPopupSunburst").selectAll("*").remove();
+      
+      // 선택된 축 초기화
+      selectedRadarAxis = null;
+      currentHighlightedAxis = null;
+      clickedNode = null; // Observable 방식: 클릭된 노드 초기화
+    }
+    
+    // 팝업 선버스트 차트 초기화 (줌/팬 기능 포함)
+    let popupSunburstZoom = null;
+    let popupSunburstRoot = null;
+    let clickedNode = null; // Observable 방식: 현재 클릭된 노드 추적
+    
+    function initPopupSunburstChart(hierarchyData) {
+      const svg = d3.select("#radarPopupSunburst");
+      svg.selectAll("*").remove();
+      
+      const size = 800;
+      const radius = size / 2;
+      
+      svg.attr('width', size).attr('height', size);
+      
+      const g = svg.append('g')
+        .attr('transform', `translate(${size / 2}, ${size / 2})`);
+      
+      // 계층 구조 생성
+      const root = d3.hierarchy(hierarchyData)
+        .sum(d => d.value || 0)
+        .sort((a, b) => b.value - a.value);
+      
+      popupSunburstRoot = root;
+      clickedNode = root; // 초기에는 루트 노드가 클릭된 상태
+      
+      // 파티션 레이아웃 (Observable 방식: 두 레이어만 표시)
+      d3.partition().size([2 * Math.PI, root.height + 2])(root);
+      
+      root.each(d => {
+        d.current = d;
+      });
+      
+      // 색상 스케일 (위계별 및 도메인별)
+      const domainColorMap = {
+        '제도': {
+          base: '#8B5CF6',
+          l1: '#8B5CF6',
+          l2: '#A78BFA',
+          l3: '#C4B5FD',
+          l4: '#DDD6FE',
+          l5: '#EDE9FE'
+        },
+        '학술': {
+          base: '#7C3AED',
+          l1: '#7C3AED',
+          l2: '#8B5CF6',
+          l3: '#A78BFA',
+          l4: '#C4B5FD',
+          l5: '#DDD6FE'
+        },
+        '담론': {
+          base: '#6D28D9',
+          l1: '#6D28D9',
+          l2: '#7C3AED',
+          l3: '#8B5CF6',
+          l4: '#A78BFA',
+          l5: '#C4B5FD'
+        },
+        '네트워크': {
+          base: '#5B21B6',
+          l1: '#5B21B6',
+          l2: '#6D28D9',
+          l3: '#7C3AED',
+          l4: '#8B5CF6',
+          l5: '#A78BFA'
+        }
+      };
+      
+      function getColorForNode(node) {
+        let domainNode = node;
+        while (domainNode.depth > 1 && domainNode.parent) {
+          domainNode = domainNode.parent;
+        }
+        const domainName = domainNode.data.name || domainNode.data.axis || '제도';
+        const domainColors = domainColorMap[domainName] || domainColorMap['제도'];
+        
+        const depth = node.depth;
+        if (depth === 1) return domainColors.l1;
+        if (depth === 2) return domainColors.l2;
+        if (depth === 3) return domainColors.l3;
+        if (depth === 4) return domainColors.l4;
+        return domainColors.l5;
+      }
+      
+      const colorScale = d3.scaleOrdinal()
+        .domain(['제도', '학술', '담론', '네트워크', '기관전시', '페어', '시상', '미디어', '교육', 'Tier-S', 'Tier-A', 'Tier-B', '국제', '국내'])
+        .range(['#8B5CF6', '#7C3AED', '#6D28D9', '#5B21B6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE', '#F3F4F6', '#DBEAFE', '#BFDBFE', '#93C5FD', '#60A5FA', '#3B82F6']);
+      
+      // Arc 생성기
+      const arc = d3.arc()
+        .startAngle(d => d.x0)
+        .endAngle(d => d.x1)
+        .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+        .padRadius(radius)
+        .innerRadius(d => d.y0 * radius)
+        .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1));
+      
+      // 줌 동작 정의
+      popupSunburstZoom = d3.zoom()
+        .scaleExtent([0.5, 5])
+        .on('zoom', function(event) {
+          const currentScale = event.transform.k;
+          g.attr('transform', event.transform.toString() + ` translate(${size / 2}, ${size / 2})`);
+          
+          // 레벨별 기본 폰트 크기 및 스케일링 팩터
+          const baseSizes = {
+            1: 18, // L1
+            2: 16, // L2
+            3: 14, // L3
+            4: 12, // L4
+            5: 10  // L5
+          };
+          const scaleFactors = {
+            1: 1.2, // L1은 더 크게
+            2: 1.1, // L2는 조금 크게
+            3: 1.0, // L3는 기본
+            4: 0.95, // L4는 조금 작게
+            5: 0.9   // L5는 더 작게
+          };
+          
+          // 각 레벨별로 폰트 크기 업데이트
+          g.selectAll('text').each(function(d) {
+            // d가 undefined이거나 depth 속성이 없을 때 처리
+            if (!d) {
+              const dataDepth = parseInt(d3.select(this).attr('data-depth')) || 3;
+              const baseSize = baseSizes[dataDepth] || 12;
+              const scaleFactor = scaleFactors[dataDepth] || 1.0;
+              const scaledSize = baseSize * currentScale * scaleFactor;
+              const minFontSize = 10;
+              const maxFontSize = 32;
+              const fontSize = Math.max(minFontSize, Math.min(maxFontSize, scaledSize));
+              d3.select(this).attr('font-size', fontSize + 'px');
+              return;
+            }
+            
+            const depth = (d && typeof d.depth === 'number') ? d.depth : parseInt(d3.select(this).attr('data-depth')) || 3;
+            const baseSize = baseSizes[depth] || 12;
+            const scaleFactor = scaleFactors[depth] || 1.0;
+            const scaledSize = baseSize * currentScale * scaleFactor;
+            const minFontSize = 10; // 최소 시인성 보장
+            const maxFontSize = 32; // 최대 크기 제한
+            const fontSize = Math.max(minFontSize, Math.min(maxFontSize, scaledSize));
+            d3.select(this).attr('font-size', fontSize + 'px');
+          });
+        });
+      
+      svg.call(popupSunburstZoom);
+      
+      // Path 렌더링 (위계별 색상 적용)
+      const path = g.selectAll('path')
+        .data(root.descendants().slice(1))
+        .join('path')
+        .attr('fill', d => {
+          // 위계별 색상 사용
+          return getColorForNode(d) || colorScale(d.data.name) || colorScale(d.data.axis) || '#8B5CF6';
+        })
+        .attr('fill-opacity', d => arcVisible(d.current) ? (d.children ? 0.8 : 0.6) : 0)
+        .attr('stroke', '#FFFFFF')
+        .attr('stroke-width', 2)
+        .attr('d', d => arc(d.current))
+        .style('cursor', 'pointer')
+        .style('filter', 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))') // 글로우 효과
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill-opacity', d => arcVisible(d.current) ? 1 : 0)
+            .style('filter', 'drop-shadow(0 4px 8px rgba(139, 92, 246, 0.4))'); // 호버 시 글로우 강화
+          const percentage = (d.value / root.value * 100).toFixed(1);
+          showTooltip(event, `${d.data.name}\n${d.value.toFixed(1)} (${percentage}%)`);
+        })
+        .on('mousemove', function(event, d) {
+          const percentage = (d.value / root.value * 100).toFixed(1);
+          showTooltip(event, `${d.data.name}\n${d.value.toFixed(1)} (${percentage}%)`);
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill-opacity', d => arcVisible(d.current) ? (d.children ? 0.8 : 0.6) : 0)
+            .style('filter', 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))');
+          hideTooltip();
+        })
+        .on('click', function(event, d) {
+          clicked(event, d);
+        });
+      
+      // 레이블 렌더링 (레벨별 기본 폰트 크기 설정)
+      const label = g.selectAll('text')
+        .data(root.descendants().slice(1))
+        .join('text')
+        .attr('dy', '0.35em')
+        .attr('fill', '#FFFFFF')
+        .attr('fill-opacity', d => +labelVisible(d.current))
+        .attr('transform', d => labelTransform(d.current))
+        .attr('data-depth', d => d.depth) // 레벨 구분을 위한 속성 추가
+        .attr('font-weight', '500')
+        .attr('font-family', 'Nanum Myeongjo, serif')
+        .each(function(d) {
+          // 레벨별 기본 폰트 크기 설정 (최소 시인성 보장)
+          const baseSizes = {
+            1: 18, // L1
+            2: 16, // L2
+            3: 14, // L3
+            4: 12, // L4
+            5: 10  // L5
+          };
+          const baseSize = baseSizes[d.depth] || 10;
+          d3.select(this).attr('font-size', baseSize + 'px');
+        })
+        .text(d => d.data.name);
+      
+      // 중앙 이미지 (WAT.svg)
+      const centerImageSize = radius * 0.6;
+      const centerImage = g.append('image')
+        .attr('href', 'ref/WAT.svg')
+        .attr('x', -centerImageSize / 2)
+        .attr('y', -centerImageSize / 2)
+        .attr('width', centerImageSize)
+        .attr('height', centerImageSize)
+        .attr('pointer-events', 'none');
+      
+      // 하얀색 써클 (이미지 위에 배치)
+      const parent = g.append('circle')
+        .datum(root)
+        .attr('r', radius * 0.25)
+        .attr('fill', 'rgba(255, 255, 255, 0.95)')
+        .attr('stroke', '#28317C')
+        .attr('stroke-width', 3)
+        .attr('pointer-events', 'all')
+        .style('filter', 'drop-shadow(0 2px 4px rgba(40, 49, 124, 0.2))')
+        .on('click', function(event, d) {
+          clicked(event, d);
+        });
+      
+      // 중앙 텍스트 (써클 안에 표시, 써클 범위를 넘지 않도록)
+      const centerText = g.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', '#28317C')
+        .attr('font-size', '14px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'Nanum Myeongjo, serif')
+        .style('pointer-events', 'none')
+        .call(function(text) {
+          // 텍스트가 써클 범위를 넘지 않도록 길이 제한
+          const maxWidth = radius * 0.4; // 써클 지름의 약 80%
+          const textNode = text.node();
+          const textLength = textNode.getComputedTextLength();
+          if (textLength > maxWidth) {
+            const textContent = root.data.name;
+            let truncated = textContent;
+            while (textNode.getComputedTextLength() > maxWidth && truncated.length > 0) {
+              truncated = truncated.slice(0, -1);
+              text.text(truncated + '...');
+            }
+          } else {
+            text.text(root.data.name);
+          }
+        });
+      
+      // 클릭 핸들러 (드릴다운) - Observable 방식 개선
+      function clicked(event, p) {
+        event.stopPropagation();
+        parent.datum(p.parent || root);
+        
+        // Observable 방식: 클릭된 노드 업데이트
+        clickedNode = p;
+        
+        root.each(d => {
+          d.target = {
+            x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+            x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+            y0: Math.max(0, d.y0 - p.depth),
+            y1: Math.max(0, d.y1 - p.depth)
+          };
+        });
+        
+        const t = svg.transition().duration(750);
+        
+        path.transition(t)
+          .tween('data', d => {
+            const i = d3.interpolate(d.current, d.target);
+            return t => d.current = i(t);
+          })
+          .filter(function(d) {
+            return +this.getAttribute('fill-opacity') || arcVisible(d.target);
+          })
+          .attr('fill-opacity', d => arcVisible(d.target) ? (d.children ? 0.8 : 0.6) : 0)
+          .attrTween('d', d => () => arc(d.current));
+        
+        label.filter(function(d) {
+            return +this.getAttribute('fill-opacity') || labelVisible(d.target);
+          })
+          .transition(t)
+          .attr('fill-opacity', d => +labelVisible(d.target))
+          .attrTween('transform', d => () => labelTransform(d.current));
+        
+        centerText.text(p.data.name);
+      }
+      
+      function arcVisible(d) {
+        // Observable 방식: 두 레이어만 표시 (현재 클릭된 노드의 depth와 depth+1)
+        const clickedDepth = clickedNode ? clickedNode.depth : 0;
+        return d.y1 <= clickedDepth + 2 && d.y0 >= clickedDepth && d.x1 > d.x0;
+      }
+      
+      function labelVisible(d) {
+        // Observable 방식: 두 레이어만 표시하고, 작은 섹션은 숨김
+        const clickedDepth = clickedNode ? clickedNode.depth : 0;
+        return d.y1 <= clickedDepth + 2 && d.y0 >= clickedDepth && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.02;
+      }
+      
+      function labelTransform(d) {
+        const x = (((d.x0 + d.x1) / 2) * 180) / Math.PI;
+        const y = ((d.y0 + d.y1) / 2) * radius;
+        return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+      }
+    }
+    
+    // 줌 리셋 함수
+    function resetSunburstZoom() {
+      if (popupSunburstZoom) {
+        const svg = d3.select("#radarPopupSunburst");
+        svg.transition()
+          .duration(750)
+          .call(popupSunburstZoom.transform, d3.zoomIdentity);
+      }
+    }
+    
+    // ============================================
+    // 선버스트 차트 구현 (Phase 1)
+    // ============================================
+    let sunburstChartG = null;
+    let currentHighlightedSunburst = null;
+    let sunburstRoot = null; // 현재 표시 중인 루트 노드
+    let sunburstCurrentPath = null; // 현재 경로 (드릴다운 추적)
+    
+    // 초기 선버스트 차트 (L1 전체 보기) - d3.partition 사용
+    function initSunburstChart() {
+      const svg = d3.select("#sunburstChart");
+      svg.selectAll("*").remove();
+      
+      // SVG 크기를 viewBox에 맞춤
+      const container = svg.node().parentElement;
+      const containerWidth = container ? container.clientWidth : 500;
+      const size = Math.min(containerWidth, 500);
+      
+      svg.attr('width', size).attr('height', size);
+      
+      const width = size;
+      const height = size;
+      const radius = Math.min(width, height) / 2;
+      
+      const data = mockData.artistSummary.sunburst_l1;
+      
+      // 계층 구조 생성 (루트 -> L1 축들)
+      const rootData = {
+        name: mockData.artistSummary.name || "아티스트",
+        children: Object.entries(data).map(([name, value]) => ({
+          name: name,
+          value: value * 100
+        }))
+      };
+      
+      const root = d3.hierarchy(rootData)
+        .sum(d => d.value || 0)
+        .sort((a, b) => b.value - a.value);
+      
+      // 파티션 레이아웃 (L3까지 표시되도록 size 조정)
+      d3.partition().size([2 * Math.PI, root.height + 2])(root);
+      
+      // 각 노드에 current 속성 추가 (애니메이션용)
+      root.each(d => {
+        d.current = d;
+      });
+      
+      const g = svg.append('g')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+      
+      sunburstChartG = g;
+      
+      // 접근성 속성 추가
+      svg.attr('role', 'img')
+        .attr('aria-label', '아티스트 4축 선버스트 차트')
+        .attr('aria-describedby', 'sunburst-chart-description');
+      
+      svg.append('title')
+        .text(`선버스트 차트: 제도=${(data.제도 * 100).toFixed(1)}%, 학술=${(data.학술 * 100).toFixed(1)}%, 담론=${(data.담론 * 100).toFixed(1)}%, 네트워크=${(data.네트워크 * 100).toFixed(1)}%`);
+      
+      svg.append('desc')
+        .attr('id', 'sunburst-chart-description')
+        .text('4축 선버스트 차트로 아티스트의 가치 분포를 시각화합니다. 각 섹터는 제도, 학술, 담론, 네트워크 축을 나타냅니다.');
+      
+      // 색상 스케일 (위계별 및 도메인별)
+      // L1: 메인 도메인 색상 (밝고 진한 톤)
+      // L2-L3: 중간 위계 (중간 톤)
+      // L4-L5: 하위 위계 (밝고 부드러운 톤)
+      const domainColorMap = {
+        '제도': {
+          base: '#8B5CF6',
+          l1: '#8B5CF6',    // 진한 보라
+          l2: '#A78BFA',    // 중간 보라
+          l3: '#C4B5FD',    // 밝은 보라
+          l4: '#DDD6FE',    // 매우 밝은 보라
+          l5: '#EDE9FE'     // 가장 밝은 보라
+        },
+        '학술': {
+          base: '#7C3AED',
+          l1: '#7C3AED',
+          l2: '#8B5CF6',
+          l3: '#A78BFA',
+          l4: '#C4B5FD',
+          l5: '#DDD6FE'
+        },
+        '담론': {
+          base: '#6D28D9',
+          l1: '#6D28D9',
+          l2: '#7C3AED',
+          l3: '#8B5CF6',
+          l4: '#A78BFA',
+          l5: '#C4B5FD'
+        },
+        '네트워크': {
+          base: '#5B21B6',
+          l1: '#5B21B6',
+          l2: '#6D28D9',
+          l3: '#7C3AED',
+          l4: '#8B5CF6',
+          l5: '#A78BFA'
+        }
+      };
+      
+      // 위계별 색상 결정 함수
+      function getColorForNode(node) {
+        // 루트에서 도메인 찾기
+        let domainNode = node;
+        while (domainNode.depth > 1 && domainNode.parent) {
+          domainNode = domainNode.parent;
+        }
+        const domainName = domainNode.data.name || domainNode.data.axis || '제도';
+        const domainColors = domainColorMap[domainName] || domainColorMap['제도'];
+        
+        // 위계에 따라 색상 선택
+        const depth = node.depth;
+        if (depth === 1) return domainColors.l1;
+        if (depth === 2) return domainColors.l2;
+        if (depth === 3) return domainColors.l3;
+        if (depth === 4) return domainColors.l4;
+        return domainColors.l5;
+      }
+      
+      const colorScale = d3.scaleOrdinal()
+        .domain(['제도', '학술', '담론', '네트워크', '기관전시', '페어', '시상', '미디어', '교육', 'Tier-S', 'Tier-A', 'Tier-B', '국제', '국내'])
+        .range(['#8B5CF6', '#7C3AED', '#6D28D9', '#5B21B6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE', '#F3F4F6', '#DBEAFE', '#BFDBFE', '#93C5FD', '#60A5FA', '#3B82F6']);
+      
+      // Arc 생성기
+      const arc = d3.arc()
+        .startAngle(d => d.x0)
+        .endAngle(d => d.x1)
+        .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+        .padRadius(radius)
+        .innerRadius(d => d.y0 * radius)
+        .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1));
+      
+      // Path 렌더링 (L1만, 즉 children만)
+      const path = g.selectAll('path')
+        .data(root.descendants().slice(1)) // 루트 제외
+        .join('path')
+        .attr('fill', d => colorScale(d.data.name))
+        .attr('fill-opacity', d => arcVisible(d.current) ? 0.8 : 0)
+        .attr('stroke', '#FFFFFF')
+        .attr('stroke-width', 2)
+        .attr('d', d => arc(d.current))
+        .style('cursor', 'pointer')
+        .attr('id', d => `sunburst-${d.data.name}`)
+        .style('filter', 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))') // 글로우 효과
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill-opacity', 1)
+            .style('filter', 'drop-shadow(0 4px 8px rgba(139, 92, 246, 0.4))'); // 호버 시 글로우 강화
+          const percentage = (d.value / root.value * 100).toFixed(1);
+          showTooltip(event, `${d.data.name}\n${d.value.toFixed(1)} (${percentage}%)`);
+        })
+        .on('mousemove', function(event, d) {
+          const percentage = (d.value / root.value * 100).toFixed(1);
+          showTooltip(event, `${d.data.name}\n${d.value.toFixed(1)} (${percentage}%)`);
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill-opacity', d => arcVisible(d.current) ? 0.8 : 0)
+            .style('filter', 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))');
+          hideTooltip();
+        })
+        .on('click', function(event, d) {
+          // 레이더 차트 하이라이트
+          const axisMapping = {
+            '제도': ['I', 'F'],
+            '학술': ['A'],
+            '담론': ['M'],
+            '네트워크': ['Sedu']
+          };
+          const radarAxes = axisMapping[d.data.name] || [];
+          if (radarAxes.length > 0) {
+            highlightRadarAxis(radarAxes[0]);
+          }
+        });
+      
+      // 레이블 렌더링
+      const label = g.selectAll('text')
+        .data(root.descendants().slice(1))
+        .join('text')
+        .attr('dy', '0.35em')
+        .attr('fill', '#FFFFFF')
+        .attr('fill-opacity', d => +labelVisible(d.current))
+        .attr('transform', d => labelTransform(d.current))
+        .attr('font-size', '14px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'Nanum Myeongjo, serif')
+        .text(d => d.data.name);
+      
+      // 중앙 이미지 (WAT.svg)
+      const centerImageSize = radius * 0.6;
+      const centerImage = g.append('image')
+        .attr('href', 'ref/WAT.svg')
+        .attr('x', -centerImageSize / 2)
+        .attr('y', -centerImageSize / 2)
+        .attr('width', centerImageSize)
+        .attr('height', centerImageSize)
+        .attr('pointer-events', 'none');
+      
+      // 하얀색 써클 (이미지 위에 배치)
+      const centerCircle = g.append('circle')
+        .datum(root)
+        .attr('r', radius * 0.25)
+        .attr('fill', 'rgba(255, 255, 255, 0.95)')
+        .attr('stroke', '#28317C')
+        .attr('stroke-width', 3)
+        .style('cursor', 'default')
+        .style('filter', 'drop-shadow(0 2px 4px rgba(40, 49, 124, 0.2))');
+      
+      // 중앙 텍스트 (써클 안에 표시, 써클 범위를 넘지 않도록)
+      const centerText = g.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', '#28317C')
+        .attr('font-size', '14px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'Nanum Myeongjo, serif')
+        .style('pointer-events', 'none')
+        .call(function(text) {
+          // 텍스트가 써클 범위를 넘지 않도록 길이 제한
+          const maxWidth = radius * 0.4; // 써클 지름의 약 80%
+          const textNode = text.node();
+          const textLength = textNode.getComputedTextLength();
+          if (textLength > maxWidth) {
+            const textContent = root.data.name;
+            let truncated = textContent;
+            while (textNode.getComputedTextLength() > maxWidth && truncated.length > 0) {
+              truncated = truncated.slice(0, -1);
+              text.text(truncated + '...');
+            }
+          } else {
+            text.text(root.data.name);
+          }
+        });
+      
+      // Helper 함수들
+      function arcVisible(d) {
+        // L3 레벨까지 표시되도록 조건 완화
+        return d.y1 <= 4 && d.y0 >= 0 && d.x1 > d.x0;
+      }
+      
+      function labelVisible(d) {
+        // L3 레벨까지 표시되도록 조건 완화
+        return d.y1 <= 4 && d.y0 >= 0 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.02;
+      }
+      
+      function labelTransform(d) {
+        const x = (((d.x0 + d.x1) / 2) * 180) / Math.PI;
+        const y = ((d.y0 + d.y1) / 2) * radius;
+        return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+      }
+      
+      // 초기화: 선택된 축 없음
+      selectedRadarAxis = null;
+      sunburstRoot = null;
+      sunburstCurrentPath = null;
+    }
+    
+    // 동적 선버스트 차트 (위계 구조 드릴다운)
+    function initDynamicSunburstChart(hierarchyData) {
+      const svg = d3.select("#sunburstChart");
+      svg.selectAll("*").remove();
+      
+      // SVG 크기를 viewBox에 맞춤
+      const container = svg.node().parentElement;
+      const containerWidth = container ? container.clientWidth : 500;
+      const size = Math.min(containerWidth, 500);
+      
+      svg.attr('width', size).attr('height', size);
+      
+      const width = size;
+      const height = size;
+      const radius = Math.min(width, height) / 2;
+      
+      const g = svg.append('g')
+        .attr('transform', `translate(${width / 2}, ${height / 2})`);
+      
+      sunburstChartG = g;
+      
+      // 계층 구조 생성
+      const root = d3.hierarchy(hierarchyData)
+        .sum(d => d.value || 0)
+        .sort((a, b) => b.value - a.value);
+      
+      sunburstRoot = root;
+      
+      // 파티션 레이아웃 (L3까지 표시되도록 size 조정)
+      d3.partition().size([2 * Math.PI, root.height + 2])(root);
+      
+      // 각 노드에 current 속성 추가 (애니메이션용)
+      root.each(d => {
+        d.current = d;
+      });
+      
+      // 색상 스케일 (위계별 및 도메인별)
+      const domainColorMap = {
+        '제도': {
+          base: '#8B5CF6',
+          l1: '#8B5CF6',
+          l2: '#A78BFA',
+          l3: '#C4B5FD',
+          l4: '#DDD6FE',
+          l5: '#EDE9FE'
+        },
+        '학술': {
+          base: '#7C3AED',
+          l1: '#7C3AED',
+          l2: '#8B5CF6',
+          l3: '#A78BFA',
+          l4: '#C4B5FD',
+          l5: '#DDD6FE'
+        },
+        '담론': {
+          base: '#6D28D9',
+          l1: '#6D28D9',
+          l2: '#7C3AED',
+          l3: '#8B5CF6',
+          l4: '#A78BFA',
+          l5: '#C4B5FD'
+        },
+        '네트워크': {
+          base: '#5B21B6',
+          l1: '#5B21B6',
+          l2: '#6D28D9',
+          l3: '#7C3AED',
+          l4: '#8B5CF6',
+          l5: '#A78BFA'
+        }
+      };
+      
+      function getColorForNode(node) {
+        let domainNode = node;
+        while (domainNode.depth > 1 && domainNode.parent) {
+          domainNode = domainNode.parent;
+        }
+        const domainName = domainNode.data.name || domainNode.data.axis || '제도';
+        const domainColors = domainColorMap[domainName] || domainColorMap['제도'];
+        
+        const depth = node.depth;
+        if (depth === 1) return domainColors.l1;
+        if (depth === 2) return domainColors.l2;
+        if (depth === 3) return domainColors.l3;
+        if (depth === 4) return domainColors.l4;
+        return domainColors.l5;
+      }
+      
+      const colorScale = d3.scaleOrdinal()
+        .domain(['제도', '학술', '담론', '네트워크', '기관전시', '페어', '시상', '미디어', '교육', 'Tier-S', 'Tier-A', 'Tier-B', '국제', '국내'])
+        .range(['#8B5CF6', '#7C3AED', '#6D28D9', '#5B21B6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE', '#F3F4F6', '#DBEAFE', '#BFDBFE', '#93C5FD', '#60A5FA', '#3B82F6']);
+      
+      // Arc 생성기
+      const arc = d3.arc()
+        .startAngle(d => d.x0)
+        .endAngle(d => d.x1)
+        .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+        .padRadius(radius)
+        .innerRadius(d => d.y0 * radius)
+        .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1));
+      
+      // Path 렌더링 (위계별 색상 적용)
+      const path = g.selectAll('path')
+        .data(root.descendants().slice(1))
+        .join('path')
+        .attr('fill', d => {
+          // 위계별 색상 사용
+          return getColorForNode(d) || colorScale(d.data.name) || colorScale(d.data.axis) || '#8B5CF6';
+        })
+        .attr('fill-opacity', d => arcVisible(d.current) ? (d.children ? 0.8 : 0.6) : 0)
+        .attr('stroke', '#FFFFFF')
+        .attr('stroke-width', 2)
+        .attr('d', d => arc(d.current))
+        .style('cursor', 'pointer')
+        .style('filter', 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))') // 글로우 효과
+        .on('mouseover', function(event, d) {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill-opacity', d => arcVisible(d.current) ? 1 : 0)
+            .style('filter', 'drop-shadow(0 4px 8px rgba(139, 92, 246, 0.4))'); // 호버 시 글로우 강화
+          const percentage = (d.value / root.value * 100).toFixed(1);
+          showTooltip(event, `${d.data.name}\n${d.value.toFixed(1)} (${percentage}%)`);
+        })
+        .on('mousemove', function(event, d) {
+          const percentage = (d.value / root.value * 100).toFixed(1);
+          showTooltip(event, `${d.data.name}\n${d.value.toFixed(1)} (${percentage}%)`);
+        })
+        .on('mouseout', function() {
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr('fill-opacity', d => arcVisible(d.current) ? (d.children ? 0.8 : 0.6) : 0)
+            .style('filter', 'drop-shadow(0 2px 4px rgba(139, 92, 246, 0.2))');
+          hideTooltip();
+        })
+        .on('click', function(event, d) {
+          clicked(event, d);
+        });
+      
+      // 레이블 렌더링
+      const label = g.selectAll('text')
+        .data(root.descendants().slice(1))
+        .join('text')
+        .attr('dy', '0.35em')
+        .attr('fill', '#FFFFFF')
+        .attr('fill-opacity', d => +labelVisible(d.current))
+        .attr('transform', d => labelTransform(d.current))
+        .attr('font-size', '12px')
+        .attr('font-weight', '500')
+        .attr('font-family', 'Nanum Myeongjo, serif')
+        .text(d => d.data.name);
+      
+      // 중앙 원 (방향타 스타일 - 백 버튼)
+      const parent = g.append('circle')
+        .datum(root)
+        .attr('r', radius * 0.3)
+        .attr('fill', 'rgba(241, 240, 236, 0.95)')
+        .attr('stroke', '#28317C')
+        .attr('stroke-width', 3)
+        .attr('pointer-events', 'all')
+        .style('filter', 'drop-shadow(0 2px 4px rgba(40, 49, 124, 0.2))')
+        .on('click', function(event, d) {
+          clicked(event, d);
+        });
+      
+      // 방향타 스타일 라인 추가 (8방향)
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI * 2) / 8;
+        const innerRadius = radius * 0.25;
+        const outerRadius = radius * 0.35;
+        const x1 = Math.cos(angle) * innerRadius;
+        const y1 = Math.sin(angle) * innerRadius;
+        const x2 = Math.cos(angle) * outerRadius;
+        const y2 = Math.sin(angle) * outerRadius;
+        
+        g.append('line')
+          .attr('x1', x1)
+          .attr('y1', y1)
+          .attr('x2', x2)
+          .attr('y2', y2)
+          .attr('stroke', '#28317C')
+          .attr('stroke-width', 1.5)
+          .style('opacity', 0.6)
+          .style('pointer-events', 'none');
+      }
+      
+      // 중앙 텍스트
+      const centerText = g.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', '#28317C')
+        .attr('font-size', '16px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'Nanum Myeongjo, serif')
+        .text(root.data.name);
+      
+      // 클릭 핸들러 (줌/드릴다운)
+      function clicked(event, p) {
+        parent.datum(p.parent || root);
+        
+        // 타겟 위치 계산
+        root.each(d => {
+          d.target = {
+            x0: Math.max(0, Math.min(1, (d.x0 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+            x1: Math.max(0, Math.min(1, (d.x1 - p.x0) / (p.x1 - p.x0))) * 2 * Math.PI,
+            y0: Math.max(0, d.y0 - p.depth),
+            y1: Math.max(0, d.y1 - p.depth)
+          };
+        });
+        
+        const t = svg.transition().duration(750);
+        
+        // Path 애니메이션
+        path.transition(t)
+          .tween('data', d => {
+            const i = d3.interpolate(d.current, d.target);
+            return t => d.current = i(t);
+          })
+          .filter(function(d) {
+            return +this.getAttribute('fill-opacity') || arcVisible(d.target);
+          })
+          .attr('fill-opacity', d => arcVisible(d.target) ? (d.children ? 0.8 : 0.6) : 0)
+          .attrTween('d', d => () => arc(d.current));
+        
+        // Label 애니메이션
+        label.filter(function(d) {
+            return +this.getAttribute('fill-opacity') || labelVisible(d.target);
+          })
+          .transition(t)
+          .attr('fill-opacity', d => +labelVisible(d.target))
+          .attrTween('transform', d => () => labelTransform(d.current));
+        
+        // 중앙 텍스트 업데이트
+        centerText.text(p.data.name);
+      }
+      
+      // Helper 함수들
+      function arcVisible(d) {
+        // L3 레벨까지 표시되도록 조건 완화
+        return d.y1 <= 4 && d.y0 >= 0 && d.x1 > d.x0;
+      }
+      
+      function labelVisible(d) {
+        // L3 레벨까지 표시되도록 조건 완화
+        return d.y1 <= 4 && d.y0 >= 0 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.02;
+      }
+      
+      function labelTransform(d) {
+        const x = (((d.x0 + d.x1) / 2) * 180) / Math.PI;
+        const y = ((d.y0 + d.y1) / 2) * radius;
+        return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
+      }
+    }
+    
+    function highlightSunburstAxis(axisName) {
+      if (!sunburstChartG) return;
+      
+      // 기존 하이라이트 제거
+      if (currentHighlightedSunburst) {
+        sunburstChartG.select(`#sunburst-${currentHighlightedSunburst}`)
+          .style('stroke', '#FFFFFF')
+          .style('stroke-width', '2px');
+      }
+      
+      // 새로운 하이라이트
+      if (axisName) {
+        sunburstChartG.select(`#sunburst-${axisName}`)
+          .transition()
+          .duration(300)
+          .style('stroke', '#FBBF24')
+          .style('stroke-width', '4px');
+        currentHighlightedSunburst = axisName;
+      } else {
+        currentHighlightedSunburst = null;
+      }
+    }
+    
+    // ============================================
+    // StackedAreaChart 구현 (Phase 2) - 수정: 단일 축 선택 시 라인 차트로 변경
+    // ============================================
+    let stackedAreaChartSvg = null;
+    let eventTimelineSvg = null;
+    let selectedAxis = 'all';
+    let sharedXScale = null;
+    
+    // 예측값 계산 함수 (10-14년 데이터 기반)
+    function calculatePrediction(axisData) {
+      const recentData = axisData.filter(d => d.t >= 10 && d.t <= 14);
+      if (recentData.length < 3) return null;
+      
+      // 선형 회귀를 사용한 예측 (간단한 평균 기울기)
+      const n = recentData.length;
+      const sumX = recentData.reduce((sum, d) => sum + d.t, 0);
+      const sumY = recentData.reduce((sum, d) => sum + d.v, 0);
+      const sumXY = recentData.reduce((sum, d) => sum + d.t * d.v, 0);
+      const sumX2 = recentData.reduce((sum, d) => sum + d.t * d.t, 0);
+      
+      const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+      
+      const predict16 = Math.min(1, Math.max(0, slope * 16 + intercept));
+      const predict17 = Math.min(1, Math.max(0, slope * 17 + intercept));
+      const predict18 = Math.min(1, Math.max(0, slope * 18 + intercept));
+      
+      return [
+        {t: 16, v: predict16, predicted: true},
+        {t: 17, v: predict17, predicted: true},
+        {t: 18, v: predict18, predicted: true}
+      ];
+    }
+    
+    function initStackedAreaChart() {
+      const svg = d3.select("#stackedAreaChart");
+      svg.selectAll("*").remove();
+      
+      stackedAreaChartSvg = svg;
+      
+      // 컨테이너 크기에 맞춰 동적으로 크기 계산
+      const container = svg.node().parentElement;
+      const containerWidth = container ? container.clientWidth : 800;
+      const width = Math.max(containerWidth, 400);
+      const height = Math.max(width / 2, 300);
+      
+      svg.attr('width', width).attr('height', height);
+      
+      const margin = { top: 20, right: 150, bottom: 40, left: 50 };
+      
+      // 데이터 검증
+      const data = mockData.timeseries || {};
+      const axes = ['제도', '학술', '담론', '네트워크'];
+      const colors = ['#3B82F6', '#22C55E', '#F97316', '#A855F7'];
+      
+      // 접근성 속성 추가
+      svg.attr('role', 'img')
+        .attr('aria-label', '아티스트 커리어 궤적 시계열 차트')
+        .attr('aria-describedby', 'timeseries-chart-description');
+      
+      svg.append('title')
+        .text('시계열 차트: 제도, 학술, 담론, 네트워크');
+      
+      svg.append('desc')
+        .attr('id', 'timeseries-chart-description')
+        .text('4축 누적 영역 차트로 아티스트의 커리어 궤적을 시각화합니다.');
+      
+      // allTimes 배열 생성 (데이터 검증 포함)
+      const allTimes = [...new Set(
+        axes.flatMap(axis => {
+          if (!data[axis] || !Array.isArray(data[axis])) return [];
+          return data[axis].map(d => d && typeof d.t === 'number' ? d.t : null).filter(t => t !== null);
+        })
+      )].sort((a, b) => a - b);
+      
+      // allTimes가 비어있으면 기본값 사용
+      if (allTimes.length === 0) {
+        console.warn('No valid timeseries data found, using default domain');
+        allTimes.push(0, 2, 4, 6, 8, 10, 12, 14);
+      }
+      
+      // 예측값 추가
+      const maxTime = Math.max(...allTimes);
+      const predictionTimes = [16, 17, 18];
+      const allTimesWithPrediction = [...allTimes, ...predictionTimes];
+      
+      sharedXScale = d3.scaleLinear()
+        .domain([0, 18])
+        .range([margin.left, width - margin.right]);
+      
+      const yScale = d3.scaleLinear()
+        .domain([0, 1])
+        .range([height - margin.bottom, margin.top]);
+      
+      const g = svg.append('g');
+      
+      if (selectedAxis === 'all') {
+        // 전체 축일 때는 Stacked Area Chart
+        const area = d3.area()
+          .x(d => {
+            const x = typeof d.t === 'number' ? sharedXScale(d.t) : 0;
+            return isNaN(x) ? 0 : x;
+          })
+          .y0(d => {
+            const y0 = typeof d.y0 === 'number' ? yScale(d.y0) : 0;
+            return isNaN(y0) ? 0 : y0;
+          })
+          .y1(d => {
+            const y0 = typeof d.y0 === 'number' ? d.y0 : 0;
+            const v = typeof d.v === 'number' ? d.v : 0;
+            const y1 = yScale(y0 + v);
+            return isNaN(y1) ? 0 : y1;
+          })
+          .curve(d3.curveMonotoneX);
+        
+        const stack = d3.stack()
+          .keys(axes)
+          .value((d, key) => {
+            if (!data[key] || !Array.isArray(data[key])) return 0;
+            const point = data[key].find(p => p && p.t === d.t);
+            const value = point && typeof point.v === 'number' ? point.v : 0;
+            return isNaN(value) ? 0 : value;
+          });
+        
+        const stackedData = stack(allTimes.map(t => ({ t })));
+        
+        // stackedData 검증 및 NaN 필터링
+        stackedData.forEach((series, i) => {
+          // series가 유효한지 확인
+          if (!Array.isArray(series) || series.length === 0) return;
+          
+          // 유효한 데이터만 필터링
+          const validSeries = series.filter(d => {
+            return d && 
+                   typeof d.t === 'number' && !isNaN(d.t) &&
+                   typeof d.y0 === 'number' && !isNaN(d.y0) &&
+                   typeof d.v === 'number' && !isNaN(d.v);
+          });
+          
+          if (validSeries.length === 0) return;
+          
+          g.append('path')
+            .datum(validSeries)
+            .attr('fill', colors[i])
+            .attr('opacity', 0.7)
+            .attr('d', area)
+            .attr('data-axis', axes[i])
+            .on('mouseover', function() {
+              d3.select(this).attr('opacity', 0.9);
+            })
+            .on('mouseout', function() {
+              d3.select(this).attr('opacity', 0.7);
+            });
+        });
+      } else {
+        // 단일 축 선택 시 라인 차트
+        const axisData = data[selectedAxis];
+        if (!axisData || !Array.isArray(axisData) || axisData.length === 0) {
+          console.warn(`No data available for axis: ${selectedAxis}`);
+          return;
+        }
+        
+        const axisColor = colors[axes.indexOf(selectedAxis)];
+        const prediction = calculatePrediction(axisData);
+        const allData = [...axisData, ...(prediction || [])];
+        
+        const line = d3.line()
+          .x(d => {
+            const x = typeof d.t === 'number' ? sharedXScale(d.t) : 0;
+            return isNaN(x) ? 0 : x;
+          })
+          .y(d => {
+            const y = typeof d.v === 'number' ? yScale(d.v) : 0;
+            return isNaN(y) ? 0 : y;
+          })
+          .curve(d3.curveMonotoneX);
+        
+        const lineDashed = d3.line()
+          .x(d => {
+            const x = typeof d.t === 'number' ? sharedXScale(d.t) : 0;
+            return isNaN(x) ? 0 : x;
+          })
+          .y(d => {
+            const y = typeof d.v === 'number' ? yScale(d.v) : 0;
+            return isNaN(y) ? 0 : y;
+          })
+          .curve(d3.curveMonotoneX);
+        
+        // 실제 데이터 라인
+        const actualData = axisData.filter(d => !d.predicted && typeof d.t === 'number' && typeof d.v === 'number' && !isNaN(d.t) && !isNaN(d.v));
+        if (actualData.length > 0) {
+          g.append('path')
+            .datum(actualData)
+            .attr('fill', 'none')
+            .attr('stroke', axisColor)
+            .attr('stroke-width', 3)
+            .attr('d', line);
+        }
+        
+        // 점선 연결 (예측 구간)
+        if (prediction && prediction.length > 0) {
+          const lastActual = axisData[axisData.length - 1];
+          if (lastActual && typeof lastActual.t === 'number' && typeof lastActual.v === 'number') {
+            const validPrediction = prediction.filter(d => typeof d.t === 'number' && typeof d.v === 'number' && !isNaN(d.t) && !isNaN(d.v));
+            if (validPrediction.length > 0) {
+              const predictionLineData = [lastActual, ...validPrediction];
+              
+              g.append('path')
+                .datum(predictionLineData)
+                .attr('fill', 'none')
+                .attr('stroke', axisColor)
+                .attr('stroke-width', 2)
+                .attr('stroke-dasharray', '5,5')
+                .attr('opacity', 0.6)
+                .attr('d', lineDashed);
+            }
+          }
+        }
+        
+        // 데이터 포인트
+        allData.forEach(d => {
+          if (d && typeof d.t === 'number' && typeof d.v === 'number' && !isNaN(d.t) && !isNaN(d.v)) {
+            const x = sharedXScale(d.t);
+            const y = yScale(d.v);
+            if (!isNaN(x) && !isNaN(y)) {
+              g.append('circle')
+                .attr('cx', x)
+                .attr('cy', y)
+                .attr('r', d.predicted ? 4 : 5)
+                .attr('fill', axisColor)
+                .attr('stroke', '#fff')
+                .attr('stroke-width', d.predicted ? 1 : 2)
+                .attr('opacity', d.predicted ? 0.6 : 1)
+                .style('cursor', 'pointer')
+                .on('mouseover', function(event) {
+                  d3.select(this).attr('r', d.predicted ? 6 : 7);
+                  const label = d.predicted ? '예측' : '실제';
+                  showTooltip(event, `${selectedAxis}: ${(d.v * 100).toFixed(1)}%\n${d.t}년 (${label})`);
+                })
+                .on('mouseout', function() {
+                  d3.select(this).attr('r', d.predicted ? 4 : 5);
+                  hideTooltip();
+                });
+            }
+          }
+        });
+      }
+      
+      // 범례 추가
+      const legend = svg.append('g')
+        .attr('transform', `translate(${width - 150}, ${margin.top})`);
+      
+      axes.forEach((axis, i) => {
+        const legendItem = legend.append('g')
+          .attr('transform', `translate(0, ${i * 25})`)
+          .style('cursor', 'pointer')
+          .on('click', function() {
+            selectedAxis = selectedAxis === axis ? 'all' : axis;
+            initStackedAreaChart();
+            initEventTimeline();
+            updateAxisTabs();
+            updateInsights();
+          });
+        
+        legendItem.append('rect')
+          .attr('width', 15)
+          .attr('height', 15)
+          .attr('fill', colors[i])
+          .style('opacity', selectedAxis === 'all' || selectedAxis === axis ? 1 : 0.3);
+        
+        legendItem.append('text')
+          .attr('x', 20)
+          .attr('y', 12)
+          .style('font-family', 'Nanum Myeongjo, serif')
+          .style('font-size', '12px')
+          .style('fill', '#28317C')
+          .style('opacity', selectedAxis === 'all' || selectedAxis === axis ? 1 : 0.3)
+          .text(axis);
+      });
+      
+      // 호버 영역 추가 (중앙 정렬)
+      svg.append('rect')
+        .attr('width', width - margin.left - margin.right)
+        .attr('height', height - margin.top - margin.bottom)
+        .attr('x', margin.left)
+        .attr('y', margin.top)
+        .style('fill', 'none')
+        .style('pointer-events', 'all')
+        .on('mousemove', function(event) {
+          const [mouseX] = d3.pointer(event);
+          const time = sharedXScale.invert(mouseX);
+          const closestTime = allTimesWithPrediction.reduce((prev, curr) => 
+            Math.abs(curr - time) < Math.abs(prev - time) ? curr : prev
+          );
+          
+          if (selectedAxis === 'all') {
+            const values = axes.map((axis, idx) => {
+              const point = data[axis].find(p => p.t === closestTime);
+              return point ? point.v : 0;
+            });
+            
+            const tooltipContent = axes.map((axis, idx) => 
+              `${axis}: ${(values[idx] * 100).toFixed(1)}%`
+            ).join('\n');
+            
+            showTooltip(event, tooltipContent);
+          } else {
+            const axisData = data[selectedAxis];
+            const point = axisData.find(p => p.t === closestTime);
+            if (point) {
+              showTooltip(event, `${selectedAxis}: ${(point.v * 100).toFixed(1)}%\n${point.t}년`);
+            }
+          }
+          
+          // EventTimeline 동기화
+          highlightEventTimeline(closestTime);
+        })
+        .on('mouseout', function() {
+          hideTooltip();
+          clearEventTimelineHighlight();
+        });
+      
+      // 축
+      svg.append('g')
+        .attr('transform', `translate(0, ${height - margin.bottom})`)
+        .call(d3.axisBottom(sharedXScale).tickFormat(d => `${d}년`))
+        .style('font-family', 'Nanum Myeongjo, serif');
+      
+      svg.append('g')
+        .attr('transform', `translate(${margin.left}, 0)`)
+        .call(d3.axisLeft(yScale))
+        .style('font-family', 'Nanum Myeongjo, serif');
+    }
+    
+    function updateStackedAreaChart() {
+      initStackedAreaChart();
+    }
+    
+    function highlightEventTimeline(time) {
+      if (!eventTimelineSvg) return;
+      
+      eventTimelineSvg.selectAll('circle')
+        .each(function(d) {
+          if (Math.abs(d.t - time) < 1) {
+            d3.select(this)
+              .transition()
+              .duration(200)
+              .attr('r', 10);
+          }
+        });
+    }
+    
+    function clearEventTimelineHighlight() {
+      if (!eventTimelineSvg) return;
+      
+      eventTimelineSvg.selectAll('circle')
+        .transition()
+        .duration(200)
+        .attr('r', 6);
+    }
+    
+    // ============================================
+    // EventTimeline 구현 (Phase 2) - X축 동기화
+    // ============================================
+    function initEventTimeline() {
+      const svg = d3.select("#eventTimeline");
+      svg.selectAll("*").remove();
+      
+      eventTimelineSvg = svg;
+      
+      const width = 800;
+      const height = 100;
+      const margin = { top: 20, right: 30, bottom: 20, left: 50 };
+      
+      // X축을 StackedAreaChart와 동일하게 설정
+      const xScale = sharedXScale || d3.scaleLinear()
+        .domain([0, 18])
+        .range([margin.left, width - margin.right]);
+      
+      // 선택된 축에 해당하는 이벤트만 표시
+      const filteredEvents = selectedAxis === 'all' 
+        ? Object.values(mockData.events).flat()
+        : mockData.events[selectedAxis] || [];
+      
+      const eventTypeColors = {
+        '전시': '#EF4444',
+        '아트페어': '#FBBF24',
+        '시상': '#3B82F6',
+        '논문': '#22C55E',
+        '학회': '#10B981',
+        '미디어': '#F97316',
+        '비평': '#8B5CF6',
+        '협업': '#EC4899',
+        '멘토링': '#06B6D4'
+      };
+      
+      // 접근성 속성 추가
+      svg.attr('role', 'img')
+        .attr('aria-label', '이벤트 타임라인')
+        .attr('aria-describedby', 'event-timeline-description');
+      
+      svg.append('title')
+        .text('이벤트 타임라인: 전시, 아트페어, 시상, 논문 등');
+      
+      svg.append('desc')
+        .attr('id', 'event-timeline-description')
+        .text('아티스트의 주요 이벤트를 시간순으로 표시합니다.');
+      
+      filteredEvents.forEach(event => {
+        const axis = selectedAxis === 'all' 
+          ? Object.keys(mockData.events).find(key => 
+              mockData.events[key].some(e => e.event_id === event.event_id)
+            )
+          : selectedAxis;
+        
+        svg.append('circle')
+          .datum(event)
+          .attr('cx', xScale(event.t))
+          .attr('cy', height / 2)
+          .attr('r', 6)
+          .attr('fill', eventTypeColors[event.type] || '#EF4444')
+          .style('cursor', 'pointer')
+          .on('mouseover', function(event) {
+            d3.select(this).attr('r', 10);
+            showTooltip(event, `${event.type} (${axis})\n${event.t}년\n영향도: +${(event.delta_v * 100).toFixed(1)}%`);
+          })
+          .on('mousemove', function(event) {
+            showTooltip(event, `${event.type} (${axis})\n${event.t}년\n영향도: +${(event.delta_v * 100).toFixed(1)}%`);
+          })
+          .on('mouseout', function() {
+            d3.select(this).attr('r', 6);
+            hideTooltip();
+          });
+      });
+      
+      // X축 제거 (StackedAreaChart에만 X축 표시)
+      // 점만 표시하고 X축 라벨 제거
+    }
+    
+    function updateInsights() {
+      const insightsContainer = document.getElementById('phase2Insights');
+      if (!insightsContainer) return;
+      
+      const insights = {
+        'all': [
+          '성장 패턴: 지속적 상승 (최근 5년)',
+          '주요 이벤트: 2015년 전시 (스파이크)',
+          '상관계수: 제도-학술 0.85'
+        ],
+        '제도': [
+          '제도 축 성장률: 연평균 12.3% 상승 (2010-2025)',
+          '주요 이벤트: 2015년 전시 (영향도 +15.0%), 2020년 아트페어 (영향도 +12.0%)',
+          '예측: 2026-2028년 지속적 성장 예상 (10-14년 데이터 기반 선형 회귀)'
+        ],
+        '학술': [
+          '학술 축 성장률: 연평균 18.5% 상승 (2010-2025)',
+          '주요 이벤트: 2018년 논문 발표 (영향도 +20.0%), 2021년 학회 참여 (영향도 +15.0%)',
+          '예측: 2026-2028년 안정적 성장 유지 예상 (학술 활동 지속)'
+        ],
+        '담론': [
+          '담론 축 성장률: 연평균 15.2% 상승 (2010-2025)',
+          '주요 이벤트: 2015년 미디어 노출 (영향도 +18.0%), 2020년 비평 게재 (영향도 +10.0%)',
+          '예측: 2026-2028년 점진적 성장 예상 (미디어 채널 확대)'
+        ],
+        '네트워크': [
+          '네트워크 축 성장률: 연평균 16.8% 상승 (2010-2025)',
+          '주요 이벤트: 2020년 협업 프로젝트 (영향도 +18.0%), 2014년 멘토링 프로그램 (영향도 +12.0%)',
+          '예측: 2026-2028년 지속적 확장 예상 (네트워크 효과 누적)'
+        ]
+      };
+      
+      const currentInsights = insights[selectedAxis] || insights['all'];
+      insightsContainer.innerHTML = currentInsights.map(item => 
+        `<li style="margin-bottom: var(--dyss-space-2);">${item}</li>`
+      ).join('');
+    }
+    
+    function updateAxisTabs() {
+      document.querySelectorAll('.axis-tab[data-axis]').forEach(tab => {
+        const axis = tab.getAttribute('data-axis');
+        if (axis === selectedAxis) {
+          tab.classList.add('active');
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+    }
+    
+    // ============================================
+    // ComparisonChart 구현 (Phase 3)
+    // ============================================
+    let comparisonChartSvg = null;
+    let lineAVisible = true;
+    let lineBVisible = true;
+    
+    function initComparisonChart() {
+      const svg = d3.select("#comparisonChart");
+      if (svg.empty()) {
+        console.warn('comparisonChart SVG not found');
+        return;
+      }
+      
+      svg.selectAll("*").remove();
+      
+      // SVG 크기를 컨테이너에 맞춤 (명시적 크기 설정)
+      const container = svg.node().parentElement;
+      if (!container) {
+        console.warn('comparisonChart container not found');
+        return;
+      }
+      
+      // 컨테이너 크기를 기다림
+      let containerWidth = container.clientWidth || container.offsetWidth;
+      if (containerWidth === 0) {
+        // 컨테이너가 아직 렌더링되지 않았으면 기본값 사용
+        containerWidth = 800;
+      }
+      
+      const width = Math.max(containerWidth, 400); // 최소 400px
+      const height = Math.max(width / 2, 200); // 2:1 비율, 최소 200px
+      
+      // SVG 속성 명시적으로 설정
+      svg.attr('width', width)
+         .attr('height', height)
+         .attr('viewBox', `0 0 ${width} ${height}`)
+         .attr('preserveAspectRatio', 'xMidYMid meet')
+         .style('display', 'block')
+         .style('visibility', 'visible')
+         .style('opacity', 1);
+      
+      comparisonChartSvg = svg;
+      
+      const margin = { top: 20, right: 150, bottom: 40, left: 50 };
+      
+      // 선택된 축에 따라 데이터 가져오기
+      const currentAxis = mockData.comparison.axis || '제도';
+      const axisData = mockData.comparison[currentAxis] || mockData.comparison.제도;
+      console.log('Comparison axis data:', axisData, 'Current axis:', currentAxis);
+      if (!axisData || !axisData.series) {
+        console.warn('No comparison data available', axisData);
+        // 빈 차트 표시
+        svg.append('text')
+          .attr('x', width / 2)
+          .attr('y', height / 2)
+          .attr('text-anchor', 'middle')
+          .style('font-family', 'Nanum Myeongjo, serif')
+          .style('font-size', '16px')
+          .text('데이터를 불러오는 중...');
+        return;
+      }
+      
+      const data = axisData.series;
+      const metrics = axisData.metrics;
+      
+      console.log('Comparison data:', data, 'Metrics:', metrics);
+      
+      if (!data || data.length === 0) {
+        console.warn('Comparison series data is empty');
+        svg.append('text')
+          .attr('x', width / 2)
+          .attr('y', height / 2)
+          .attr('text-anchor', 'middle')
+          .style('font-family', 'Nanum Myeongjo, serif')
+          .style('font-size', '16px')
+          .text('데이터가 없습니다.');
+        return;
+      }
+      
+      // 축별 색상 정의
+      const axisColors = {
+        '제도': { a: '#3B82F6', b: '#60A5FA' }, // 블루 계열
+        '학술': { a: '#22C55E', b: '#4ADE80' }, // 그린 계열
+        '담론': { a: '#F97316', b: '#FB923C' }, // 오렌지 계열
+        '네트워크': { a: '#A855F7', b: '#C084FC' } // 퍼플 계열
+      };
+      
+      const colors = axisColors[currentAxis] || axisColors['제도'];
+      
+      // 접근성 속성 추가
+      svg.attr('role', 'img')
+        .attr('aria-label', `${mockData.comparison.artistA} vs ${mockData.comparison.artistB} 비교 차트 (${currentAxis} 축)`)
+        .attr('aria-describedby', 'comparison-chart-description');
+      
+      svg.append('title')
+        .text(`비교 차트: 상관계수=${metrics.correlation}, 절대 차이 합계=${metrics.abs_diff_sum}`);
+      
+      svg.append('desc')
+        .attr('id', 'comparison-chart-description')
+        .text(`두 아티스트의 ${currentAxis} 축 비교 분석 차트입니다.`);
+      
+      // X축과 Y축 범위 계산
+      const xExtent = d3.extent(data, d => d.t);
+      const yExtent = [0, 1]; // 정규화된 값이므로 0-1
+      
+      const xScale = d3.scaleLinear()
+        .domain(xExtent)
+        .range([margin.left, width - margin.right])
+        .nice();
+      
+      const yScale = d3.scaleLinear()
+        .domain(yExtent)
+        .range([height - margin.bottom, margin.top])
+        .nice();
+      
+      // X축 그리드 라인
+      const xAxis = d3.axisBottom(xScale)
+        .tickFormat(d => `${d}년`)
+        .ticks(Math.min(10, data.length));
+      
+      const yAxis = d3.axisLeft(yScale)
+        .tickFormat(d => (d * 100).toFixed(0) + '%')
+        .ticks(5);
+      
+      // 축 렌더링 (먼저 축을 그려서 차트가 보이도록)
+      svg.append('g')
+        .attr('transform', `translate(0, ${height - margin.bottom})`)
+        .call(xAxis)
+        .style('font-family', 'Nanum Myeongjo, serif')
+        .style('font-size', '12px')
+        .style('color', '#28317C');
+      
+      svg.append('g')
+        .attr('transform', `translate(${margin.left}, 0)`)
+        .call(yAxis)
+        .style('font-family', 'Nanum Myeongjo, serif')
+        .style('font-size', '12px')
+        .style('color', '#28317C');
+      
+      const lineA = d3.line()
+        .x(d => xScale(d.t))
+        .y(d => yScale(d.v_A))
+        .curve(d3.curveMonotoneX);
+      
+      const lineB = d3.line()
+        .x(d => xScale(d.t))
+        .y(d => yScale(d.v_B))
+        .curve(d3.curveMonotoneX);
+      
+      const lineGroupA = svg.append('g').attr('class', 'line-group-a');
+      const lineGroupB = svg.append('g').attr('class', 'line-group-b');
+      
+      lineGroupA.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', colors.a)
+        .attr('stroke-width', 3)
+        .attr('d', lineA)
+        .style('opacity', lineAVisible ? 1 : 0.3);
+      
+      lineGroupB.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', colors.b)
+        .attr('stroke-width', 3)
+        .attr('d', lineB)
+        .style('opacity', lineBVisible ? 1 : 0.3);
+      
+      // 데이터 포인트 마커
+      lineGroupA.selectAll('.point-a')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', 'point-a')
+        .attr('cx', d => xScale(d.t))
+        .attr('cy', d => yScale(d.v_A))
+        .attr('r', 4)
+        .attr('fill', colors.a)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .style('cursor', 'pointer')
+        .style('opacity', lineAVisible ? 1 : 0.3);
+      
+      lineGroupB.selectAll('.point-b')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', 'point-b')
+        .attr('cx', d => xScale(d.t))
+        .attr('cy', d => yScale(d.v_B))
+        .attr('r', 4)
+        .attr('fill', colors.b)
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 1.5)
+        .style('cursor', 'pointer')
+        .style('opacity', lineBVisible ? 1 : 0.3);
+      
+      // 범례 추가
+      const legend = svg.append('g')
+        .attr('transform', `translate(${width - 120}, ${margin.top + 20})`);
+      
+      const legendData = [
+        { label: '아티스트 A', color: colors.a, key: 'A' },
+        { label: '아티스트 B', color: colors.b, key: 'B' }
+      ];
+      
+      legendData.forEach((item, i) => {
+        const legendItem = legend.append('g')
+          .attr('transform', `translate(0, ${i * 25})`)
+          .style('cursor', 'pointer');
+        
+        legendItem.append('line')
+          .attr('x1', 0)
+          .attr('x2', 20)
+          .attr('y1', 0)
+          .attr('y2', 0)
+          .attr('stroke', item.color)
+          .attr('stroke-width', 3)
+          .style('opacity', item.key === 'A' ? (lineAVisible ? 1 : 0.3) : (lineBVisible ? 1 : 0.3));
+        
+        legendItem.append('text')
+          .attr('x', 25)
+          .attr('y', 5)
+          .style('font-family', 'Nanum Myeongjo, serif')
+          .style('font-size', '12px')
+          .style('fill', '#28317C')
+          .text(item.label)
+          .style('opacity', item.key === 'A' ? (lineAVisible ? 1 : 0.3) : (lineBVisible ? 1 : 0.3));
+        
+        legendItem.on('click', function() {
+          if (item.key === 'A') {
+            lineAVisible = !lineAVisible;
+          } else {
+            lineBVisible = !lineBVisible;
+          }
+          updateComparisonChart();
+        });
+      });
+      
+      // 호버 영역 및 툴팁
+      const focus = svg.append('g').attr('class', 'focus').style('display', 'none');
+      
+      focus.append('line')
+        .attr('class', 'focus-line')
+        .attr('y1', margin.top)
+        .attr('y2', height - margin.bottom)
+        .style('stroke', '#666')
+        .style('stroke-width', 1)
+        .style('stroke-dasharray', '3,3')
+        .style('opacity', 0.5);
+      
+      // 축별 색상을 나중에 적용하기 위해 여기서는 기본 색상만 설정
+      focus.append('circle')
+        .attr('class', 'focus-circle-a')
+        .attr('r', 5)
+        .style('fill', colors.a)
+        .style('stroke', '#fff')
+        .style('stroke-width', 2);
+      
+      focus.append('circle')
+        .attr('class', 'focus-circle-b')
+        .attr('r', 5)
+        .style('fill', colors.b)
+        .style('stroke', '#fff')
+        .style('stroke-width', 2);
+      
+      // 호버 영역
+      svg.append('rect')
+        .attr('class', 'overlay')
+        .attr('width', width - margin.left - margin.right)
+        .attr('height', height - margin.top - margin.bottom)
+        .attr('transform', `translate(${margin.left}, ${margin.top})`)
+        .style('fill', 'none')
+        .style('pointer-events', 'all')
+        .on('mouseover', function() {
+          focus.style('display', null);
+        })
+        .on('mouseout', function() {
+          focus.style('display', 'none');
+          hideTooltip();
+        })
+        .on('mousemove', function(event) {
+          const [mouseX] = d3.pointer(event);
+          const time = xScale.invert(mouseX - margin.left);
+          const closestPoint = data.reduce((prev, curr) => 
+            Math.abs(curr.t - time) < Math.abs(prev.t - time) ? curr : prev
+          );
+          
+          focus.attr('transform', `translate(${xScale(closestPoint.t) + margin.left}, 0)`);
+          focus.select('.focus-circle-a')
+            .attr('cy', yScale(closestPoint.v_A) + margin.top)
+            .style('fill', colors.a);
+          focus.select('.focus-circle-b')
+            .attr('cy', yScale(closestPoint.v_B) + margin.top)
+            .style('fill', colors.b);
+          
+          const diff = Math.abs(closestPoint.v_A - closestPoint.v_B);
+          showTooltip(event, 
+            `${closestPoint.t}년\n` +
+            `아티스트 A: ${(closestPoint.v_A * 100).toFixed(1)}%\n` +
+            `아티스트 B: ${(closestPoint.v_B * 100).toFixed(1)}%\n` +
+            `차이: ${(diff * 100).toFixed(1)}%`
+          );
+        });
+      
+      // 메트릭 업데이트
+      updateComparisonMetrics(metrics);
+      updateComparisonInsights();
+    }
+    
+    function updateComparisonChart() {
+      if (!comparisonChartSvg) return;
+      
+      // 축별 색상 정의
+      const currentAxis = mockData.comparison.axis || '제도';
+      const axisColors = {
+        '제도': { a: '#3B82F6', b: '#60A5FA' },
+        '학술': { a: '#22C55E', b: '#4ADE80' },
+        '담론': { a: '#F97316', b: '#FB923C' },
+        '네트워크': { a: '#A855F7', b: '#C084FC' }
+      };
+      const colors = axisColors[currentAxis] || axisColors['제도'];
+      
+      comparisonChartSvg.selectAll('.line-group-a path')
+        .transition()
+        .duration(300)
+        .attr('stroke', colors.a)
+        .style('opacity', lineAVisible ? 1 : 0.3);
+      
+      comparisonChartSvg.selectAll('.line-group-b path')
+        .transition()
+        .duration(300)
+        .attr('stroke', colors.b)
+        .style('opacity', lineBVisible ? 1 : 0.3);
+      
+      comparisonChartSvg.selectAll('.point-a')
+        .transition()
+        .duration(300)
+        .attr('fill', colors.a)
+        .style('opacity', lineAVisible ? 1 : 0.3);
+      
+      comparisonChartSvg.selectAll('.point-b')
+        .transition()
+        .duration(300)
+        .attr('fill', colors.b)
+        .style('opacity', lineBVisible ? 1 : 0.3);
+      
+      // 범례 색상 업데이트
+      comparisonChartSvg.selectAll('.focus-circle-a')
+        .style('fill', colors.a);
+      comparisonChartSvg.selectAll('.focus-circle-b')
+        .style('fill', colors.b);
+    }
+    
+    function updateComparisonMetrics(metrics) {
+      const correlationEl = document.querySelector('#phase3Metrics .correlation-value');
+      const diffSumEl = document.querySelector('#phase3Metrics .diff-sum-value');
+      const aucAEl = document.querySelector('#phase3Metrics .auc-a-value');
+      const aucBEl = document.querySelector('#phase3Metrics .auc-b-value');
+      
+      if (correlationEl) correlationEl.textContent = metrics.correlation.toFixed(2);
+      if (diffSumEl) diffSumEl.textContent = metrics.abs_diff_sum.toFixed(1);
+      if (aucAEl) aucAEl.textContent = metrics.auc_A.toFixed(1);
+      if (aucBEl) aucBEl.textContent = metrics.auc_B.toFixed(1);
+    }
+    
+    function updateComparisonInsights() {
+      const insightsContainer = document.getElementById('phase3Insights');
+      if (!insightsContainer) return;
+      
+      const axis = mockData.comparison.axis || '제도';
+      const axisData = mockData.comparison[axis] || mockData.comparison.제도 || {};
+      
+      // metrics가 없을 때 기본값 생성
+      const metrics = axisData.metrics || {
+        correlation: 0.85,
+        abs_diff_sum: 125.7,
+        auc_A: 450.2,
+        auc_B: 387.5
+      };
+      
+      const insights = {
+        '제도': [
+          `상관계수: ${metrics.correlation} (높은 유사성)`,
+          `성장 패턴: 두 아티스트 모두 지속적 상승 곡선`,
+          `차이점: 아티스트 A가 후반부 역전 (2020년 이후)`,
+          `인사이트: 제도적 성취는 후반부 집중이 효과적`
+        ],
+        '학술': [
+          `상관계수: ${metrics.correlation} (매우 높은 유사성)`,
+          `성장 패턴: 두 아티스트 모두 급격한 초기 성장`,
+          `차이점: 아티스트 B가 전반적으로 앞서나감`,
+          `인사이트: 학술 활동은 초기 투자가 중요`
+        ],
+        '담론': [
+          `상관계수: ${metrics.correlation} (중간 유사성)`,
+          `성장 패턴: 아티스트 B가 더 일관된 성장`,
+          `차이점: 아티스트 A는 변동성이 큼`,
+          `인사이트: 담론 축은 지속적 노출이 핵심`
+        ],
+        '네트워크': [
+          `상관계수: ${metrics.correlation} (높은 유사성)`,
+          `성장 패턴: 두 아티스트 모두 네트워크 효과 누적`,
+          `차이점: 아티스트 A가 초반부터 앞서나감`,
+          `인사이트: 네트워크는 초기 구축이 중요`
+        ]
+      };
+      
+      const currentInsights = insights[axis] || insights['제도'];
+      insightsContainer.innerHTML = currentInsights.map(item => 
+        `<li style="margin-bottom: var(--dyss-space-2);">${item}</li>`
+      ).join('');
+      
+      // 메트릭 업데이트
+      updateComparisonMetrics(metrics);
+    }
+    
+    // ============================================
+    // Markdown 렌더링 (Phase 4)
+    // ============================================
+    function generateReport() {
+      showLoading();
+      
+      // 진행률 바 추가
+      const progressBar = document.createElement('div');
+      progressBar.id = 'reportProgress';
+      progressBar.style.cssText = 'position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: var(--dyss-color-primary); z-index: 10001; transition: width 0.3s ease;';
+      document.body.appendChild(progressBar);
+      
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90;
+        progressBar.style.width = `${progress}%`;
+      }, 200);
+      
+      setTimeout(() => {
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+        
+        setTimeout(() => {
+          progressBar.remove();
+          
+          const reportContent = mockData.report.content;
+          const html = marked.parse(reportContent);
+          document.getElementById('markdownReport').innerHTML = html;
+          
+          // 보고서 헤더 표시
+          document.getElementById('reportHeader').style.display = 'block';
+          document.getElementById('reportGeneratedAt').textContent = new Date(mockData.report.generated_at).toLocaleString('ko-KR');
+          document.getElementById('reportModel').textContent = mockData.report.model_used;
+          document.getElementById('reportTokenUsage').textContent = `${mockData.report.token_usage.input.toLocaleString()} / ${mockData.report.token_usage.output.toLocaleString()}`;
+          
+          // 섹션 네비게이션 표시
+          document.getElementById('reportNavigation').style.display = 'flex';
+          
+          // 액션 버튼 표시
+          document.getElementById('reportActions').style.display = 'flex';
+          
+          hideLoading();
+          
+          // 섹션 네비게이션을 위한 스크롤 처리
+          document.querySelectorAll('#markdownReport h1, #markdownReport h2').forEach(heading => {
+            heading.style.cursor = 'pointer';
+            heading.setAttribute('id', heading.textContent.toLowerCase().replace(/\s+/g, '-'));
+            heading.addEventListener('click', function() {
+              this.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+          });
+          
+          // 섹션 네비게이션 버튼 업데이트
+          document.querySelectorAll('.section-nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const section = this.getAttribute('data-section');
+              const heading = document.querySelector(`#markdownReport h1, #markdownReport h2`);
+              if (heading && heading.textContent.toLowerCase().includes(section.toLowerCase())) {
+                heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            });
+          });
+        }, 300);
+      }, 2000);
+    }
+    
+    function downloadReport(format) {
+      if (format === 'pdf') {
+        alert('PDF 다운로드 기능은 프로토타입에서는 시뮬레이션됩니다.\n실제 구현 시 PDF 생성 라이브러리를 사용합니다.');
+      } else {
+        // Markdown 다운로드
+        const content = mockData.report.content;
+        const blob = new Blob([content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `curator-odyssey-report-${mockData.artistSummary.artist_id}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+    
+    function shareReport() {
+      const url = window.location.href;
+      if (navigator.share) {
+        navigator.share({
+          title: 'CuratorOdyssey 보고서',
+          text: '아티스트 분석 보고서를 확인하세요.',
+          url: url
+        }).catch(() => {
+          copyToClipboard(url);
+        });
+      } else {
+        copyToClipboard(url);
+      }
+    }
+    
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('링크가 클립보드에 복사되었습니다.');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('링크가 클립보드에 복사되었습니다.');
+      });
+    }
+    
+    // 전역 함수로 노출
+    window.downloadReport = downloadReport;
+    window.shareReport = shareReport;
+    
+    console.log('CuratorOdyssey Prototype Loaded');
+  </script>
+</body>
+</html>
+

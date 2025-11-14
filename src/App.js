@@ -4,6 +4,8 @@ import Header from './components/layout/Header';
 import ArtistPhase1View from './components/layout/ArtistPhase1View';
 import ArtistPhase2View from './components/layout/ArtistPhase2View';
 import ArtistPhase3View from './components/layout/ArtistPhase3View';
+import ArtistPhase4View from './components/layout/ArtistPhase4View';
+import PhysicalGameResultView from './components/physical-game/PhysicalGameResultView';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import './styles/globals.css';
 import './styles/components.css';
@@ -46,7 +48,8 @@ function App() {
   const handleDrilldownToPhase4 = (artistId = currentArtistId) => {
     setCurrentArtistId(artistId);
     setCurrentPhase(4);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // /artist/:id/report 경로로 리다이렉트
+    window.location.href = `/artist/${artistId}/report`;
   };
 
   return (
@@ -127,13 +130,18 @@ function App() {
               />
               {/* Phase 4 종합 분석 라우트 */}
               <Route 
-                path="/phase4"
+                path="/artist/:id/report"
                 element={
                   <ArtistPhase4View 
                     artistId={currentArtistId}
                     onBackToPhase1={() => setCurrentPhase(1)}
                   />
                 }
+              />
+              {/* 피지컬 게임 결과 화면 라우트 */}
+              <Route 
+                path="/physical-game/result"
+                element={<PhysicalGameResultView />}
               />
             </Routes>
           </main>

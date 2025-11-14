@@ -2,6 +2,10 @@
   "name": "curator-odyssey",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.9.1",
     "@testing-library/jest-dom": "^5.16.4",

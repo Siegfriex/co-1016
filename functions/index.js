@@ -29,12 +29,28 @@ const mockArtistData = {
   }
 };
 
+// 응답 래퍼 헬퍼 함수 (API 스펙 준수)
+function wrapResponse(data, meta = {}) {
+  return {
+    data: data,
+    meta: {
+      hits: Array.isArray(data) ? data.length : (data ? 1 : 0),
+      response_time: Date.now(),
+      ...meta
+    }
+  };
+}
+
 // 📊 GET /api/artist/:id/summary (1016blprint.md STEP 2)
 exports.getArtistSummary = onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   
   try {
-    const artistId = req.query.id || 'ARTIST_0005';
+    // Path parameter 파싱: Firebase Hosting rewrites는 /api/artist/*/summary 패턴 사용
+    // 쿼리 스트링 제거 후 파싱
+    const urlParts = req.url.split('?')[0].split('/').filter(part => part);
+    // URL 구조: ['api', 'artist', '{id}', 'summary']
+    const artistId = urlParts[2] || req.query.id || req.query.artistId || 'ARTIST_0005';
     console.log(`👨‍🎨 작가 요약 요청: ${artistId}`);
     
     // 🤝 Dr. Sarah Kim 존중: P2 컬렉션 우선 확인
@@ -42,7 +58,10 @@ exports.getArtistSummary = onRequest(async (req, res) => {
       const p2Doc = await db.collection('artist_summary').doc(artistId).get();
       if (p2Doc.exists) {
         console.log('🎉 P2 실제 데이터 사용');
-        return res.status(200).json(p2Doc.data());
+        const firestoreData = p2Doc.data();
+        return res.status(200).json(wrapResponse(firestoreData, {
+          source: 'firestore'
+        }));
       }
     } catch (p2Error) {
       console.log('⏳ P2 대기 중 - 기존 목업 사용');
@@ -59,7 +78,9 @@ exports.getArtistSummary = onRequest(async (req, res) => {
     }
     
     console.log(`✅ 성공: ${data.name} (기존 목업)`);
-    return res.status(200).json(data);
+    return res.status(200).json(wrapResponse(data, {
+      source: 'mock'
+    }));
     
   } catch (error) {
     console.error('❌ API 오류:', error);
@@ -67,20 +88,80 @@ exports.getArtistSummary = onRequest(async (req, res) => {
   }
 });
 
-// 📈 GET /api/artist/:id/timeseries/:axis 
+// 📈 GET /api/artist/:id/timeseries/:axis (FR-P2-TIM-001)
 exports.getArtistTimeseries = onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   
   try {
-    const artistId = req.query.id || req.query.artistId || 'ARTIST_0005';
-    const axis = req.query.axis || '제도';
+    // Path parameter 파싱: Firebase Hosting rewrites는 /api/artist/*/timeseries/* 패턴 사용
+    // 쿼리 스트링 제거 후 파싱
+    const urlParts = req.url.split('?')[0].split('/').filter(part => part);
+    // URL 구조: ['api', 'artist', '{id}', 'timeseries', '{axis}']
+    const artistId = urlParts[2] || req.query.id || req.query.artistId || 'ARTIST_0005';
+    const axis = urlParts[4] || req.query.axis || '제도';
+    
+    // 입력 검증
+    if (!artistId || !axis) {
+      return res.status(400).json({ 
+        error: 'Missing required parameters: id and axis',
+        code: 'ERR_MISSING_PARAMS'
+      });
+    }
+    
+    // artist_id 패턴 검증
+    if (!/^ARTIST_\d{4}$/.test(artistId)) {
+      return res.status(400).json({ 
+        error: 'Invalid artist_id format. Expected pattern: ARTIST_XXXX',
+        code: 'ERR_INVALID_ARTIST_ID'
+      });
+    }
+    
+    // axis enum 검증
+    const validAxes = ['제도', '학술', '담론', '네트워크'];
+    if (!validAxes.includes(axis)) {
+      return res.status(400).json({ 
+        error: `Invalid axis. Expected one of: ${validAxes.join(', ')}`,
+        code: 'ERR_INVALID_AXIS'
+      });
+    }
     
     console.log(`📈 시계열 요청: ${artistId} - ${axis}`);
     
-    // 기본 시계열 데이터 (기존 mockData 구조 활용)
+    // Firestore에서 timeseries 데이터 조회
+    try {
+      const timeseriesId = `${artistId}_${axis}`;
+      const timeseriesDoc = await db.collection('timeseries')
+        .doc(timeseriesId)
+        .get();
+      
+      if (timeseriesDoc.exists) {
+        const data = timeseriesDoc.data();
+        console.log(`✅ Firestore 시계열 데이터 사용: ${timeseriesId}`);
+        
+        // 응답 형식 문서 스펙 준수
+        return res.status(200).json(wrapResponse({
+          artist_id: data.artist_id || artistId,
+          axis: data.axis || axis,
+          bins: data.bins || [],
+          window_applied: data.window_applied || {
+            type: "10y_weighted",
+            boost: 1.0
+          },
+          version: data.version || "v1.0"
+        }, {
+          source: 'firestore',
+          hits: data.bins?.length || 0
+        }));
+      }
+    } catch (firestoreError) {
+      console.log('⏳ Firestore 조회 실패, 목업 데이터 사용:', firestoreError.message);
+    }
+    
+    // Firestore 데이터가 없을 경우 목업 데이터 반환 (임시)
+    // TODO: 배치 함수(fnBatchTimeseries) 실행 후 제거 필요
+    console.log('⚠️ Firestore 데이터 없음, 목업 데이터 반환');
     const timeseriesData = {
       artist_id: artistId,
-      artist_name: mockArtistData[artistId]?.name || '알 수 없음',
       axis: axis,
       bins: [
         { t: 0, v: 12.5 },
@@ -89,15 +170,26 @@ exports.getArtistTimeseries = onRequest(async (req, res) => {
         { t: 15, v: 88.4 },
         { t: 20, v: 94.0 }
       ],
-      version: "AHP_v1"
+      window_applied: {
+        type: "10y_weighted",
+        boost: 1.0
+      },
+      version: "v1.0"
     };
     
-    console.log(`✅ 시계열 성공: ${timeseriesData.artist_name}`);
-    return res.status(200).json(timeseriesData);
+    return res.status(200).json(wrapResponse(timeseriesData, {
+      source: 'mock',
+      hits: timeseriesData.bins.length,
+      _mock_data: true
+    }));
     
   } catch (error) {
     console.error('❌ 시계열 API 오류:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ 
+      error: 'Timeseries retrieval error',
+      code: 'ERR_TIMESERIES_RETRIEVAL',
+      message: error.message
+    });
   }
 });
 
@@ -142,7 +234,12 @@ exports.generateAiReport = onRequest(async (req, res) => {
       fallback_used: result.fallback_used || false
     });
         
-    return res.status(200).json(result);
+    return res.status(200).json(wrapResponse(result, {
+      source: 'vertex_ai',
+      model: result.model,
+      processing_time: result.processing_time_ms,
+      tokens: result.estimated_tokens
+    }));
         
   } catch (error) {
     console.error('❌ AI 보고서 오류:', error);
@@ -201,7 +298,11 @@ exports.getArtistSunburst = onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   
   try {
-    const artistId = req.query.id || 'ARTIST_0005';
+    // Path parameter 파싱: Firebase Hosting rewrites는 /api/artist/*/sunburst 패턴 사용
+    // 쿼리 스트링 제거 후 파싱
+    const urlParts = req.url.split('?')[0].split('/').filter(part => part);
+    // URL 구조: ['api', 'artist', '{id}', 'sunburst']
+    const artistId = urlParts[2] || req.query.id || req.query.artistId || 'ARTIST_0005';
     console.log(`🌅 선버스트 데이터 요청: ${artistId}`);
     
     // P2 데이터 우선 확인
@@ -209,7 +310,10 @@ exports.getArtistSunburst = onRequest(async (req, res) => {
       const p2Doc = await db.collection('artist_sunburst').doc(artistId).get();
       if (p2Doc.exists) {
         console.log('🎉 P2 선버스트 데이터 사용');
-        return res.status(200).json(p2Doc.data());
+        const firestoreData = p2Doc.data();
+        return res.status(200).json(wrapResponse(firestoreData, {
+          source: 'firestore'
+        }));
       }
     } catch (p2Error) {
       console.log('⏳ P2 대기 중 - 목업 선버스트 사용');
@@ -249,7 +353,9 @@ exports.getArtistSunburst = onRequest(async (req, res) => {
     };
     
     console.log('✅ 선버스트 데이터 반환 완료');
-    return res.status(200).json(sunburstData);
+    return res.status(200).json(wrapResponse(sunburstData, {
+      source: 'mock'
+    }));
     
   } catch (error) {
     console.error('❌ 선버스트 오류:', error);
@@ -257,255 +363,137 @@ exports.getArtistSunburst = onRequest(async (req, res) => {
   }
 });
 
-// 📊 GET /api/compare/:artistA/:artistB (P3 비교 분석용)
+// 📊 GET /api/compare/:artistA/:artistB/:axis (FR-P3-CMP-001)
 exports.getCompareArtists = onRequest(async (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   
   try {
-    const { artistA, artistB } = req.params;
-    const axis = req.query.axis || 'all';
-    console.log(`⚖️ 아티스트 비교 요청: ${artistA} vs ${artistB} (${axis})`);
+    // Path parameter 파싱: Firebase Hosting rewrites는 /api/compare/*/*/* 패턴 사용
+    // 쿼리 스트링 제거 후 파싱
+    const urlParts = req.url.split('?')[0].split('/').filter(part => part);
+    // URL 구조: ['api', 'compare', '{artistA}', '{artistB}', '{axis}']
+    const artistA = urlParts[2] || req.params.artistA;
+    const artistB = urlParts[3] || req.params.artistB;
+    const axis = urlParts[4] || req.query.axis || req.params.axis || 'all';
+    const forceCompute = req.query.compute === 'true';
     
-    // P2 비교 데이터 우선 확인
-    try {
-      const p2Doc = await db.collection('artist_comparisons').doc(`${artistA}_vs_${artistB}`).get();
-      if (p2Doc.exists) {
-        console.log('🎉 P2 비교 데이터 사용');
-        return res.status(200).json(p2Doc.data());
-      }
-    } catch (p2Error) {
-      console.log('⏳ P2 대기 중 - 목업 비교 사용');
+    // 입력 검증
+    if (!artistA || !artistB) {
+      return res.status(400).json({ 
+        error: 'Missing required parameters: artistA and artistB',
+        code: 'ERR_MISSING_PARAMS'
+      });
     }
     
-    // 목업 비교 데이터 생성
+    // artist_id 패턴 검증
+    if (!/^ARTIST_\d{4}$/.test(artistA) || !/^ARTIST_\d{4}$/.test(artistB)) {
+      return res.status(400).json({ 
+        error: 'Invalid artist_id format. Expected pattern: ARTIST_XXXX',
+        code: 'ERR_INVALID_ARTIST_ID'
+      });
+    }
+    
+    // axis enum 검증 (all이 아닌 경우)
+    if (axis !== 'all') {
+      const validAxes = ['제도', '학술', '담론', '네트워크'];
+      if (!validAxes.includes(axis)) {
+        return res.status(400).json({ 
+          error: `Invalid axis. Expected one of: ${validAxes.join(', ')}, or 'all'`,
+          code: 'ERR_INVALID_AXIS'
+        });
+      }
+    }
+    
+    console.log(`⚖️ 아티스트 비교 요청: ${artistA} vs ${artistB} (${axis})`);
+    
+    // P2 비교 데이터 우선 확인 (forceCompute가 false인 경우)
+    if (!forceCompute) {
+      try {
+        const pairId = axis === 'all' 
+          ? `${artistA}_vs_${artistB}` 
+          : `${artistA}_vs_${artistB}_${axis}`;
+        const p2Doc = await db.collection('compare_pairs').doc(pairId).get();
+        
+        if (p2Doc.exists) {
+          const cachedData = p2Doc.data();
+          console.log('🎉 P2 비교 데이터 사용 (캐시)');
+          
+          // 문서 스펙에 맞는 응답 형식으로 변환
+          const firestoreData = {
+            pair_id: cachedData.pair_id || pairId,
+            axis: cachedData.axis || axis,
+            series: cachedData.series || [],
+            metrics: cachedData.metrics || {
+              correlation: cachedData.correlation || null,
+              abs_diff_sum: cachedData.abs_diff_sum || 0,
+              auc: cachedData.auc || null
+            },
+            cached: true,
+            computed_at: cachedData.computed_at || cachedData.calculated_at || new Date().toISOString()
+          };
+          return res.status(200).json(wrapResponse(firestoreData, {
+            source: 'firestore',
+            cache_hit: true
+          }));
+        }
+      } catch (p2Error) {
+        console.log('⏳ P2 대기 중 - 실시간 계산:', p2Error.message);
+      }
+    }
+    
+    // 목업 비교 데이터 생성 (임시, 실제로는 timeseries 데이터로 계산 필요)
     const artistAData = mockArtistData[artistA];
     const artistBData = mockArtistData[artistB];
     
     if (!artistAData || !artistBData) {
-      return res.status(404).json({ error: 'One or both artists not found' });
+      return res.status(404).json({ 
+        error: 'One or both artists not found',
+        code: 'ERR_ARTIST_NOT_FOUND'
+      });
     }
     
+    // 문서 스펙에 맞는 응답 형식으로 변환
+    // TODO: 실제 timeseries 데이터로 series 계산 필요
+    const series = [
+      { t: 0, v_A: 0.1, v_B: 0.2, diff: -0.1 },
+      { t: 5, v_A: 0.45, v_B: 0.5, diff: -0.05 },
+      { t: 10, v_A: 0.7, v_B: 0.75, diff: -0.05 }
+    ];
+    
     const comparisonData = {
-      artist_a: {
-        id: artistA,
-        name: artistAData.name,
-        radar5: artistAData.radar5,
-        sunburst_l1: artistAData.sunburst_l1
+      pair_id: `${artistA}_vs_${artistB}${axis !== 'all' ? `_${axis}` : ''}`,
+      axis: axis,
+      series: series,
+      metrics: {
+        correlation: 0.85,
+        abs_diff_sum: series.reduce((sum, item) => sum + Math.abs(item.diff), 0),
+        auc: 0.78
       },
-      artist_b: {
-        id: artistB,
-        name: artistBData.name,
-        radar5: artistBData.radar5,
-        sunburst_l1: artistBData.sunburst_l1
-      },
-      comparison_metrics: {
-        total_score_difference: Math.abs(
-          Object.values(artistAData.radar5).reduce((a, b) => a + b, 0) -
-          Object.values(artistBData.radar5).reduce((a, b) => a + b, 0)
-        ),
-        strongest_axis_a: Object.entries(artistAData.radar5)
-          .reduce((a, b) => artistAData.radar5[a[0]] > artistAData.radar5[b[0]] ? a : b)[0],
-        strongest_axis_b: Object.entries(artistBData.radar5)
-          .reduce((a, b) => artistBData.radar5[a[0]] > artistBData.radar5[b[0]] ? a : b)[0],
-        market_leader: Object.values(artistAData.radar5).reduce((a, b) => a + b, 0) > 
-                      Object.values(artistBData.radar5).reduce((a, b) => a + b, 0) ? 
-                      artistAData.name : artistBData.name
-      },
-      axis_comparison: axis === 'all' ? {
-        institution: {
-          a: artistAData.radar5.I,
-          b: artistBData.radar5.I,
-          difference: Math.abs(artistAData.radar5.I - artistBData.radar5.I)
-        },
-        fair: {
-          a: artistAData.radar5.F,
-          b: artistBData.radar5.F,
-          difference: Math.abs(artistAData.radar5.F - artistBData.radar5.F)
-        },
-        award: {
-          a: artistAData.radar5.A,
-          b: artistBData.radar5.A,
-          difference: Math.abs(artistAData.radar5.A - artistBData.radar5.A)
-        },
-        media: {
-          a: artistAData.radar5.M,
-          b: artistBData.radar5.M,
-          difference: Math.abs(artistAData.radar5.M - artistBData.radar5.M)
-        },
-        seduction: {
-          a: artistAData.radar5.Sedu,
-          b: artistBData.radar5.Sedu,
-          difference: Math.abs(artistAData.radar5.Sedu - artistBData.radar5.Sedu)
-        }
-      } : null,
-      timestamp: new Date().toISOString(),
-      _p3_ui_compatible: true
+      cached: false,
+      computed_at: new Date().toISOString()
     };
     
-    console.log('✅ 비교 데이터 반환 완료');
-    return res.status(200).json(comparisonData);
+    console.log('✅ 비교 데이터 반환 완료 (실시간 계산)');
+    return res.status(200).json(wrapResponse(comparisonData, {
+      source: 'mock',
+      cache_hit: false,
+      _mock_data: true
+    }));
     
   } catch (error) {
     console.error('❌ 비교 분석 오류:', error);
-    return res.status(500).json({ error: 'Comparison analysis error' });
-  }
-});
-
-// 📊 POST /api/ai/vertex-generate (Vertex AI 종합 보고서)
-exports.generateComprehensiveReport = onRequest(async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  
-  try {
-    const { artistIds, reportType = 'comprehensive' } = req.body;
-    console.log(`🤖 Vertex AI 종합 보고서 생성: ${artistIds?.join(', ')}`);
-    
-    // P2 Vertex AI 데이터 우선 확인
-    try {
-      const p2Doc = await db.collection('ai_reports').doc(`${artistIds?.join('_')}_${reportType}`).get();
-      if (p2Doc.exists) {
-        console.log('🎉 P2 AI 보고서 사용');
-        return res.status(200).json(p2Doc.data());
-      }
-    } catch (p2Error) {
-      console.log('⏳ P2 대기 중 - 목업 AI 보고서 사용');
-    }
-    
-    // 목업 종합 보고서 생성
-    const artists = artistIds?.map(id => mockArtistData[id]).filter(Boolean) || 
-                   [mockArtistData['ARTIST_0005']];
-    
-    const comprehensiveReport = {
-      report_id: `comprehensive_${Date.now()}`,
-      report_type: reportType,
-      artists_analyzed: artists.map(a => ({ id: a.artist_id, name: a.name })),
-      executive_summary: `이 보고서는 ${artists.length}명의 아티스트에 대한 종합 분석을 제공합니다. 각 아티스트의 5축 레이더 분석과 4축 선버스트 분석을 통해 시장에서의 위치와 잠재력을 평가했습니다.`,
-      detailed_analysis: {
-        market_positioning: artists.map(artist => ({
-          artist_id: artist.artist_id,
-          name: artist.name,
-          total_score: Object.values(artist.radar5).reduce((a, b) => a + b, 0),
-          market_tier: Object.values(artist.radar5).reduce((a, b) => a + b, 0) > 300 ? 'Tier 1' : 'Tier 2',
-          strengths: Object.entries(artist.radar5)
-            .filter(([_, value]) => value > 80)
-            .map(([axis, _]) => axis),
-          opportunities: Object.entries(artist.radar5)
-            .filter(([_, value]) => value < 50)
-            .map(([axis, _]) => axis)
-        })),
-        comparative_insights: artists.length > 1 ? {
-          market_leader: artists.reduce((a, b) => 
-            Object.values(a.radar5).reduce((x, y) => x + y, 0) > 
-            Object.values(b.radar5).reduce((x, y) => x + y, 0) ? a : b
-          ).name,
-          performance_gap: Math.max(...artists.map(a => 
-            Object.values(a.radar5).reduce((x, y) => x + y, 0)
-          )) - Math.min(...artists.map(a => 
-            Object.values(a.radar5).reduce((x, y) => x + y, 0)
-          )),
-          common_strengths: ['institution', 'academic'], // 분석 로직 생략
-          common_weaknesses: ['seduction'] // 분석 로직 생략
-        } : null
-      },
-      recommendations: {
-        strategic_focus: artists.map(artist => ({
-          artist_id: artist.artist_id,
-          name: artist.name,
-          primary_recommendation: '시장 가시성 확대',
-          secondary_recommendation: '네트워크 강화',
-          timeline: '6-12개월'
-        })),
-        market_opportunities: [
-          '국제 전시 확대',
-          '학술적 인정도 제고',
-          '미디어 노출 증가'
-        ]
-      },
-      technical_metadata: {
-        analysis_engine: 'CuratorOdyssey v2.0',
-        data_sources: ['P1 API', 'P2 Database', 'P3 UI'],
-        confidence_score: 0.92,
-        last_updated: new Date().toISOString()
-      },
-      _p3_ui_compatible: true
-    };
-    
-    console.log('✅ 종합 보고서 생성 완료');
-    return res.status(200).json(comprehensiveReport);
-    
-  } catch (error) {
-    console.error('❌ 종합 보고서 오류:', error);
-    return res.status(500).json({ error: 'Comprehensive report generation error' });
-  }
-});
-
-// 📊 GET /api/ai/vertex-health (Vertex AI 상태 확인)
-exports.checkVertexHealth = onRequest(async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
-  
-  try {
-    console.log('🔍 Vertex AI 헬스체크 요청');
-    
-    // P2 Vertex AI 상태 우선 확인
-    try {
-      const p2Doc = await db.collection('system_health').doc('vertex_ai').get();
-      if (p2Doc.exists) {
-        console.log('🎉 P2 Vertex AI 상태 사용');
-        return res.status(200).json(p2Doc.data());
-      }
-    } catch (p2Error) {
-      console.log('⏳ P2 대기 중 - 목업 상태 사용');
-    }
-    
-    // 목업 Vertex AI 상태
-    const healthStatus = {
-      service: 'Vertex AI',
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      capabilities: {
-        text_generation: true,
-        comprehensive_analysis: true,
-        multi_artist_comparison: true,
-        market_insights: true
-      },
-      performance_metrics: {
-        response_time: '<2s',
-        success_rate: '99.5%',
-        daily_quota_used: '15%',
-        monthly_quota_remaining: '85%'
-      },
-      configuration: {
-        model: 'text-bison@002',
-        max_tokens: 8192,
-        temperature: 0.7,
-        top_p: 0.95
-      },
-      p2_integration: {
-        data_adapter_ready: true,
-        quality_validation_active: true,
-        time_window_rules_applied: true
-      },
-      p3_integration: {
-        ui_compatibility: true,
-        report_formatting: true,
-        real_time_updates: true
-      },
-      _system_ready: true
-    };
-    
-    console.log('✅ Vertex AI 헬스체크 완료');
-    return res.status(200).json(healthStatus);
-    
-  } catch (error) {
-    console.error('❌ Vertex AI 헬스체크 오류:', error);
-    return res.status(200).json({
-      service: 'Vertex AI',
-      status: 'degraded',
-      timestamp: new Date().toISOString(),
-      error: error.message,
-      fallback_mode: true
+    return res.status(500).json({ 
+      error: 'Comparison analysis error',
+      code: 'ERR_COMPARISON_ANALYSIS',
+      message: error.message
     });
   }
 });
 
+// 제거됨: POST /api/ai/vertex-generate
+// 제거됨: GET /api/ai/vertex-health
+// 이 엔드포인트들은 문서에 정의되지 않았으며, 다른 엔드포인트로 통합되었습니다.
+// 내부 로직은 functions/src/services/vertexAIService.js에서 계속 사용 가능합니다.
+
 console.log('🚀 CuratorOdyssey Functions 완전 구현 로드 완료');
-console.log('📡 활성 엔드포인트: getArtistSummary, getArtistSunburst, getArtistTimeseries, getCompareArtists, generateAiReport, generateComprehensiveReport, checkVertexHealth, healthCheck');
+console.log('📡 활성 엔드포인트: getArtistSummary, getArtistSunburst, getArtistTimeseries, getCompareArtists, generateAiReport, healthCheck');

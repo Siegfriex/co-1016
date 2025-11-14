@@ -84,11 +84,14 @@ export const CORE_SOURCE_COLLECTIONS = {
     
     // Dr. Sarah Kim's 시계열 최적화 인덱싱 전략
     indexes: [
-      { fields: ['entity_type', 'debut_year'], type: 'composite' },
-      { fields: ['names_ko'], type: 'array_contains' },
-      { fields: ['names_en'], type: 'array_contains' },
-      { fields: ['external_ids.viaf'], type: 'simple' },
-      { fields: ['career_status', 'debut_year'], type: 'composite' }
+      // MEDIUM 우선순위: 활성 아티스트 목록 조회 (fnBatchComparePairs 사용)
+      { fields: ['identity_type', 'career_status'], type: 'composite', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['entity_type', 'debut_year'], type: 'composite', note: '자동 생성됨' },
+      { fields: ['names_ko'], type: 'array_contains', note: '자동 생성됨' },
+      { fields: ['names_en'], type: 'array_contains', note: '자동 생성됨' },
+      { fields: ['external_ids.viaf'], type: 'simple', note: '자동 생성됨' },
+      { fields: ['career_status', 'debut_year'], type: 'composite', note: '자동 생성됨' }
     ],
     
     // 시계열 분석 성능 최적화
@@ -165,11 +168,16 @@ export const CORE_SOURCE_COLLECTIONS = {
     },
     
     indexes: [
-      { fields: ['start_date'], type: 'simple' },
-      { fields: ['entity_participants'], type: 'array_contains' },
-      { fields: ['type', 'start_date'], type: 'composite' },
-      { fields: ['org', 'type'], type: 'composite' },
-      { fields: ['tier', 'start_date'], type: 'composite' }
+      // MEDIUM 우선순위: 특정 작가의 이벤트 시간순 조회 (최신순)
+      { fields: ['entity_participants', 'start_date'], type: 'composite', order: 'desc', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // MEDIUM 우선순위: 특정 작가의 이벤트 범위 조회 (timeWindowRules.js 사용)
+      { fields: ['entity_participants', 'start_date'], type: 'composite', order: 'asc', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['start_date'], type: 'simple', note: '자동 생성됨' },
+      { fields: ['entity_participants'], type: 'array_contains', note: '자동 생성됨' },
+      { fields: ['type', 'start_date'], type: 'composite', note: '자동 생성됨' },
+      { fields: ['org', 'type'], type: 'composite', note: '자동 생성됨' },
+      { fields: ['tier', 'start_date'], type: 'composite', note: '자동 생성됨' }
     ],
     
     dr_sarah_optimizations: {
@@ -271,11 +279,19 @@ export const CORE_SOURCE_COLLECTIONS = {
     },
     
     indexes: [
-      { fields: ['entity_id', 'axis'], type: 'composite' },
-      { fields: ['metric_code'], type: 'simple' },
-      { fields: ['entity_id', 'axis', 'time_window'], type: 'composite' },
-      { fields: ['source_id', 'priority'], type: 'composite' },
-      { fields: ['value_normalized'], type: 'simple' }
+      // HIGH 우선순위: 축별 집계 쿼리 최적화
+      { fields: ['entity_id', 'axis'], type: 'composite', priority: 'HIGH', status: '✅ 배포됨' },
+      // HIGH 우선순위: 시계열 집계 쿼리 (fnBatchTimeseries 필수)
+      { fields: ['entity_id', 'axis', 'time_window'], type: 'composite', priority: 'HIGH', status: '✅ 배포됨' },
+      // HIGH 우선순위: 정규화된 값 기준 시계열 조회
+      { fields: ['entity_id', 'axis', 'value_normalized', 'time_window'], type: 'composite', priority: 'HIGH', status: '✅ 배포됨' },
+      // MEDIUM 우선순위: 특정 축/지표 조회
+      { fields: ['entity_id', 'axis', 'metric_code'], type: 'composite', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // LOW 우선순위: 출처별 우선순위 조회
+      { fields: ['source_id', 'priority'], type: 'composite', priority: 'LOW', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['metric_code'], type: 'simple', note: '자동 생성됨' },
+      { fields: ['value_normalized'], type: 'simple', note: '자동 생성됨 (명시적으로 요구되면 추가)' }
     ],
     
     dr_sarah_optimizations: {
@@ -418,11 +434,14 @@ export const CORE_SOURCE_COLLECTIONS = {
     },
     
     indexes: [
-      { fields: ['src_id', 'dst_id'], type: 'composite' },
-      { fields: ['relation_type'], type: 'simple' },
-      { fields: ['event_id'], type: 'simple' },
-      { fields: ['src_id', 'relation_type'], type: 'composite' },
-      { fields: ['weight'], type: 'simple', order: 'desc' }
+      // MEDIUM 우선순위: 관계 네트워크 조회 (weight DESC)
+      { fields: ['src_id', 'relation_type', 'weight'], type: 'composite', order: 'desc', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['src_id', 'dst_id'], type: 'composite', note: '자동 생성됨' },
+      { fields: ['relation_type'], type: 'simple', note: '자동 생성됨' },
+      { fields: ['event_id'], type: 'simple', note: '자동 생성됨' },
+      { fields: ['src_id', 'relation_type'], type: 'composite', note: '자동 생성됨' },
+      { fields: ['weight'], type: 'simple', order: 'desc', note: '자동 생성됨' }
     ]
   },
 
@@ -757,8 +776,13 @@ export const SERVING_OPTIMIZED_COLLECTIONS = {
     },
     
     indexes: [
-      { fields: ['updated_at'], type: 'simple', order: 'desc' },
-      { fields: ['weights_version'], type: 'simple' }
+      // 주의: is_temporary는 단일 필드 인덱스로 Firestore가 자동 생성하므로 명시하지 않음
+      // { fields: ['is_temporary'], type: 'composite', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // MEDIUM 우선순위: 최신 요약 데이터 조회 (IA 문서 명시)
+      { fields: ['artist_id', 'updated_at'], type: 'composite', order: 'desc', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['updated_at'], type: 'simple', order: 'desc', note: '자동 생성됨' },
+      { fields: ['weights_version'], type: 'simple', note: '자동 생성됨' }
     ],
     
     dr_sarah_optimizations: {
@@ -866,9 +890,13 @@ export const SERVING_OPTIMIZED_COLLECTIONS = {
     },
     
     indexes: [
-      { fields: ['artist_id', 'axis'], type: 'composite' },
-      { fields: ['last_calculated'], type: 'simple', order: 'desc' },
-      { fields: ['version'], type: 'simple' }
+      // HIGH 우선순위: 특정 작가의 특정 축 시계열 조회
+      { fields: ['artist_id', 'axis'], type: 'composite', priority: 'HIGH', status: '✅ 배포됨' },
+      // HIGH 우선순위: 최신 버전 시계열 조회 (블루프린트/SRD 명시 필수)
+      { fields: ['artist_id', 'axis', 'version'], type: 'composite', order: 'desc', priority: 'HIGH', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['last_calculated'], type: 'simple', order: 'desc', note: '자동 생성됨' },
+      { fields: ['version'], type: 'simple', note: '자동 생성됨' }
     ],
     
     dr_sarah_optimizations: {
@@ -962,9 +990,12 @@ export const SERVING_OPTIMIZED_COLLECTIONS = {
     },
     
     indexes: [
-      { fields: ['artistA_id', 'axis'], type: 'composite' },
-      { fields: ['artistB_id', 'axis'], type: 'composite' },
-      { fields: ['abs_diff_sum'], type: 'simple', order: 'desc' }
+      // HIGH 우선순위: 특정 비교 쌍의 특정 축 조회 (getCompareArtists API 사용)
+      { fields: ['pair_id', 'axis'], type: 'composite', priority: 'HIGH', status: '✅ 배포됨' },
+      // MEDIUM 우선순위: 작가 쌍별 비교 분석 (IA 문서 명시)
+      { fields: ['artistA_id', 'artistB_id', 'axis'], type: 'composite', priority: 'MEDIUM', status: '✅ 배포됨' },
+      // 단일 필드 인덱스 (Firestore 자동 생성)
+      { fields: ['abs_diff_sum'], type: 'simple', order: 'desc', note: '자동 생성됨' }
     ]
   }
 };

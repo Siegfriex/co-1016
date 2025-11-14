@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CuratorOdyssey - Phase 2: 커리어 궤적 분석">
+  <title>커리어 궤적 분석 - CuratorOdyssey</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <!-- Header Navigation -->
+  <nav class="header-nav" role="navigation" aria-label="메인 네비게이션">
+    <div class="container">
+      <a href="index.html" class="nav-link">CuratorOdyssey</a>
+      <ul class="nav-links">
+        <li><a href="artist.html?id=ARTIST_0005" class="nav-link">Phase 1</a></li>
+        <li><a href="#phase2" class="nav-link active">Phase 2</a></li>
+        <li><a href="#phase3" class="nav-link">Phase 3</a></li>
+        <li><a href="#phase4" class="nav-link">Phase 4</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main role="main" aria-label="Phase 2: 커리어 궤적 분석">
+    <!-- 아티스트 정보 헤더 -->
+    <section class="section" id="artist-header" aria-label="아티스트 정보">
+      <div class="container">
+        <div class="artist-info">
+          <h1 id="artist-name">아티스트: <span id="artist-name-value">로딩 중...</span></h1>
+          <button class="btn btn-secondary" onclick="goToPhase1()">← Phase 1로 돌아가기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 축 선택 탭 -->
+    <section class="section" id="axis-tabs" aria-label="축 선택">
+      <div class="container">
+        <div class="axis-toggles">
+          <button class="axis-toggle active" onclick="selectAxis('전체')">전체</button>
+          <button class="axis-toggle" onclick="selectAxis('제도')">제도</button>
+          <button class="axis-toggle" onclick="selectAxis('학술')">학술</button>
+          <button class="axis-toggle" onclick="selectAxis('담론')">담론</button>
+          <button class="axis-toggle" onclick="selectAxis('네트워크')">네트워크</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- StackedAreaChart -->
+    <section class="section" id="chart-section" aria-label="누적 영역 차트">
+      <div class="container">
+        <div class="chart-container stacked-area-chart-container" id="stacked-area-chart" aria-label="누적 영역 차트"></div>
+      </div>
+    </section>
+
+    <!-- EventTimeline -->
+    <section class="section" id="timeline-section" aria-label="이벤트 타임라인">
+      <div class="container">
+        <div class="event-timeline" id="event-timeline" aria-label="이벤트 타임라인"></div>
+      </div>
+    </section>
+
+    <!-- 분석 인사이트 카드 -->
+    <section class="section" id="insights-section" aria-label="분석 인사이트">
+      <div class="container">
+        <div class="insights-card card">
+          <h3>분석 인사이트</h3>
+          <p id="insights-content">로딩 중...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 네비게이션 버튼 -->
+    <section class="section" id="navigation-section" aria-label="네비게이션">
+      <div class="container">
+        <button class="btn btn-primary" onclick="goToPhase3()">Phase 3: 비교 분석 보기</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <p>CuratorOdyssey v1.0</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/config.js"></script>
+  <script src="js/api-mock.js"></script>
+  <script src="js/charts/stacked-area-chart.js"></script>
+  
+  <script>
+    let currentAxis = '전체';
+    let artistId = 'ARTIST_0005';
+    let timeseriesData = null;
+
+    // URL 파라미터에서 아티스트 ID 가져오기
+    function getArtistIdFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('id') || 'ARTIST_0005';
+    }
+
+    // Phase 1로 이동
+    function goToPhase1() {
+      window.location.href = `artist.html?id=${artistId}`;
+    }
+
+    // Phase 3로 이동
+    function goToPhase3() {
+      // Phase 3는 두 아티스트 비교이므로 기본값 사용
+      window.location.href = `compare.html?artistA=${artistId}&artistB=ARTIST_0003`;
+    }
+
+    // 축 선택
+    function selectAxis(axis) {
+      currentAxis = axis;
+      
+      // 탭 활성화 업데이트
+      document.querySelectorAll('.axis-toggle').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // 차트 업데이트
+      if (timeseriesData) {
+        updateChart();
+      }
+    }
+
+    // 차트 업데이트
+    function updateChart() {
+      // TODO: StackedAreaChart 업데이트 로직
+      console.log('Updating chart for axis:', currentAxis);
+    }
+
+    // 페이지 로드 시 데이터 로드
+    document.addEventListener('DOMContentLoaded', async () => {
+      artistId = getArtistIdFromURL();
+      
+      try {
+        // 아티스트 요약 데이터 로드 (이름 표시용)
+        const summaryData = await apiMock.getArtistSummary(artistId);
+        document.getElementById('artist-name-value').textContent = summaryData.data.name || artistId;
+
+        // 배치 시계열 데이터 로드
+        const batchData = await apiMock.getBatchTimeseries(artistId, ['제도', '학술', '담론', '네트워크']);
+        timeseriesData = batchData.data.batch;
+
+        // StackedAreaChart 렌더링
+        // TODO: StackedAreaChart 구현 필요
+        console.log('Timeseries data loaded:', timeseriesData);
+
+        // 인사이트 표시
+        document.getElementById('insights-content').innerHTML = `
+          <p>📈 성장 패턴: 지속적 상승 (최근 5년)</p>
+          <p>🎯 주요 이벤트: 2015년 전시 (스파이크)</p>
+          <p>📊 상관계수: 제도-학술 0.85</p>
+        `;
+
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      }
+    });
+  </script>
+</body>
+</html>
+

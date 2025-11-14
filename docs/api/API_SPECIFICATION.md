@@ -4,11 +4,11 @@
 
 **Document Name**: CO-1016 CURATOR ODYSSEY API Specification v1.0
 
-**Version**: 1.0
+**Version**: 1.1
 
 **Status**: Draft (초안, SRD v1.0 및 TSD v1.0 기반)
 
-**Last Modified**: 2025-11-02
+**Last Modified**: 2025-11-10
 
 **Owner**: NEO GOD (Director)
 
@@ -16,6 +16,7 @@
 
 **Revision History**:
 - v1.0 (2025-11-02): SRD Phase 1-4 FR 및 TSD API Layer 기반 엔드포인트 정의, OpenAPI 3.0 호환 스펙화
+- v1.1 (2025-11-10): 문서 동기화 및 참조 관계 확정, FR ID 매핑 추가
 
 **Distribution Scope**: Backend Development Team (Firebase Functions), Frontend Development Team (React Query Integration), QA Team (Testing)
 
@@ -23,8 +24,12 @@
 
 ### References (참조 문서)
 
-- **[SRD v1.0](../requirements/SRD.md)** - Functional Requirements (FR) 및 Acceptance Criteria (AC)
-- **[TSD v1.0](../TSD.md)** - API Layer 상세 및 Functions 구현
+- **[FRD v1.1](../requirements/FRD.md)** - Functional Requirements Document, SRD FR을 API 엔드포인트와 매핑한 상세 명세
+- **[SRD v1.1](../requirements/SRD.md)** - Functional Requirements (FR) 및 Acceptance Criteria (AC)
+- **[FR ID 매핑 테이블](../FR_ID_MAPPING.md)** - SRD FR ID와 FRD FR ID 간 매핑 관계
+- **[TSD v1.1](../TSD.md)** - API Layer 상세 및 Functions 구현
+- **[BRD v1.1](../requirements/BRD.md)** - 피지컬 컴퓨팅 아트워크 및 웹앱 통합 비즈니스 요구사항
+- **[피지컬 컴퓨팅 API Spec](physical-computing/PHYSICAL_COMPUTING_API_SPEC.md)** - 피지컬 컴퓨팅 아트워크 API 명세서
 - **[API Integration Guide](API_INTEGRATION_GUIDE.md)** - React Query 통합, 오류 처리
 - **[OpenAPI Specification YAML](OPENAPI_SPECIFICATION.yaml)** - 본 명세서의 YAML 버전 (자동 생성 가능)
 
@@ -58,13 +63,14 @@
 - **Phase 2**: Timeseries data retrieval (`/timeseries`) + Batch API (`/batch/timeseries`)
 - **Phase 3**: Comparison data retrieval (`/compare`)
 - **Phase 4**: AI report generation (`/report/generate`)
+- **WebSocket 통신**: 피지컬 컴퓨팅 아트워크와의 실시간 통신 (WebSocket 프로토콜)
 - **Common**: Error handling, caching (React Query + Functions TTL), token optimization
 
 ### 1.4 Out of Scope (범위 외)
 
 - User authentication endpoints (향후 Firebase Auth 도입 예정, v1.1)
 - Large-scale batch API (ETL 파이프라인 별도)
-- WebSocket real-time updates (웹 폴링 사용)
+- WebSocket real-time updates for CuratorOdyssey (웹 폴링 사용, 피지컬 컴퓨팅 아트워크는 WebSocket 사용)
 
 ### 1.5 가정과 제약 (Assumptions and Constraints)
 
@@ -214,6 +220,10 @@ OpenAPI 3.0 호환 스펙. YAML 버전은 `OPENAPI_SPECIFICATION.yaml` 참조. �
 
 #### GET /api/artist/{id}/summary
 
+**FRD FR ID**: [FR-P1-SUM-001](../requirements/FRD.md#fr-p1-sum-001-아티스트-요약-데이터-조회)  
+**SRD FR ID**: [FR-P1-DQ-001](../requirements/SRD.md#fr-p1-dq-001-아티스트-요약-데이터-조회)  
+**구현 상태**: ✅ 구현 완료 (`functions/index.js`의 `getArtistSummary`)
+
 **Description**: Retrieve artist summary data (radar5, sunburst_l1). Firestore `artist_summary` 쿼리, 인덱스 히트. (AC-P1-DQ-001)
 
 **Path Parameters**:
@@ -322,6 +332,10 @@ GET /api/artist/ARTIST_0005/summary?version=v1.0
 
 #### GET /api/artist/{id}/sunburst
 
+**FRD FR ID**: [FR-P1-SUN-001](../requirements/FRD.md#fr-p1-sun-001-sunburst-상세-데이터-조회)  
+**SRD FR ID**: [FR-P1-DQ-001](../requirements/SRD.md#fr-p1-dq-001-아티스트-요약-데이터-조회) (보완)  
+**구현 상태**: ✅ 구현 완료 (`functions/index.js`의 `getArtistSunburst`)
+
 **Description**: Retrieve sunburst detailed data (L1/L2 계층). TSD 참조, Phase 1 보완.
 
 **Path Parameters**: `id` (string, required)
@@ -362,6 +376,10 @@ GET /api/artist/ARTIST_0005/summary?version=v1.0
 ### 4.3 Phase 2: Career Trajectory Analysis (커리어 궤적 분석, FR-P2-DQ-001 등 연계)
 
 #### GET /api/artist/{id}/timeseries/{axis}
+
+**FRD FR ID**: [FR-P2-TIM-001](../requirements/FRD.md#fr-p2-tim-001-시계열-데이터-조회)  
+**SRD FR ID**: [FR-P2-DQ-001](../requirements/SRD.md#fr-p2-dq-001-시계열-데이터-조회)  
+**구현 상태**: ⚠️ 부분 구현 (`functions/index.js`의 `getArtistTimeseries`, 목업 데이터만 반환)
 
 **Description**: Retrieve timeseries data by axis (`bins[{t,v}]`). Time Window Rules applied, composite index. (AC-P2-DQ-001)
 
@@ -453,6 +471,10 @@ GET /api/artist/ARTIST_0005/timeseries/제도?limit=20
 ---
 
 #### POST /api/batch/timeseries
+
+**FRD FR ID**: [FR-P2-BAT-001](../requirements/FRD.md#fr-p2-bat-001-배치-시계열-데이터-조회)  
+**SRD FR ID**: [FR-P2-DQ-001](../requirements/SRD.md#fr-p2-dq-001-시계열-데이터-조회) (확장)  
+**구현 상태**: ❌ 미구현
 
 **Description**: Batch timeseries retrieval for multiple axes (효율성 향상). Single request로 다중 축 조회.
 
@@ -566,6 +588,10 @@ GET /api/artist/ARTIST_0005/timeseries/제도?limit=20
 
 #### GET /api/artist/{id}/events/{axis}
 
+**FRD FR ID**: [FR-P2-EVT-001](../requirements/FRD.md#fr-p2-evt-001-이벤트-영향-분석)  
+**SRD FR ID**: [FR-P2-DQ-002](../requirements/SRD.md#fr-p2-dq-002-이벤트-영향-분석)  
+**구현 상태**: ❌ 미구현
+
 **Description**: Event impact analysis (delta_v). FR-P2-DQ-002 보완.
 
 **Path Parameters**: `id` (string, required, pattern: `^ARTIST_\d{4}$`), `axis` (string, required, enum: `제도`, `학술`, `담론`, `네트워크`)
@@ -602,6 +628,10 @@ GET /api/artist/ARTIST_0005/timeseries/제도?limit=20
 ### 4.4 Phase 3: Comparison Analysis (비교 분석, FR-P3-DQ-001 등 연계)
 
 #### GET /api/compare/{artistA}/{artistB}/{axis}
+
+**FRD FR ID**: [FR-P3-CMP-001](../requirements/FRD.md#fr-p3-cmp-001-두-아티스트-비교-데이터-조회)  
+**SRD FR ID**: [FR-P3-DQ-001](../requirements/SRD.md#fr-p3-dq-001-비교-데이터-조회)  
+**구현 상태**: ✅ 구현 완료 (`functions/index.js`의 `getCompareArtists`)
 
 **Description**: Compare two artists (`series[{t, v_A, v_B, diff}]`). Cache (`compare_pairs`) 또는 실시간 계산. (AC-P3-DQ-001)
 
@@ -671,6 +701,10 @@ GET /api/compare/ARTIST_0005/ARTIST_0010/제도?compute=true
 ### 4.5 Phase 4: AI Report Generation (AI 보고서 생성, FR-P4-RP-001 등 연계)
 
 #### POST /api/report/generate
+
+**FRD FR ID**: [FR-P4-RPT-001](../requirements/FRD.md#fr-p4-rpt-001-ai-보고서-생성)  
+**SRD FR ID**: [FR-P4-RP-001](../requirements/SRD.md#fr-p4-rp-001-vertex-ai-호출)  
+**구현 상태**: ✅ 구현 완료 (`functions/index.js`의 `generateAiReport`)
 
 **Description**: Aggregate Phase 1-3 data and generate AI report. Vertex AI 호출, 토큰 최적화. (AC-P4-RP-001)
 
@@ -787,6 +821,329 @@ Content-Type: application/json
 **Performance**: <30s, 토큰 <50K (NFR-P4-TO-001)
 
 **SRD Link**: [FR-P4-RP-001](../requirements/SRD.md#fr-p4-rp-001-vertex-ai-호출)
+
+---
+
+## 4.6 WebSocket 통신 프로토콜 (WebSocket Communication Protocol)
+
+본 섹션은 CuratorOdyssey 웹앱이 피지컬 컴퓨팅 아트워크와 통신하기 위한 WebSocket 프로토콜을 정의합니다. 피지컬 컴퓨팅 아트워크의 WebSocket 서버 API는 [피지컬 컴퓨팅 API Spec](physical-computing/PHYSICAL_COMPUTING_API_SPEC.md)을 참조하세요.
+
+**BRD 연계**: [BRD v1.1 Section 9.2](../requirements/BRD.md#92-websocket-통신-프로토콜)
+
+**FRD 연계**: 
+- [FR-WEB-001](../requirements/FRD.md#fr-web-001-모니터-자동-켜기): 모니터 자동 켜기
+- [FR-WEB-002](../requirements/FRD.md#fr-web-002-게임-결과-표시): 게임 결과 표시
+
+**SRD 연계**:
+- [FR-WEB-001](../requirements/SRD.md#fr-web-001-모니터-자동-켜기): 모니터 자동 켜기
+- [FR-WEB-002](../requirements/SRD.md#fr-web-002-게임-결과-표시): 게임 결과 표시
+
+### 4.6.1 연결 설정 (Connection Setup)
+
+**WebSocket URL**:
+- 개발 환경: `ws://localhost:8000/ws`
+- 프로덕션 환경: `wss://physical-game.example.com/ws` (실제 도메인으로 변경 필요)
+
+**프로토콜**: WebSocket (RFC 6455)
+
+**인증**: 현재 인증 없음 (향후 필요 시 추가)
+
+**연결 예시**:
+
+```javascript
+const ws = new WebSocket('ws://localhost:8000/ws');
+
+ws.onopen = () => {
+  console.log('WebSocket connected');
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+
+ws.onclose = () => {
+  console.log('WebSocket disconnected');
+};
+```
+
+### 4.6.2 메시지 타입 정의 (Message Types)
+
+피지컬 컴퓨팅 아트워크 백엔드에서 웹앱으로 전송되는 메시지 타입은 다음과 같습니다:
+
+#### 4.6.2.1 game_start
+
+**설명**: 게임 시작 이벤트
+
+**방향**: 서버 → 클라이언트
+
+**메시지 형식**:
+
+```json
+{
+  "type": "game_start",
+  "session_id": "SESSION_123456",
+  "timestamp": "2024-11-10T10:00:00Z"
+}
+```
+
+**필드 설명**:
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | Yes | 메시지 타입: `"game_start"` |
+| `session_id` | string | Yes | 게임 세션 ID (패턴: `^SESSION_\d+$`) |
+| `timestamp` | string | Yes | 이벤트 발생 시간 (ISO 8601) |
+
+**처리**: 웹앱은 세션 ID를 저장하고 게임 진행 상태를 초기화합니다.
+
+---
+
+#### 4.6.2.2 ball_collected
+
+**설명**: 공 수집 이벤트
+
+**방향**: 서버 → 클라이언트
+
+**메시지 형식**:
+
+```json
+{
+  "type": "ball_collected",
+  "session_id": "SESSION_123456",
+  "tier": 1,
+  "axis": "제도",
+  "timestamp": "2024-11-10T10:02:00Z"
+}
+```
+
+**필드 설명**:
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | Yes | 메시지 타입: `"ball_collected"` |
+| `session_id` | string | Yes | 게임 세션 ID |
+| `tier` | integer | Yes | 공 티어 (1: 당구공, 2: 골프공, 3: 탁구공) |
+| `axis` | string | Yes | 축 (`"제도"`, `"학술"`, `"담론"`, `"네트워크"`) |
+| `timestamp` | string | Yes | 이벤트 발생 시간 (ISO 8601) |
+
+**처리**: 웹앱은 공 수집 데이터를 업데이트하고 실시간 수집 현황을 표시합니다.
+
+---
+
+#### 4.6.2.3 treasure_box_selected
+
+**설명**: 보물 상자 선택 이벤트
+
+**방향**: 서버 → 클라이언트
+
+**메시지 형식**:
+
+```json
+{
+  "type": "treasure_box_selected",
+  "session_id": "SESSION_123456",
+  "box_id": 1,
+  "age_group": "10대",
+  "event_description": "구설수가 생기다",
+  "timestamp": "2024-11-10T10:03:00Z"
+}
+```
+
+**필드 설명**:
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | Yes | 메시지 타입: `"treasure_box_selected"` |
+| `session_id` | string | Yes | 게임 세션 ID |
+| `box_id` | integer | Yes | 보물 상자 ID (1-9) |
+| `age_group` | string | Yes | 나이대 (`"10대"`, `"20대"`, `"30대"`) |
+| `event_description` | string | Yes | 이벤트 설명 |
+| `timestamp` | string | Yes | 이벤트 발생 시간 (ISO 8601) |
+
+**처리**: 웹앱은 보물 상자 선택 데이터를 업데이트하고 주 페르소나를 갱신합니다.
+
+---
+
+#### 4.6.2.4 game_end
+
+**설명**: 게임 종료 이벤트 (결과 데이터 포함)
+
+**방향**: 서버 → 클라이언트
+
+**메시지 형식**:
+
+```json
+{
+  "type": "game_end",
+  "session_id": "SESSION_123456",
+  "data": {
+    "main_persona": {
+      "life_scenario": "구설수 → 퇴학 → 입대",
+      "event_sequence": [
+        "구설수가 생기다",
+        "대학교에서 퇴학당하다",
+        "군에 입대하다"
+      ]
+    },
+    "calculated_metadata": {
+      "radar5": {
+        "I": 25.0,
+        "F": 10.0,
+        "A": 15.0,
+        "M": 20.0,
+        "Sedu": 3.0
+      },
+      "sunburst_l1": {
+        "제도": 35.0,
+        "학술": 20.0,
+        "담론": 30.0,
+        "네트워크": 15.0
+      }
+    },
+    "ai_matching": {
+      "matched_artist_id": "ARTIST_0005",
+      "matched_artist_name": "헨리 마티스",
+      "similarity_score": 0.85,
+      "matching_reason": "유사한 인생 궤적과 작품 스타일",
+      "generated_story": "AI 생성 스토리 텍스트...",
+      "curator_odyssey_link": "/artist/ARTIST_0005"
+    }
+  },
+  "timestamp": "2024-11-10T10:08:30Z"
+}
+```
+
+**필드 설명**:
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | Yes | 메시지 타입: `"game_end"` |
+| `session_id` | string | Yes | 게임 세션 ID |
+| `data` | object | Yes | 게임 세션 데이터 (아래 참조) |
+| `timestamp` | string | Yes | 이벤트 발생 시간 (ISO 8601) |
+
+**data 객체 구조**:
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `main_persona` | object | Yes | 주 페르소나 정보 |
+| `main_persona.life_scenario` | string | Yes | 인생 시나리오 템플릿 |
+| `main_persona.event_sequence` | array[string] | Yes | 이벤트 시퀀스 배열 |
+| `calculated_metadata` | object | Yes | 계산된 메타데이터 |
+| `calculated_metadata.radar5` | object | Yes | 레이더 5축 점수 |
+| `calculated_metadata.sunburst_l1` | object | Yes | 선버스트 4축 점수 |
+| `ai_matching` | object | Yes | AI 매칭 결과 |
+| `ai_matching.matched_artist_id` | string | Yes | 매칭된 작가 ID |
+| `ai_matching.matched_artist_name` | string | Yes | 매칭된 작가 이름 |
+| `ai_matching.similarity_score` | number | Yes | 유사도 점수 (0-1) |
+| `ai_matching.curator_odyssey_link` | string | Yes | CuratorOdyssey 링크 |
+
+**처리**: 웹앱은 게임 세션 데이터를 저장하고 결과 화면을 표시합니다.
+
+---
+
+#### 4.6.2.5 treasure_box_detected
+
+**설명**: 배 감지 이벤트 (모니터 켜기 트리거)
+
+**방향**: 서버 → 클라이언트
+
+**메시지 형식**:
+
+```json
+{
+  "type": "treasure_box_detected",
+  "session_id": "SESSION_123456",
+  "timestamp": "2024-11-10T10:07:00Z"
+}
+```
+
+**필드 설명**:
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | Yes | 메시지 타입: `"treasure_box_detected"` |
+| `session_id` | string | Yes | 게임 세션 ID |
+| `timestamp` | string | Yes | 이벤트 발생 시간 (ISO 8601) |
+
+**처리**: 웹앱은 모니터를 자동으로 켜고 전체화면 모드로 전환한 후 결과 화면으로 이동합니다.
+
+**구현 예시**:
+
+```javascript
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  
+  if (message.type === 'treasure_box_detected') {
+    // 전체화면 모드 전환
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
+    }
+    
+    // 결과 화면으로 라우팅
+    navigate('/physical-game/result');
+  }
+};
+```
+
+### 4.6.3 재연결 로직 (Reconnection Logic)
+
+**전략**: 지수 백오프 (Exponential Backoff)
+
+**파라미터**:
+- 초기 지연: 1초
+- 최대 재연결 시도: 5회
+- 지수 백오프: `delay = INITIAL_DELAY × 2^attempt_number`
+- 최대 지연: 32초 (2^5)
+
+**구현 예시**:
+
+```javascript
+const MAX_RECONNECT_ATTEMPTS = 5;
+const INITIAL_RECONNECT_DELAY = 1000; // 1초
+let reconnectAttempts = 0;
+
+function attemptReconnect() {
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    console.error('Max reconnect attempts reached');
+    return;
+  }
+
+  const delay = INITIAL_RECONNECT_DELAY * Math.pow(2, reconnectAttempts);
+  reconnectAttempts += 1;
+
+  setTimeout(() => {
+    console.log(`Reconnecting... (attempt ${reconnectAttempts})`);
+    connect();
+  }, delay);
+}
+
+ws.onclose = () => {
+  attemptReconnect();
+};
+```
+
+### 4.6.4 에러 처리 (Error Handling)
+
+**연결 실패**:
+- 자동 재연결 시도 (지수 백오프)
+- 최대 재연결 시도 초과 시 사용자에게 알림
+
+**메시지 파싱 오류**:
+- 잘못된 형식의 메시지 수신 시 로그 기록 및 무시
+- `ERR_INVALID_MESSAGE` 에러 코드
+
+**타임아웃**:
+- 연결 타임아웃: 30초
+- 메시지 타임아웃: 없음 (서버가 주기적으로 ping 전송)
+
+### 4.6.5 참조 문서
+
+- [BRD v1.1 Section 9.2](../requirements/BRD.md#92-websocket-통신-프로토콜) - WebSocket 통신 프로토콜 비즈니스 요구사항
+- [TSD Section 13.2](../TSD.md#132-websocket-클라이언트-구현) - WebSocket 클라이언트 구현 상세
+- [피지컬 컴퓨팅 API Spec](physical-computing/PHYSICAL_COMPUTING_API_SPEC.md) - 피지컬 컴퓨팅 아트워크 WebSocket 서버 API
 
 ---
 

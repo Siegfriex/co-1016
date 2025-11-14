@@ -1,0 +1,191 @@
+/* CO-1016 CURATOR ODYSSEY: Responsive CSS
+ * Based on VID v2.0 Section 7
+ */
+
+/* ============================================
+   1. 반응형 브레이크포인트
+   ============================================ */
+
+/* 모바일: 0px - 767px */
+@media (max-width: 767px) {
+  :root {
+    --landing-container-padding: var(--landing-container-padding-mobile);
+    --landing-section-margin: var(--landing-section-margin-mobile);
+    --landing-grid-cols: var(--landing-grid-cols-mobile);
+    --landing-grid-gutter: var(--landing-grid-gutter-mobile);
+  }
+
+  .hero-logo {
+    top: 24px;
+    left: 24px;
+    width: clamp(80px, 15vw, 120px);
+    height: clamp(80px, 15vw, 120px);
+  }
+
+  .section-result {
+    padding: 80px 24px;
+  }
+
+  .grid-feature-cards {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, 1fr);
+  }
+}
+
+/* 태블릿: 768px - 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --landing-container-padding: var(--landing-container-padding-tablet);
+    --landing-section-margin: var(--landing-section-margin-tablet);
+    --landing-grid-cols: var(--landing-grid-cols-tablet);
+    --landing-grid-gutter: var(--landing-grid-gutter-tablet);
+  }
+
+  .section-result {
+    padding: 100px 40px;
+  }
+
+  .grid-feature-cards {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
+
+/* 데스크톱: 1024px+ */
+@media (min-width: 1024px) {
+  :root {
+    --landing-container-padding: var(--landing-container-padding-desktop);
+    --landing-section-margin: var(--landing-section-margin-desktop);
+    --landing-grid-cols: var(--landing-grid-cols-desktop);
+    --landing-grid-gutter: var(--landing-grid-gutter-desktop);
+  }
+
+  .section-result {
+    padding: var(--result-base-margin);
+  }
+}
+
+/* ============================================
+   2. 가로 스크롤 컨테이너 (결과 화면)
+   ============================================ */
+
+.horizontal-scroll-container {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  width: 100vw;
+  height: 100vh;
+  height: 100svh;
+}
+
+/* 모바일 가로 스크롤 유지 */
+@media (max-width: 767px) {
+  .horizontal-scroll-container {
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+  }
+
+  .section-result {
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+  }
+}
+
+/* 태블릿 레이아웃 조정 */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .section-result {
+    padding: 100px 40px;
+  }
+}
+
+/* ============================================
+   3. 터치 제스처 최적화
+   ============================================ */
+
+.horizontal-scroll-container {
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+.section-result {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* ============================================
+   4. 반응형 타이포그래피
+   ============================================ */
+
+@media (max-width: 767px) {
+  .hero-title {
+    font-size: clamp(32px, 8vw, 48px);
+  }
+
+  .section-title {
+    font-size: clamp(32px, 5vw, 48px);
+  }
+}
+
+/* ============================================
+   5. 반응형 차트 크기
+   ============================================ */
+
+@media (max-width: 767px) {
+  .radar-chart-container,
+  .sunburst-chart-container {
+    width: 300px;
+    height: 300px;
+  }
+
+  .stacked-area-chart-container {
+    height: 300px;
+  }
+
+  .comparison-chart-container {
+    width: 100%;
+    height: 300px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .radar-chart-container,
+  .sunburst-chart-container {
+    width: 350px;
+    height: 350px;
+  }
+
+  .stacked-area-chart-container {
+    height: 400px;
+  }
+
+  .comparison-chart-container {
+    width: 90%;
+    height: 350px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .radar-chart-container,
+  .sunburst-chart-container {
+    width: 400px;
+    height: 400px;
+  }
+
+  .stacked-area-chart-container {
+    height: 500px;
+  }
+
+  .comparison-chart-container {
+    width: 800px;
+    height: 400px;
+  }
+}
+

@@ -4,16 +4,18 @@
 
 **문서명**: CO-1016 CURATOR ODYSSEY 사이트맵 및 와이어프레임 기능명세
 
-**버전**: 1.0
+**버전**: 2.1
 
-**최종 수정**: 2025-11-02
+**최종 수정**: 2025-11-10
 
 **소유자**: NEO GOD (Director)
 
 **참조 문서**:
-- [VID v1.0](./VID.md) - Visual Interaction Design Document
-- [IA v1.0](../architecture/IA.md) - Information Architecture Document
-- [FRD v1.0](../requirements/FRD.md) - Functional Requirements Document
+- [VID v2.0](./VID.md) - Visual Interaction Design Document
+- [IA v1.1](../architecture/IA.md) - Information Architecture Document
+- [FRD v1.1](../requirements/FRD.md) - Functional Requirements Document
+- [SRD v1.1](../requirements/SRD.md) - Software Requirements Document
+- [TSD v1.1](../TSD.md) - Technical Design Document
 
 ---
 
@@ -44,6 +46,13 @@ CO-1016 CURATOR ODYSSEY
     ├── MarkdownReportDisplay (AI 보고서 표시)
     ├── 섹션 네비게이션 (Introduction, Analysis, Prediction)
     └── 다운로드/공유 버튼
+│
+└── /physical-game/result (피지컬 게임 결과 화면)
+    ├── MainPersonaSection (주 페르소나 섹션)
+    ├── EffortResultSection (노력의 결과 섹션)
+    ├── MatchedArtistSection (매칭 작가 섹션)
+    ├── ComparisonChartSection (비교 차트 섹션)
+    └── ResultNavigation (결과 화면 네비게이션)
 ```
 
 ---
@@ -94,20 +103,31 @@ CO-1016 CURATOR ODYSSEY
 
 #### 기능명세
 
-| 기능 ID | 기능명 | 설명 | 우선순위 |
-|---------|--------|------|----------|
-| **FEAT-HOME-001** | 아티스트 ID 입력 | 사용자가 아티스트 ID 입력 (패턴: `ARTIST_\d{4}`) | Must |
-| **FEAT-HOME-002** | 입력 검증 | Joi validation (`ARTIST_\d{4}` 패턴, 필수 입력) | Must |
-| **FEAT-HOME-003** | Phase 1 자동 이동 | 유효한 ID 입력 시 `/artist/:id`로 자동 이동 | Must |
-| **FEAT-HOME-004** | 예시 아티스트 표시 | 사용 가능한 아티스트 ID 목록 표시 (ARTIST_0005, ARTIST_0003) | Should |
-| **FEAT-HOME-005** | Phase 안내 카드 | Phase 1-4 간단한 설명 카드 표시 | Could |
-| **FEAT-HOME-006** | 에러 메시지 표시 | 잘못된 ID 입력 시 에러 메시지 표시 (404 에러) | Must |
+| 기능 ID | FRD FR ID | SRD FR ID | 기능명 | 설명 | 우선순위 |
+|---------|-----------|-----------|--------|------|----------|
+| **FEAT-HOME-001** | FR-P1-DQ-001 | FR-P1-DQ-001 | 아티스트 ID 입력 | 사용자가 아티스트 ID 입력 (패턴: `ARTIST_\d{4}`) | Must |
+| **FEAT-HOME-002** | FR-P1-DQ-001 | FR-P1-DQ-001 | 입력 검증 | Joi validation (`ARTIST_\d{4}` 패턴, 필수 입력) | Must |
+| **FEAT-HOME-003** | FR-P1-DQ-001 | FR-P1-DQ-001 | Phase 1 자동 이동 | 유효한 ID 입력 시 `/artist/:id`로 자동 이동 | Must |
+| **FEAT-HOME-004** | - | - | 예시 아티스트 표시 | 사용 가능한 아티스트 ID 목록 표시 (ARTIST_0005, ARTIST_0003) | Should |
+| **FEAT-HOME-005** | - | - | Phase 안내 카드 | Phase 1-4 간단한 설명 카드 표시 | Could |
+| **FEAT-HOME-006** | FR-P1-DQ-001 | FR-P1-DQ-001 | 에러 메시지 표시 | 잘못된 ID 입력 시 에러 메시지 표시 (404 에러) | Must |
 
-#### API 연동
-- **API 호출**: 없음 (단순 입력 검증)
-- **리다이렉트**: React Router `useNavigate` 사용
+#### 비기능 명세
 
-#### 인터랙션
+| 비기능 ID | 비기능명 | 설명 | 우선순위 | SRD 참조 |
+|-----------|---------|------|----------|----------|
+| **NFR-UI-001** | UI 일관성 | VID v2.0 디자인 시스템 준수 (색상, 타이포그래피, 그리드) | Must | [SRD NFR-UI-001](../requirements/SRD.md#nfr-ui-001-사용자-인터페이스-요구사항) |
+| **NFR-ACC-001** | 접근성 | WCAG 2.1 AA 준수 (키보드 네비게이션, ARIA 레이블, 색상 대비) | Must | [SRD NFR-ACC-001](../requirements/SRD.md#nfr-acc-001-wcag-21-aa-compliance) |
+| **NFR-PERF-001** | 성능 | 페이지 로드 시간 < 2초, API 응답 시간 p95 < 300ms | Must | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| **NFR-SEC-001** | 보안 | 입력 검증 (Joi), CORS 설정, XSS 방지 | Must | [SRD NFR-SEC-001](../requirements/SRD.md#nfr-sec-001-보안-요구사항) |
+| **NFR-SCAL-001** | 확장성 | MVP 30명 사용자 지원, 동시 사용자 최대 10명 | Must | [SRD NFR-SCAL-001](../requirements/SRD.md#nfr-scal-001-horizontal-scaling) |
+
+#### 수용 기준
+
+**FEAT-HOME-001, FEAT-HOME-002, FEAT-HOME-003, FEAT-HOME-006**:
+- **AC-P1-DQ-001**: Given 사용자가 홈페이지에 접속했을 때, When 아티스트 ID를 입력하고 로드 버튼을 클릭하면, Then 유효한 ID인 경우 Phase 1 페이지로 이동하고, 유효하지 않은 ID인 경우 에러 메시지를 표시한다.
+
+---
 - Enter 키: 입력 필드에서 Enter 키 → Phase 1 페이지로 이동
 - 로드 버튼 클릭: 동일 동작
 - Tab 키: 입력 필드 → 로드 버튼 순서
@@ -169,18 +189,36 @@ CO-1016 CURATOR ODYSSEY
 
 #### 기능명세
 
-| 기능 ID | 기능명 | 설명 | 우선순위 |
-|---------|--------|------|----------|
-| **FEAT-P1-001** | 아티스트 요약 데이터 조회 | `GET /api/artist/:id/summary` API 호출 | Must |
-| **FEAT-P1-002** | 레이더 차트 렌더링 | Radar5Chart 컴포넌트 (5축: I, F, A, M, Sedu) | Must |
-| **FEAT-P1-003** | 선버스트 차트 렌더링 | SunburstChart 컴포넌트 (4축: 제도, 학술, 담론, 네트워크) | Must |
-| **FEAT-P1-004** | 선버스트-레이더 상호작용 | 선버스트 섹터 클릭 → 레이더 해당 축 하이라이트 | Must |
-| **FEAT-P1-005** | 호버 툴팁 | 차트 호버 시 값 표시 (축 이름: 값) | Must |
-| **FEAT-P1-006** | 데이터 신선도 표시 | `weights_version`, `updated_at` 표시 | Should |
-| **FEAT-P1-007** | 일관성 검증 표시 | ±0.5p 일관성 검증 결과 표시 | Must |
-| **FEAT-P1-008** | Phase 2 네비게이션 | Phase 2 탭 클릭 → `/artist/:id/trajectory` 이동 | Must |
-| **FEAT-P1-009** | 로딩 상태 | React Query `isLoading` 상태 시 스켈레톤 UI | Must |
-| **FEAT-P1-010** | 에러 처리 | API 실패 시 에러 메시지 및 mockData.js 폴백 | Must |
+| 기능 ID | FRD FR ID | SRD FR ID | 기능명 | 설명 | 우선순위 |
+|---------|-----------|-----------|--------|------|----------|
+| **FEAT-P1-001** | FR-P1-DQ-001 | FR-P1-DQ-001 | 아티스트 요약 데이터 조회 | `GET /api/artist/:id/summary` API 호출 | Must |
+| **FEAT-P1-002** | FR-P1-VI-001 | FR-P1-VI-001 | 레이더 차트 렌더링 | Radar5Chart 컴포넌트 (5축: I, F, A, M, Sedu) | Must |
+| **FEAT-P1-003** | FR-P1-VI-001 | FR-P1-VI-001 | 선버스트 차트 렌더링 | SunburstChart 컴포넌트 (4축: 제도, 학술, 담론, 네트워크) | Must |
+| **FEAT-P1-004** | FR-P1-VI-001 | FR-P1-VI-001 | 선버스트-레이더 상호작용 | 선버스트 섹터 클릭 → 레이더 해당 축 하이라이트 | Must |
+| **FEAT-P1-005** | FR-P1-VI-001 | FR-P1-VI-001 | 호버 툴팁 | 차트 호버 시 값 표시 (축 이름: 값) | Must |
+| **FEAT-P1-006** | FR-P1-DQ-001 | FR-P1-DQ-001 | 데이터 신선도 표시 | `weights_version`, `updated_at` 표시 | Should |
+| **FEAT-P1-007** | FR-P1-DQ-001 | FR-P1-DQ-001 | 일관성 검증 표시 | ±0.5p 일관성 검증 결과 표시 | Must |
+| **FEAT-P1-008** | - | - | Phase 2 네비게이션 | Phase 2 탭 클릭 → `/artist/:id/trajectory` 이동 | Must |
+| **FEAT-P1-009** | FR-P1-DQ-001 | FR-P1-DQ-001 | 로딩 상태 | React Query `isLoading` 상태 시 스켈레톤 UI | Must |
+| **FEAT-P1-010** | FR-P1-DQ-001 | FR-P1-DQ-001 | 에러 처리 | API 실패 시 에러 메시지 및 mockData.js 폴백 | Must |
+
+#### 비기능 명세
+
+| 비기능 ID | 비기능명 | 설명 | 우선순위 |
+|-----------|---------|------|----------|
+| **NFR-UI-001** | UI 일관성 | VID v2.0 디자인 시스템 준수 (색상, 타이포그래피, 그리드) | Must |
+| **NFR-ACC-001** | 접근성 | WCAG 2.1 AA 준수 (키보드 네비게이션, ARIA 레이블, 색상 대비) | Must |
+| **NFR-PERF-001** | 성능 | API 응답 시간 p95 < 300ms, 차트 렌더링 시간 < 500ms | Must | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| **NFR-SEC-001** | 보안 | 입력 검증, CORS 설정, XSS 방지 | Must |
+| **NFR-SCAL-001** | 확장성 | MVP 30명 사용자 지원, 동시 사용자 최대 10명 | Must |
+
+#### 수용 기준
+
+**FEAT-P1-001, FEAT-P1-006, FEAT-P1-007, FEAT-P1-009, FEAT-P1-010**:
+- **AC-P1-DQ-001**: Given 아티스트 ID가 입력되었을 때, When API를 호출하면, Then 요약 데이터를 반환하고, 데이터가 없을 경우 mock 데이터를 반환하며, 일관성 검증 결과를 표시한다.
+
+**FEAT-P1-002, FEAT-P1-003, FEAT-P1-004, FEAT-P1-005**:
+- **AC-P1-VI-001**: Given 요약 데이터가 로드되었을 때, When 차트를 렌더링하면, Then 레이더 차트와 선버스트 차트가 표시되고, 선버스트 섹터 클릭 시 레이더 축이 하이라이트되며, 호버 시 툴팁이 표시된다.
 
 #### API 연동
 - **API 엔드포인트**: `GET /api/artist/:id/summary`
@@ -274,18 +312,36 @@ CO-1016 CURATOR ODYSSEY
 
 #### 기능명세
 
-| 기능 ID | 기능명 | 설명 | 우선순위 |
-|---------|--------|------|----------|
-| **FEAT-P2-001** | 배치 시계열 데이터 조회 | `POST /api/batch/timeseries` API 호출 (4축 동시) | Must |
-| **FEAT-P2-002** | StackedAreaChart 렌더링 | 4축 누적 영역 차트 (제도, 학술, 담론, 네트워크) | Must |
-| **FEAT-P2-003** | EventTimeline 렌더링 | 이벤트 타임라인 (전시, 아트페어, 시상 마커) | Should |
-| **FEAT-P2-004** | 차트-타임라인 동기화 | StackedAreaChart 호버 → EventTimeline 하이라이트 | Should |
-| **FEAT-P2-005** | 호버 툴팁 | 차트 호버 시 4축 값 표시 (`{axis}: {value}`) | Must |
-| **FEAT-P2-006** | 줌/팬 기능 | 마우스 휠 줌, 드래그 팬 (D3 zoom) | Could |
-| **FEAT-P2-007** | 축 선택 탭 | 개별 축 선택 시 해당 축만 표시 | Should |
-| **FEAT-P2-008** | 분석 인사이트 표시 | 성장 패턴, 주요 이벤트, 상관계수 표시 | Should |
-| **FEAT-P2-009** | Phase 1 복귀 | Phase 1 탭 클릭 → `/artist/:id` 이동 | Must |
-| **FEAT-P2-010** | Phase 3 네비게이션 | Phase 3 탭 클릭 → `/compare/:artistA/:artistB` 이동 | Must |
+| 기능 ID | FRD FR ID | SRD FR ID | 기능명 | 설명 | 우선순위 |
+|---------|-----------|-----------|--------|------|----------|
+| **FEAT-P2-001** | FR-P2-DQ-001 | FR-P2-DQ-001 | 배치 시계열 데이터 조회 | `POST /api/batch/timeseries` API 호출 (4축 동시) | Must |
+| **FEAT-P2-002** | FR-P2-VI-001 | FR-P2-VI-001 | StackedAreaChart 렌더링 | 4축 누적 영역 차트 (제도, 학술, 담론, 네트워크) | Must |
+| **FEAT-P2-003** | FR-P2-VI-001 | FR-P2-VI-001 | EventTimeline 렌더링 | 이벤트 타임라인 (전시, 아트페어, 시상 마커) | Should |
+| **FEAT-P2-004** | FR-P2-VI-001 | FR-P2-VI-001 | 차트-타임라인 동기화 | StackedAreaChart 호버 → EventTimeline 하이라이트 | Should |
+| **FEAT-P2-005** | FR-P2-VI-001 | FR-P2-VI-001 | 호버 툴팁 | 차트 호버 시 4축 값 표시 (`{axis}: {value}`) | Must |
+| **FEAT-P2-006** | - | - | 줌/팬 기능 | 마우스 휠 줌, 드래그 팬 (D3 zoom) | Could |
+| **FEAT-P2-007** | - | - | 축 선택 탭 | 개별 축 선택 시 해당 축만 표시 | Should |
+| **FEAT-P2-008** | - | - | 분석 인사이트 표시 | 성장 패턴, 주요 이벤트, 상관계수 표시 | Should |
+| **FEAT-P2-009** | - | - | Phase 1 복귀 | Phase 1 탭 클릭 → `/artist/:id` 이동 | Must |
+| **FEAT-P2-010** | - | - | Phase 3 네비게이션 | Phase 3 탭 클릭 → `/compare/:artistA/:artistB` 이동 | Must |
+
+#### 비기능 명세
+
+| 비기능 ID | 비기능명 | 설명 | 우선순위 |
+|-----------|---------|------|----------|
+| **NFR-UI-001** | UI 일관성 | VID v2.0 디자인 시스템 준수 (색상, 타이포그래피, 그리드) | Must |
+| **NFR-ACC-001** | 접근성 | WCAG 2.1 AA 준수 (키보드 네비게이션, ARIA 레이블, 색상 대비) | Must |
+| **NFR-PERF-001** | 성능 | API 응답 시간 p95 < 300ms, 차트 렌더링 시간 < 500ms | Must | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| **NFR-SEC-001** | 보안 | 입력 검증, CORS 설정, XSS 방지 | Must |
+| **NFR-SCAL-001** | 확장성 | MVP 30명 사용자 지원, 동시 사용자 최대 10명 | Must |
+
+#### 수용 기준
+
+**FEAT-P2-001**:
+- **AC-P2-DQ-001**: Given 아티스트 ID가 입력되었을 때, When 배치 시계열 API를 호출하면, Then 4축 시계열 데이터를 반환하고, 데이터가 없을 경우 mock 데이터를 반환한다.
+
+**FEAT-P2-002, FEAT-P2-003, FEAT-P2-004, FEAT-P2-005**:
+- **AC-P2-VI-001**: Given 시계열 데이터가 로드되었을 때, When 차트를 렌더링하면, Then StackedAreaChart와 EventTimeline이 표시되고, 차트 호버 시 타임라인이 동기화되며, 호버 시 툴팁이 표시된다.
 
 #### API 연동
 - **API 엔드포인트**: `POST /api/batch/timeseries`
@@ -372,18 +428,36 @@ CO-1016 CURATOR ODYSSEY
 
 #### 기능명세
 
-| 기능 ID | 기능명 | 설명 | 우선순위 |
-|---------|--------|------|----------|
-| **FEAT-P3-001** | 아티스트 A/B 선택 | 드롭다운 또는 검색으로 아티스트 선택 | Must |
-| **FEAT-P3-002** | 축 선택 | 4축 중 하나 선택 (제도, 학술, 담론, 네트워크) | Must |
-| **FEAT-P3-003** | 비교 데이터 조회 | `GET /api/compare/:A/:B/:axis` API 호출 | Must |
-| **FEAT-P3-004** | ComparisonAreaChart 렌더링 | dual-line 비교 영역 차트 (A/B 라인) | Must |
-| **FEAT-P3-005** | 비교 지표 표시 | 상관계수, abs_diff_sum, AUC 표시 | Must |
-| **FEAT-P3-006** | 범례 클릭 토글 | 범례 클릭 시 해당 라인 표시/숨김 | Should |
-| **FEAT-P3-007** | 호버 툴팁 | 호버 시 두 아티스트 값 및 차이 표시 | Must |
-| **FEAT-P3-008** | 캐시 히트 표시 | 캐시된 데이터 사용 시 표시 | Should |
-| **FEAT-P3-009** | 실시간 계산 표시 | 캐시 미스 시 실시간 계산 중 표시 | Should |
-| **FEAT-P3-010** | Phase 4 네비게이션 | Phase 4 탭 클릭 → `/artist/:id/report` 이동 | Must |
+| 기능 ID | FRD FR ID | SRD FR ID | 기능명 | 설명 | 우선순위 |
+|---------|-----------|-----------|--------|------|----------|
+| **FEAT-P3-001** | FR-P3-DQ-001 | FR-P3-DQ-001 | 아티스트 A/B 선택 | 드롭다운 또는 검색으로 아티스트 선택 | Must |
+| **FEAT-P3-002** | FR-P3-DQ-001 | FR-P3-DQ-001 | 축 선택 | 4축 중 하나 선택 (제도, 학술, 담론, 네트워크) | Must |
+| **FEAT-P3-003** | FR-P3-DQ-001 | FR-P3-DQ-001 | 비교 데이터 조회 | `GET /api/compare/:A/:B/:axis` API 호출 | Must |
+| **FEAT-P3-004** | FR-P3-VI-001 | FR-P3-VI-001 | ComparisonAreaChart 렌더링 | dual-line 비교 영역 차트 (A/B 라인) | Must |
+| **FEAT-P3-005** | FR-P3-DQ-001 | FR-P3-DQ-001 | 비교 지표 표시 | 상관계수, abs_diff_sum, AUC 표시 | Must |
+| **FEAT-P3-006** | FR-P3-VI-001 | FR-P3-VI-001 | 범례 클릭 토글 | 범례 클릭 시 해당 라인 표시/숨김 | Should |
+| **FEAT-P3-007** | FR-P3-VI-001 | FR-P3-VI-001 | 호버 툴팁 | 호버 시 두 아티스트 값 및 차이 표시 | Must |
+| **FEAT-P3-008** | FR-P3-DQ-001 | FR-P3-DQ-001 | 캐시 히트 표시 | 캐시된 데이터 사용 시 표시 | Should |
+| **FEAT-P3-009** | FR-P3-DQ-001 | FR-P3-DQ-001 | 실시간 계산 표시 | 캐시 미스 시 실시간 계산 중 표시 | Should |
+| **FEAT-P3-010** | - | - | Phase 4 네비게이션 | Phase 4 탭 클릭 → `/artist/:id/report` 이동 | Must |
+
+#### 비기능 명세
+
+| 비기능 ID | 비기능명 | 설명 | 우선순위 |
+|-----------|---------|------|----------|
+| **NFR-UI-001** | UI 일관성 | VID v2.0 디자인 시스템 준수 (색상, 타이포그래피, 그리드) | Must |
+| **NFR-ACC-001** | 접근성 | WCAG 2.1 AA 준수 (키보드 네비게이션, ARIA 레이블, 색상 대비) | Must |
+| **NFR-PERF-001** | 성능 | API 응답 시간 p95 < 300ms, 차트 렌더링 시간 < 500ms | Must | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| **NFR-SEC-001** | 보안 | 입력 검증, CORS 설정, XSS 방지 | Must |
+| **NFR-SCAL-001** | 확장성 | MVP 30명 사용자 지원, 동시 사용자 최대 10명 | Must |
+
+#### 수용 기준
+
+**FEAT-P3-001, FEAT-P3-002, FEAT-P3-003, FEAT-P3-005, FEAT-P3-008, FEAT-P3-009**:
+- **AC-P3-DQ-001**: Given 아티스트 A와 B가 선택되고 축이 선택되었을 때, When 비교 API를 호출하면, Then 비교 데이터를 반환하고, 캐시 히트 시 캐시된 데이터를 사용하며, 캐시 미스 시 실시간 계산을 수행한다.
+
+**FEAT-P3-004, FEAT-P3-006, FEAT-P3-007**:
+- **AC-P3-VI-001**: Given 비교 데이터가 로드되었을 때, When 차트를 렌더링하면, Then ComparisonAreaChart가 표시되고, 범례 클릭 시 해당 라인이 토글되며, 호버 시 툴팁이 표시된다.
 
 #### API 연동
 - **API 엔드포인트**: `GET /api/compare/:A/:B/:axis`
@@ -473,20 +547,38 @@ CO-1016 CURATOR ODYSSEY
 
 #### 기능명세
 
-| 기능 ID | 기능명 | 설명 | 우선순위 |
-|---------|--------|------|----------|
-| **FEAT-P4-001** | Phase 1-3 데이터 취합 | UniversalDataAdapter로 통합 데이터 준비 | Must |
-| **FEAT-P4-002** | AI 보고서 생성 | `POST /api/report/generate` API 호출 | Must |
-| **FEAT-P4-003** | Vertex AI 호출 | Gemini 1.5 Pro 호출 (토큰 최적화 적용) | Must |
-| **FEAT-P4-004** | 폴백 메커니즘 | Vertex 실패 → GPT-4 → 템플릿 보고서 | Must |
-| **FEAT-P4-005** | Markdown 렌더링 | React Markdown으로 보고서 표시 | Must |
-| **FEAT-P4-006** | 섹션 네비게이션 | Introduction, Analysis, Prediction 섹션으로 스크롤 | Should |
-| **FEAT-P4-007** | 로딩 상태 | 생성 중 스켈레톤 UI 및 진행률 표시 | Must |
-| **FEAT-P4-008** | 토큰 사용량 표시 | 입력/출력 토큰 사용량 표시 | Should |
-| **FEAT-P4-009** | 다운로드 기능 | PDF 또는 Markdown 다운로드 | Should |
-| **FEAT-P4-010** | 공유 기능 | 보고서 URL 복사 또는 공유 링크 생성 | Could |
-| **FEAT-P4-011** | 생성 시간 표시 | 보고서 생성 시간 및 모델 정보 표시 | Should |
-| **FEAT-P4-012** | 에러 처리 | AI 호출 실패 시 에러 메시지 및 폴백 표시 | Must |
+| 기능 ID | FRD FR ID | SRD FR ID | 기능명 | 설명 | 우선순위 |
+|---------|-----------|-----------|--------|------|----------|
+| **FEAT-P4-001** | FR-P4-DQ-001 | FR-P4-DQ-001 | Phase 1-3 데이터 취합 | UniversalDataAdapter로 통합 데이터 준비 | Must |
+| **FEAT-P4-002** | FR-P4-DQ-001 | FR-P4-DQ-001 | AI 보고서 생성 | `POST /api/report/generate` API 호출 | Must |
+| **FEAT-P4-003** | FR-P4-DQ-001 | FR-P4-DQ-001 | Vertex AI 호출 | Gemini 1.5 Pro 호출 (토큰 최적화 적용) | Must |
+| **FEAT-P4-004** | FR-P4-DQ-001 | FR-P4-DQ-001 | 폴백 메커니즘 | Vertex 실패 → GPT-4 → 템플릿 보고서 | Must |
+| **FEAT-P4-005** | FR-P4-VI-001 | FR-P4-VI-001 | Markdown 렌더링 | React Markdown으로 보고서 표시 | Must |
+| **FEAT-P4-006** | FR-P4-VI-001 | FR-P4-VI-001 | 섹션 네비게이션 | Introduction, Analysis, Prediction 섹션으로 스크롤 | Should |
+| **FEAT-P4-007** | FR-P4-DQ-001 | FR-P4-DQ-001 | 로딩 상태 | 생성 중 스켈레톤 UI 및 진행률 표시 | Must |
+| **FEAT-P4-008** | FR-P4-DQ-001 | FR-P4-DQ-001 | 토큰 사용량 표시 | 입력/출력 토큰 사용량 표시 | Should |
+| **FEAT-P4-009** | - | - | 다운로드 기능 | PDF 또는 Markdown 다운로드 | Should |
+| **FEAT-P4-010** | - | - | 공유 기능 | 보고서 URL 복사 또는 공유 링크 생성 | Could |
+| **FEAT-P4-011** | FR-P4-DQ-001 | FR-P4-DQ-001 | 생성 시간 표시 | 보고서 생성 시간 및 모델 정보 표시 | Should |
+| **FEAT-P4-012** | FR-P4-DQ-001 | FR-P4-DQ-001 | 에러 처리 | AI 호출 실패 시 에러 메시지 및 폴백 표시 | Must |
+
+#### 비기능 명세
+
+| 비기능 ID | 비기능명 | 설명 | 우선순위 |
+|-----------|---------|------|----------|
+| **NFR-UI-001** | UI 일관성 | VID v2.0 디자인 시스템 준수 (색상, 타이포그래피, 그리드) | Must |
+| **NFR-ACC-001** | 접근성 | WCAG 2.1 AA 준수 (키보드 네비게이션, ARIA 레이블, 색상 대비) | Must |
+| **NFR-PERF-001** | 성능 | AI 보고서 생성 시간 < 30초, 페이지 로드 시간 < 2초 | Must | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| **NFR-SEC-001** | 보안 | 입력 검증, CORS 설정, XSS 방지, 토큰 사용량 모니터링 | Must | [SRD NFR-SEC-001](../requirements/SRD.md#nfr-sec-001-보안-요구사항) |
+| **NFR-SCAL-001** | 확장성 | MVP 30명 사용자 지원, 동시 사용자 최대 10명 | Must |
+
+#### 수용 기준
+
+**FEAT-P4-001, FEAT-P4-002, FEAT-P4-003, FEAT-P4-004, FEAT-P4-007, FEAT-P4-008, FEAT-P4-011, FEAT-P4-012**:
+- **AC-P4-DQ-001**: Given Phase 1-3 데이터가 준비되었을 때, When AI 보고서 생성 API를 호출하면, Then Vertex AI를 호출하고, 실패 시 폴백 메커니즘을 사용하며, 로딩 상태와 토큰 사용량을 표시하고, 생성 시간을 기록한다.
+
+**FEAT-P4-005, FEAT-P4-006**:
+- **AC-P4-VI-001**: Given AI 보고서가 생성되었을 때, When 보고서를 렌더링하면, Then Markdown 형식으로 표시하고, 섹션 네비게이션이 작동한다.
 
 #### API 연동
 - **API 엔드포인트**: `POST /api/report/generate`
@@ -506,7 +598,167 @@ CO-1016 CURATOR ODYSSEY
 
 ---
 
-## 2. 네비게이션 맵 (Navigation Map)
+### 1.6 피지컬 게임 결과 화면 (`/physical-game/result`)
+
+#### 와이어프레임 레이아웃
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  가로 스크롤 컨테이너 (18 Years of Büro 스타일)         │
+│                                                          │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐  │
+│  │              │ │              │ │              │  │
+│  │  섹션 1:     │ │  섹션 2:     │ │  섹션 3:     │  │
+│  │  주 페르소나 │ │  노력의 결과 │ │  매칭 작가   │  │
+│  │              │ │              │ │              │  │
+│  │  ┌────────┐  │ │  ┌────────┐  │ │  ┌────────┐  │  │
+│  │  │10대:   │  │ │  │레이더  │  │ │  │작가명  │  │  │
+│  │  │구설수  │  │ │  │차트    │  │ │  │유사도  │  │  │
+│  │  └────────┘  │ │  └────────┘  │ │  └────────┘  │  │
+│  │  ┌────────┐  │ │  ┌────────┐  │ │              │  │
+│  │  │20대:   │  │ │  │선버스트│  │ │  [Curator   │  │
+│  │  │퇴학    │  │ │  │차트    │  │ │   Odyssey]  │  │
+│  │  └────────┘  │ │  └────────┘  │ │              │  │
+│  │  ┌────────┐  │ │              │ │              │  │
+│  │  │30대:   │  │ │              │ │              │  │
+│  │  │군입대  │  │ │              │ │              │  │
+│  │  └────────┘  │ │              │ │              │  │
+│  └──────────────┘ └──────────────┘ └──────────────┘  │
+│                                                          │
+│  ┌──────────────┐                                       │
+│  │              │                                       │
+│  │  섹션 4:     │                                       │
+│  │  비교 차트   │                                       │
+│  │              │                                       │
+│  │  ┌────────┐  │                                       │
+│  │  │비교    │  │                                       │
+│  │  │차트    │  │                                       │
+│  │  │(플레이어│  │                                       │
+│  │  │ vs 작가)│  │                                       │
+│  │  └────────┘  │                                       │
+│  │              │                                       │
+│  │  [Curator Odyssey로 이동]                           │
+│  └──────────────┘                                       │
+│                                                          │
+│  하단 점 네비게이션: [●] [○] [○] [○]                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### 기능명세
+
+| 기능 ID | FRD FR ID | SRD FR ID | 기능명 | 설명 | 우선순위 |
+|---------|-----------|-----------|--------|------|----------|
+| **FEAT-PG-001** | FR-WEB-001 | FR-WEB-001 | 게임 세션 데이터 로드 | WebSocket 또는 API로 게임 세션 데이터 수신 | Must |
+| **FEAT-PG-002** | FR-WEB-002 | FR-WEB-002 | 주 페르소나 섹션 표시 | 10대/20대/30대 이벤트 타임라인 표시 | Must |
+| **FEAT-PG-003** | FR-WEB-002 | FR-WEB-002 | 노력의 결과 섹션 표시 | 레이더 차트 및 선버스트 차트 표시 | Must |
+| **FEAT-PG-004** | FR-WEB-003 | FR-WEB-003 | 매칭 작가 섹션 표시 | AI 매칭된 작가 프로필 및 유사도 표시 | Must |
+| **FEAT-PG-005** | FR-WEB-003 | FR-WEB-003 | 비교 차트 섹션 표시 | 플레이어 vs 작가 비교 차트 표시 | Must |
+| **FEAT-PG-006** | FR-WEB-002 | FR-WEB-002 | 가로 스크롤 네비게이션 | 마우스 휠 → 가로 스크롤 변환 | Must |
+| **FEAT-PG-007** | FR-WEB-002 | FR-WEB-002 | 키보드 네비게이션 | 화살표 키 (← →)로 섹션 이동 | Should |
+| **FEAT-PG-008** | FR-WEB-002 | FR-WEB-002 | 하단 점 네비게이션 | 현재 섹션 인디케이터 및 클릭 이동 | Should |
+| **FEAT-PG-009** | FR-WEB-004 | FR-WEB-004 | CuratorOdyssey 링크 | 매칭 작가 상세 페이지로 이동 | Must |
+| **FEAT-PG-010** | FR-WEB-002 | FR-WEB-002 | WebGL 배경 렌더링 | 기하학적 패턴 배경 (주 컬러 기반) | Should |
+
+#### 비기능 명세
+
+| 비기능 ID | 비기능명 | 설명 | 우선순위 |
+|-----------|---------|------|----------|
+| **NFR-UI-001** | UI 일관성 | VID v2.0 디자인 시스템 준수 (색상, 타이포그래피, 그리드, 18 Years of Büro 스타일) | Must | [SRD NFR-UI-001](../requirements/SRD.md#nfr-ui-001-사용자-인터페이스-요구사항) |
+| **NFR-ACC-001** | 접근성 | WCAG 2.1 AA 준수 (키보드 네비게이션, ARIA 레이블, 색상 대비) | Must | [SRD NFR-ACC-001](../requirements/SRD.md#nfr-acc-001-wcag-21-aa-compliance) |
+| **NFR-PERF-001** | 성능 | WebSocket 연결 시간 < 1초, 차트 렌더링 시간 < 500ms | Must | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| **NFR-SEC-001** | 보안 | WebSocket 인증, CORS 설정, XSS 방지 | Must | [SRD NFR-SEC-001](../requirements/SRD.md#nfr-sec-001-보안-요구사항) |
+| **NFR-SCAL-001** | 확장성 | MVP 30명 사용자 지원, 동시 사용자 최대 10명 | Must | [SRD NFR-SCAL-001](../requirements/SRD.md#nfr-scal-001-horizontal-scaling) |
+
+#### 수용 기준
+
+**FEAT-PG-001**:
+- **AC-WEB-001**: Given 피지컬 게임이 시작되었을 때, When WebSocket에 연결하면, Then 게임 세션 데이터를 수신하고, 연결 실패 시 REST API로 폴백한다.
+
+**FEAT-PG-002, FEAT-PG-003, FEAT-PG-006, FEAT-PG-007, FEAT-PG-008, FEAT-PG-010**:
+- **AC-WEB-002**: Given 게임 세션 데이터가 수신되었을 때, When 결과 화면을 렌더링하면, Then 주 페르소나 섹션과 노력의 결과 섹션이 표시되고, 가로 스크롤 네비게이션이 작동하며, 키보드 네비게이션이 지원된다.
+
+**FEAT-PG-004, FEAT-PG-005**:
+- **AC-WEB-003**: Given 매칭 작가가 결정되었을 때, When CuratorOdyssey API를 호출하면, Then 작가 프로필과 비교 차트가 표시된다.
+
+**FEAT-PG-009**:
+- **AC-WEB-004**: Given 매칭 작가가 표시되었을 때, When CuratorOdyssey 링크를 클릭하면, Then 작가 상세 페이지로 이동한다.
+
+#### API 연동
+- **WebSocket**: `ws://localhost:8000/ws` (개발), `wss://api.example.com/ws` (프로덕션)
+- **REST API**: `GET /api/physical-game/session/{sessionId}` (폴백)
+- **CuratorOdyssey API**: `GET /api/artist/{id}/summary`, `GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis}`
+
+#### WebSocket 프로토콜 상세
+
+**메시지 타입**:
+- `game_start`: 게임 시작 메시지
+  ```json
+  {
+    "type": "game_start",
+    "session_id": "SESSION_123456",
+    "timestamp": "2025-11-10T10:00:00Z"
+  }
+  ```
+- `ball_collected`: 공 수집 메시지
+  ```json
+  {
+    "type": "ball_collected",
+    "session_id": "SESSION_123456",
+    "ball": {
+      "tier": 1,
+      "axis": "제도",
+      "timestamp": "2025-11-10T10:05:00Z"
+    }
+  }
+  ```
+- `treasure_box_selected`: 보물 상자 선택 메시지
+  ```json
+  {
+    "type": "treasure_box_selected",
+    "session_id": "SESSION_123456",
+    "treasure_box": {
+      "box_id": 1,
+      "age_group": "10대",
+      "event_description": "구설수가 생기다",
+      "timestamp": "2025-11-10T10:10:00Z"
+    }
+  }
+  ```
+- `game_end`: 게임 종료 메시지 (결과 데이터 포함)
+  ```json
+  {
+    "type": "game_end",
+    "session_id": "SESSION_123456",
+    "data": {
+      "main_persona": { /* ... */ },
+      "calculated_metadata": { /* ... */ },
+      "matched_artist_id": "ARTIST_0005"
+    },
+    "timestamp": "2025-11-10T10:15:00Z"
+  }
+  ```
+
+**재연결 로직**:
+- Exponential backoff 전략 사용
+- 초기 재연결 지연: 1초
+- 최대 재연결 지연: 30초
+- 최대 재연결 시도: 10회
+
+**에러 처리**:
+- 연결 실패 시 REST API로 폴백 (`GET /api/physical-game/session/{sessionId}`)
+- 메시지 파싱 실패 시 에러 로그 및 재연결 시도
+- 타임아웃: 30초 (게임 종료 메시지 미수신 시)
+
+#### 인터랙션
+- 화살표 키 (← →) → 섹션 이동
+- 하단 점 클릭 → 해당 섹션으로 스크롤
+- CuratorOdyssey 링크 클릭 → 작가 상세 페이지로 이동
+
+#### 반응형 레이아웃
+- 데스크톱: 가로 스크롤 레이아웃, 각 섹션 100vw × 100vh
+- 모바일: 가로 스크롤 유지, 터치 제스처 지원
+
+---
 
 ### 2.1 전체 네비게이션 구조
 
@@ -523,8 +775,11 @@ CO-1016 CURATOR ODYSSEY
   │     │
   │     └─→ Phase 4 (직접 접근 가능)
   │
-  └─→ Phase 3 (직접 접근: /compare/:A/:B)
-        └─→ Phase 4
+  ├─→ Phase 3 (직접 접근: /compare/:A/:B)
+  │     └─→ Phase 4
+  │
+  └─→ 피지컬 게임 결과 화면 (/physical-game/result)
+        └─→ CuratorOdyssey 작가 상세 페이지 (/artist/:id)
 ```
 
 ### 2.2 네비게이션 컴포넌트 (Header)
@@ -535,7 +790,7 @@ CO-1016 CURATOR ODYSSEY
 │  ┌───────────────────────────────────────────────────┐ │
 │  │ CuratorOdyssey Logo                               │ │
 │  │                                                   │ │
-│  │ [Phase 1] [Phase 2] [Phase 3] [Phase 4]          │ │
+│  │ [Phase 1] [Phase 2] [Phase 3] [Phase 4] [Physical]│ │
 │  │  (현재 Phase 강조 표시)                           │ │
 │  └───────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
@@ -548,6 +803,7 @@ CO-1016 CURATOR ODYSSEY
 | **FEAT-NAV-001** | Phase 탭 네비게이션 | Phase 1-4 탭 클릭으로 페이지 이동 | Must |
 | **FEAT-NAV-002** | 현재 Phase 강조 | 현재 페이지 Phase 탭 활성화 표시 | Must |
 | **FEAT-NAV-003** | 로고 클릭 | 로고 클릭 시 홈페이지(`/`)로 이동 | Must |
+| **FEAT-NAV-004** | 피지컬 게임 링크 | 피지컬 게임 결과 화면으로 이동 | Should |
 
 ---
 
@@ -631,20 +887,89 @@ CO-1016 CURATOR ODYSSEY
 
 ## 7. 추적성 매트릭스
 
-| 기능 ID | FRD FR ID | API 엔드포인트 | 컴포넌트 | 우선순위 |
-|---------|-----------|---------------|----------|----------|
-| FEAT-HOME-001 | FR-P1-DQ-001 | - | ArtistIdInput | Must |
-| FEAT-P1-001 | FR-P1-DQ-001 | GET /api/artist/:id/summary | ArtistPhase1View | Must |
-| FEAT-P1-002 | FR-P1-VI-001 | - | Radar5Chart | Must |
-| FEAT-P1-003 | FR-P1-VI-001 | - | SunburstChart | Must |
-| FEAT-P2-001 | FR-P2-DQ-001 | POST /api/batch/timeseries | ArtistPhase2View | Must |
-| FEAT-P2-002 | FR-P2-VI-001 | - | StackedAreaChart | Must |
-| FEAT-P3-001 | FR-P3-DQ-001 | GET /api/compare/:A/:B/:axis | ArtistPhase3View | Must |
-| FEAT-P3-004 | FR-P3-VI-001 | - | ComparisonAreaChart | Must |
-| FEAT-P4-001 | FR-P4-DQ-001 | POST /api/report/generate | ArtistPhase4View | Must |
-| FEAT-P4-005 | FR-P4-VI-001 | - | MarkdownReportDisplay | Must |
+| 기능 ID | FRD FR ID | SRD FR ID | API 엔드포인트 | 컴포넌트 | 우선순위 | 수용 기준 |
+|---------|-----------|-----------|---------------|----------|----------|----------|
+| FEAT-HOME-001 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistIdInput | Must | AC-P1-DQ-001 |
+| FEAT-HOME-002 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistIdInput | Must | AC-P1-DQ-001 |
+| FEAT-HOME-003 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistIdInput | Must | AC-P1-DQ-001 |
+| FEAT-HOME-006 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistIdInput | Must | AC-P1-DQ-001 |
+| FEAT-P1-001 | FR-P1-DQ-001 | FR-P1-DQ-001 | GET /api/artist/:id/summary | ArtistPhase1View | Must | AC-P1-DQ-001 |
+| FEAT-P1-002 | FR-P1-VI-001 | FR-P1-VI-001 | - | Radar5Chart | Must | AC-P1-VI-001 |
+| FEAT-P1-003 | FR-P1-VI-001 | FR-P1-VI-001 | - | SunburstChart | Must | AC-P1-VI-001 |
+| FEAT-P1-004 | FR-P1-VI-001 | FR-P1-VI-001 | - | ArtistPhase1View | Must | AC-P1-VI-001 |
+| FEAT-P1-005 | FR-P1-VI-001 | FR-P1-VI-001 | - | Radar5Chart, SunburstChart | Must | AC-P1-VI-001 |
+| FEAT-P1-006 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistPhase1View | Should | AC-P1-DQ-001 |
+| FEAT-P1-007 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistPhase1View | Must | AC-P1-DQ-001 |
+| FEAT-P1-009 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistPhase1View | Must | AC-P1-DQ-001 |
+| FEAT-P1-010 | FR-P1-DQ-001 | FR-P1-DQ-001 | - | ArtistPhase1View | Must | AC-P1-DQ-001 |
+| FEAT-P2-001 | FR-P2-DQ-001 | FR-P2-DQ-001 | POST /api/batch/timeseries | ArtistPhase2View | Must | AC-P2-DQ-001 |
+| FEAT-P2-002 | FR-P2-VI-001 | FR-P2-VI-001 | - | StackedAreaChart | Must | AC-P2-VI-001 |
+| FEAT-P2-003 | FR-P2-VI-001 | FR-P2-VI-001 | - | EventTimeline | Should | AC-P2-VI-001 |
+| FEAT-P2-004 | FR-P2-VI-001 | FR-P2-VI-001 | - | ArtistPhase2View | Should | AC-P2-VI-001 |
+| FEAT-P2-005 | FR-P2-VI-001 | FR-P2-VI-001 | - | StackedAreaChart | Must | AC-P2-VI-001 |
+| FEAT-P3-001 | FR-P3-DQ-001 | FR-P3-DQ-001 | - | ArtistPhase3View | Must | AC-P3-DQ-001 |
+| FEAT-P3-002 | FR-P3-DQ-001 | FR-P3-DQ-001 | - | ArtistPhase3View | Must | AC-P3-DQ-001 |
+| FEAT-P3-003 | FR-P3-DQ-001 | FR-P3-DQ-001 | GET /api/compare/:A/:B/:axis | ArtistPhase3View | Must | AC-P3-DQ-001 |
+| FEAT-P3-004 | FR-P3-VI-001 | FR-P3-VI-001 | - | ComparisonAreaChart | Must | AC-P3-VI-001 |
+| FEAT-P3-005 | FR-P3-DQ-001 | FR-P3-DQ-001 | - | ArtistPhase3View | Must | AC-P3-DQ-001 |
+| FEAT-P3-006 | FR-P3-VI-001 | FR-P3-VI-001 | - | ComparisonAreaChart | Should | AC-P3-VI-001 |
+| FEAT-P3-007 | FR-P3-VI-001 | FR-P3-VI-001 | - | ComparisonAreaChart | Must | AC-P3-VI-001 |
+| FEAT-P3-008 | FR-P3-DQ-001 | FR-P3-DQ-001 | - | ArtistPhase3View | Should | AC-P3-DQ-001 |
+| FEAT-P3-009 | FR-P3-DQ-001 | FR-P3-DQ-001 | - | ArtistPhase3View | Should | AC-P3-DQ-001 |
+| FEAT-P4-001 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Must | AC-P4-DQ-001 |
+| FEAT-P4-002 | FR-P4-DQ-001 | FR-P4-DQ-001 | POST /api/report/generate | ArtistPhase4View | Must | AC-P4-DQ-001 |
+| FEAT-P4-003 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Must | AC-P4-DQ-001 |
+| FEAT-P4-004 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Must | AC-P4-DQ-001 |
+| FEAT-P4-005 | FR-P4-VI-001 | FR-P4-VI-001 | - | MarkdownReportDisplay | Must | AC-P4-VI-001 |
+| FEAT-P4-006 | FR-P4-VI-001 | FR-P4-VI-001 | - | ArtistPhase4View | Should | AC-P4-VI-001 |
+| FEAT-P4-007 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Must | AC-P4-DQ-001 |
+| FEAT-P4-008 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Should | AC-P4-DQ-001 |
+| FEAT-P4-011 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Should | AC-P4-DQ-001 |
+| FEAT-P4-012 | FR-P4-DQ-001 | FR-P4-DQ-001 | - | ArtistPhase4View | Must | AC-P4-DQ-001 |
+| FEAT-PG-001 | FR-WEB-001 | FR-WEB-001 | WebSocket /ws | PhysicalGameResultView | Must | AC-WEB-001 |
+| FEAT-PG-002 | FR-WEB-002 | FR-WEB-002 | - | MainPersonaSection | Must | AC-WEB-002 |
+| FEAT-PG-003 | FR-WEB-002 | FR-WEB-002 | - | EffortResultSection | Must | AC-WEB-002 |
+| FEAT-PG-004 | FR-WEB-003 | FR-WEB-003 | GET /api/artist/{id}/summary | MatchedArtistSection | Must | AC-WEB-003 |
+| FEAT-PG-005 | FR-WEB-003 | FR-WEB-003 | GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis} | ComparisonChartSection | Must | AC-WEB-003 |
+| FEAT-PG-006 | FR-WEB-002 | FR-WEB-002 | - | PhysicalGameResultView | Must | AC-WEB-002 |
+| FEAT-PG-007 | FR-WEB-002 | FR-WEB-002 | - | PhysicalGameResultView | Should | AC-WEB-002 |
+| FEAT-PG-008 | FR-WEB-002 | FR-WEB-002 | - | PhysicalGameResultView | Should | AC-WEB-002 |
+| FEAT-PG-009 | FR-WEB-004 | FR-WEB-004 | - | ResultNavigation | Must | AC-WEB-004 |
+| FEAT-PG-010 | FR-WEB-002 | FR-WEB-002 | - | WebGLBackground | Should | AC-WEB-002 |
+
+### 비기능 요구사항 (NFR)
+
+| 비기능 ID | 비기능명 | 설명 | 우선순위 | 수용 기준 | SRD 참조 |
+|-----------|---------|------|----------|----------|----------|
+| NFR-UI-001 | UI 일관성 | VID v2.0 디자인 시스템 준수 | Must | AC-NFR-UI-001 | [SRD NFR-UI-001](../requirements/SRD.md#nfr-ui-001-사용자-인터페이스-요구사항) |
+| NFR-ACC-001 | 접근성 | WCAG 2.1 AA 준수 | Must | AC-NFR-ACC-001 | [SRD NFR-ACC-001](../requirements/SRD.md#nfr-acc-001-wcag-21-aa-compliance) |
+| NFR-PERF-001 | 성능 | API 응답 시간 p95 < 300ms | Must | AC-NFR-PERF-001 | [SRD NFR-PERF-001](../requirements/SRD.md#nfr-perf-001-api-응답-시간) |
+| NFR-SEC-001 | 보안 | 입력 검증, CORS 설정, XSS 방지 | Must | AC-NFR-SEC-001 | [SRD NFR-SEC-001](../requirements/SRD.md#nfr-sec-001-보안-요구사항) |
+| NFR-SCAL-001 | 확장성 | MVP 30명 사용자 지원 | Must | AC-NFR-SCAL-001 | [SRD NFR-SCAL-001](../requirements/SRD.md#nfr-scal-001-horizontal-scaling) |
 
 ---
 
-이 문서는 VID v1.0과 IA v1.0을 기반으로 작성되었으며, 실제 구현 시 React Router와 React Query를 사용하여 라우팅 및 데이터 페칭을 처리합니다.
+## 8. 비매핑 기능 설명
+
+다음 기능들은 SITEMAP_WIREFRAME에 정의되어 있으나 FRD에 별도 FR ID가 없습니다:
+
+| 기능 ID | 설명 | 우선순위 | 비고 |
+|---------|------|----------|------|
+| FEAT-HOME-004 | 예시 아티스트 표시 | Should | UI 개선 기능 |
+| FEAT-HOME-005 | Phase 안내 카드 | Could | UI 개선 기능 |
+| FEAT-P1-008 | Phase 2 네비게이션 | Must | 네비게이션 기능 |
+| FEAT-P2-006 | 줌/팬 기능 | Could | 차트 인터랙션 |
+| FEAT-P2-007 | 축 선택 탭 | Should | 차트 인터랙션 |
+| FEAT-P2-008 | 분석 인사이트 표시 | Should | UI 개선 기능 |
+| FEAT-P2-009 | Phase 1 복귀 | Must | 네비게이션 기능 |
+| FEAT-P2-010 | Phase 3 네비게이션 | Must | 네비게이션 기능 |
+| FEAT-P3-010 | Phase 4 네비게이션 | Must | 네비게이션 기능 |
+| FEAT-P4-009 | 다운로드 기능 | Should | UI 개선 기능 |
+| FEAT-P4-010 | 공유 기능 | Could | UI 개선 기능 |
+
+이러한 기능들은 FRD의 Phase별 FR에 포함되어 있으나 별도 FR ID로 분리되지 않았습니다.
+
+---
+
+이 문서는 VID v2.0과 IA v1.1을 기반으로 작성되었으며, 실제 구현 시 React Router와 React Query를 사용하여 라우팅 및 데이터 페칭을 처리합니다.
 

@@ -1,14 +1,14 @@
-# CO-1016 CURATOR ODYSSEY: Information Architecture Document (IA) v1.0
+# CO-1016 CURATOR ODYSSEY: Information Architecture Document (IA) v1.1
 
 ## 문서 메타데이터 (Document Metadata)
 
-**문서명**: CO-1016 CURATOR ODYSSEY Information Architecture Document (IA) v1.0
+**문서명**: CO-1016 CURATOR ODYSSEY Information Architecture Document (IA) v1.1
 
-**버전**: 1.0
+**버전**: 1.1
 
-**상태**: Draft (초안, FRD v1.0 기반)
+**상태**: Draft (초안, FRD v1.1 기반)
 
-**최종 수정**: 2025-11-02
+**최종 수정**: 2025-11-10
 
 **소유자**: NEO GOD (Director)
 
@@ -16,15 +16,19 @@
 
 **개정 이력**:
 - v1.0 (2025-11-02): FRD v1.0 기반 초기 작성
+- v1.1 (2025-11-10): 문서 동기화 및 참조 관계 확정, 피지컬 컴퓨팅 통합 내용 반영
 
 **배포 범위**: Data Team, Backend Development Team, Frontend Development Team
 
 **변경 관리 프로세스**: GitHub Issues/PR 워크플로, 변경 시 FRD/TSD 동시 업데이트
 
 **참조 문서 (References)**:
-- **[FRD v1.0](../requirements/FRD.md)** - Functional Requirements Document, 데이터 흐름 및 논리 데이터 모델
+- **[FRD v1.1](../requirements/FRD.md)** - Functional Requirements Document, 데이터 흐름 및 논리 데이터 모델
+- **[SRD v1.1](../requirements/SRD.md)** - Software Requirements Document, 기능 요구사항 및 수용 기준
+- **[TSD v1.1](../TSD.md)** - Technical Design Document, 기술 설계 및 API 구현
+- **[VID v2.0](../design/VID.md)** - Visual Interaction Design Document, 컴포넌트 스펙 및 디자인 시스템
 - **[Data Model Specification](../data/DATA_MODEL_SPECIFICATION.md)** - Firestore 스키마 상세, ER 다이어그램
-- **[API Specification v1.0](../api/API_SPECIFICATION.md)** - API 엔드포인트 정의
+- **[API Specification v1.1](../api/API_SPECIFICATION.md)** - API 엔드포인트 정의
 
 ---
 
@@ -76,6 +80,7 @@ erDiagram
     ARTIST ||--o{ COMPARISON : "compares_as_A"
     ARTIST ||--o{ COMPARISON : "compares_as_B"
     ARTIST ||--o{ REPORT : "generates"
+    ARTIST ||--o{ PHYSICAL_GAME_SESSION : "matched_by"
     
     TIMESERIES ||--o{ EVENT_IMPACT : "influenced_by"
     TIMESERIES }o--|| AXIS_MAP : "mapped_to"
@@ -83,6 +88,11 @@ erDiagram
     COMPARISON ||--o{ COMPARISON_SERIES : "contains"
     
     ARTIST_SUMMARY ||--|| WEIGHTS_VERSION : "uses"
+    
+    PHYSICAL_GAME_SESSION ||--o{ TREASURE_BOX : "selects"
+    PHYSICAL_GAME_SESSION }o--|| TREASURE_BOX_COMBINATION : "matches_to"
+    
+    TREASURE_BOX_COMBINATION ||--o{ TREASURE_BOX : "contains"
     
     ARTIST {
         string artist_id PK
@@ -125,6 +135,37 @@ erDiagram
         string model_used
         object token_usage
         timestamp generated_at
+    }
+    
+    PHYSICAL_GAME_SESSION {
+        string session_id PK
+        timestamp started_at
+        timestamp ended_at
+        object balls_collected
+        array treasure_boxes_selected
+        object calculated_metadata
+        string main_persona
+        string matched_artist_id FK
+        string combination_id FK
+        timestamp created_at
+    }
+    
+    TREASURE_BOX {
+        integer box_id PK
+        string age_group
+        integer position
+        string event_description
+        string event_type
+        object metadata
+    }
+    
+    TREASURE_BOX_COMBINATION {
+        string combination_id PK
+        array box_ids
+        string storytelling_keyword
+        array similar_artists
+        string rarity
+        object story_template
     }
 ```
 
@@ -306,6 +347,185 @@ erDiagram
 
 ---
 
+#### 2.2.6 PhysicalGameSession (피지컬 게임 세션)
+
+**Firestore 컬렉션**: `physical_game_sessions`
+
+**주요 필드**:
+- `session_id` (PK): `SESSION_\d{6}` 패턴
+- `started_at`: 게임 시작 시간
+- `ended_at`: 게임 종료 시간
+- `balls_collected`: 객체 `{tier_1, tier_2, tier_3}` (각 티어별 공 수집 정보)
+- `treasure_boxes_selected`: 배열 `[{box_id, age_group, event_description, sequence, selected_at}]` (시간순)
+- `calculated_metadata`: 객체 `{radar5, sunburst_l1, consistency_check, influence_score, recognition_score, artwork_price_range, final_grade}`
+- `main_persona`: 문자열 (주 페르소나)
+- `matched_artist_id` (FK): 매칭된 아티스트 ID
+- `combination_id` (FK): 매칭된 조합식 ID
+
+**관계**:
+- `matched_artist_id` → `Artist.artist_id` (N:1)
+- `combination_id` → `TreasureBoxCombination.combination_id` (N:1)
+- `treasure_boxes_selected[].box_id` → `TreasureBox.box_id` (N:M)
+
+**예시**:
+```json
+{
+  "session_id": "SESSION_123456",
+  "started_at": "2025-11-10T10:00:00Z",
+  "ended_at": "2025-11-10T10:15:00Z",
+  "balls_collected": {
+    "tier_1": {
+      "count": 2,
+      "axis_distribution": {
+        "제도": 1,
+        "학술": 0,
+        "담론": 1,
+        "네트워크": 0
+      },
+      "calculated_scores": {
+        "radar5": {
+          "I": 7.0,
+          "F": 3.0,
+          "A": 0,
+          "M": 8.0,
+          "Sedu": 0
+        },
+        "sunburst_l1": {
+          "제도": 10.0,
+          "학술": 0,
+          "담론": 10.0,
+          "네트워크": 0
+        }
+      }
+    }
+  },
+  "treasure_boxes_selected": [
+    {
+      "box_id": 1,
+      "age_group": "10대",
+      "event_description": "구설수가 생기다",
+      "sequence": 1,
+      "selected_at": "2025-11-10T10:05:00Z"
+    },
+    {
+      "box_id": 4,
+      "age_group": "20대",
+      "event_description": "대학교에서 퇴학당하다",
+      "sequence": 2,
+      "selected_at": "2025-11-10T10:10:00Z"
+    },
+    {
+      "box_id": 7,
+      "age_group": "30대",
+      "event_description": "군에 입대하다",
+      "sequence": 3,
+      "selected_at": "2025-11-10T10:15:00Z"
+    }
+  ],
+  "calculated_metadata": {
+    "radar5": {
+      "I": 25.0,
+      "F": 10.0,
+      "A": 15.0,
+      "M": 20.0,
+      "Sedu": 3.0
+    },
+    "sunburst_l1": {
+      "제도": 35.0,
+      "학술": 20.0,
+      "담론": 30.0,
+      "네트워크": 15.0
+    },
+    "consistency_check": {
+      "radar_sum": 73.0,
+      "sunburst_sum": 100.0,
+      "mapped_sum": 72.5,
+      "difference": 0.5,
+      "valid": true
+    }
+  },
+  "main_persona": "파격적 궤적의 순수 아웃사이더",
+  "matched_artist_id": "ARTIST_0005",
+  "combination_id": "COMBO_001",
+  "created_at": "2025-11-10T10:00:00Z",
+  "updated_at": "2025-11-10T10:15:00Z"
+}
+```
+
+---
+
+#### 2.2.7 TreasureBox (보물 상자)
+
+**Firestore 컬렉션**: `treasure_boxes`
+
+**주요 필드**:
+- `box_id` (PK): 정수 (1-9)
+- `age_group`: 문자열 (`"10대"`, `"20대"`, `"30대"`)
+- `position`: 정수 (해당 나이대 내 위치: 1, 2, 3)
+- `event_description`: 문자열 (이벤트 설명)
+- `event_type`: 문자열 (`"negative"`, `"positive"`, `"neutral"`)
+- `metadata`: 객체 `{category, impact_level}`
+
+**관계**:
+- `box_id` → `TreasureBoxCombination.box_ids[]` (1:N, 조합식에 포함)
+
+**예시**:
+```json
+{
+  "box_id": 1,
+  "age_group": "10대",
+  "position": 1,
+  "event_description": "구설수가 생기다",
+  "event_type": "negative",
+  "metadata": {
+    "category": "네트워크",
+    "impact_level": "high"
+  },
+  "created_at": "2025-11-10T00:00:00Z"
+}
+```
+
+---
+
+#### 2.2.8 TreasureBoxCombination (보물 상자 조합식)
+
+**Firestore 컬렉션**: `treasure_box_combinations`
+
+**주요 필드**:
+- `combination_id` (PK): `COMBO_\d{3}` 패턴 (COMBO_001 ~ COMBO_027)
+- `box_ids`: 배열 `[integer]` (시간순 정렬: 10대-20대-30대)
+- `story_template`: 문자열 (이벤트 시퀀스 템플릿)
+- `storytelling_keyword`: 문자열 (스토리텔링 키워드)
+- `similar_artists`: 배열 `[{name_ko, name_en, matching_rationale, keywords}]`
+- `rarity`: 문자열 (`"common"`, `"rare"`, `"epic"`)
+
+**관계**:
+- `box_ids[]` → `TreasureBox.box_id` (N:M, 조합식에 포함된 보물 상자들)
+- `combination_id` → `PhysicalGameSession.combination_id` (1:N)
+
+**예시**:
+```json
+{
+  "combination_id": "COMBO_001",
+  "box_ids": [1, 4, 7],
+  "story_template": "구설수 → 퇴학 → 입대",
+  "storytelling_keyword": "파격적 궤적의 순수 아웃사이더",
+  "similar_artists": [
+    {
+      "name_ko": "헨리 마티스",
+      "name_en": "Henri Matisse",
+      "matching_rationale": "초기 논란, 정규 교육 중단, 긴 경력 공백, 순수성 추구",
+      "keywords": ["초기 논란", "정규 교육 중단", "긴 경력 공백", "순수성 추구"]
+    }
+  ],
+  "rarity": "common",
+  "created_at": "2025-11-10T00:00:00Z",
+  "updated_at": "2025-11-10T00:00:00Z"
+}
+```
+
+---
+
 ### 2.3 엔티티 간 관계 매핑 (Entity Relationship Mapping)
 
 **핵심 관계**:
@@ -330,6 +550,22 @@ erDiagram
    - 한 비교 쌍은 여러 시계열 데이터 포인트를 가짐
    - 관계: `pair_id`로 포함
 
+6. **PhysicalGameSession → Artist** (N:1)
+   - 한 게임 세션은 하나의 매칭된 아티스트를 가짐
+   - 관계: `matched_artist_id`로 조인
+
+7. **PhysicalGameSession → TreasureBoxCombination** (N:1)
+   - 한 게임 세션은 하나의 조합식에 매칭됨
+   - 관계: `combination_id`로 조인
+
+8. **PhysicalGameSession → TreasureBox** (N:M)
+   - 한 게임 세션은 여러 보물 상자를 선택함 (시간순)
+   - 관계: `treasure_boxes_selected[].box_id`로 조인
+
+9. **TreasureBoxCombination → TreasureBox** (N:M)
+   - 한 조합식은 여러 보물 상자를 포함함 (3개: 10대-20대-30대)
+   - 관계: `box_ids[]` 배열로 포함
+
 ---
 
 ## 3. 네비게이션 맵 (Navigation Map)
@@ -353,9 +589,19 @@ erDiagram
   │     ├── 비교 데이터 조회 (GET /api/compare/:A/:B/:axis)
   │     └── ComparisonAreaChart (dual-line)
   │
-  └── Phase 4: AI 보고서 (/artist/:id/report)
-        ├── 보고서 생성 (POST /api/report/generate)
-        └── MarkdownReportDisplay
+  ├── Phase 4: AI 보고서 (/artist/:id/report)
+  │     ├── 보고서 생성 (POST /api/report/generate)
+  │     └── MarkdownReportDisplay
+  │
+  └── 피지컬 게임 결과 화면 (/physical-game/result)
+        ├── WebSocket 클라이언트 연결 (ws://localhost:8000/ws)
+        ├── 게임 세션 데이터 수신 (game_start, ball_collected, treasure_box_selected, game_end)
+        ├── 결과 화면 렌더링 (PhysicalGameResultView)
+        │     ├── MainPersonaSection (주 페르소나)
+        │     ├── EffortResultSection (노력의 결과: 레이더/선버스트 차트)
+        │     ├── MatchedArtistSection (매칭 작가)
+        │     └── ComparisonChartSection (비교 차트)
+        └── CuratorOdyssey 링크 (/artist/:id)
 ```
 
 ### 3.2 네비게이션 플로우
@@ -366,11 +612,13 @@ erDiagram
 2. **Phase 1 → Phase 2**: Phase 2 탭 클릭 → 배치 API 호출 → 시계열 차트 렌더링
 3. **Phase 1 → Phase 3**: 비교 페이지 이동 → 아티스트 A/B 선택 → 비교 차트 렌더링
 4. **Phase 1-3 → Phase 4**: 보고서 생성 버튼 클릭 → AI 호출 → Markdown 렌더링
+5. **피지컬 게임 → 결과 화면**: WebSocket 연결 → 게임 이벤트 수신 → 결과 화면 렌더링 → CuratorOdyssey 작가 상세 페이지 이동
 
 **대안 플로우**:
 
 - **Phase 2 → Phase 1**: Phase 1 탭 클릭 → 캐시된 요약 데이터 표시
 - **Phase 3 → Phase 1**: 아티스트 A/B 개별 페이지로 이동
+- **피지컬 게임 결과 화면 → CuratorOdyssey**: 매칭 작가 링크 클릭 → `/artist/:id` 이동
 
 ---
 
@@ -386,6 +634,7 @@ erDiagram
 | 시계열 데이터 | `['artist', id, 'batch-timeseries']` | 5분 | 10분 |
 | 비교 데이터 | `['compare', A, B, axis]` | 24시간 | 48시간 |
 | AI 보고서 | `['report', id]` | 1시간 | 2시간 |
+| 피지컬 게임 세션 | `['physical-game', sessionId]` | 1시간 | 2시간 |
 
 **Firestore 캐싱 (서버)**:
 
@@ -401,11 +650,22 @@ erDiagram
 
 **Firestore 복합 인덱스**:
 
-| 컬렉션 | 인덱스 필드 | 용도 |
-|--------|------------|------|
-| `timeseries` | `(artist_id, axis, version DESC)` | 시계열 조회 |
-| `compare_pairs` | `(artistA, artistB, axis)` | 비교 데이터 조회 |
-| `artist_summary` | `(artist_id, updated_at DESC)` | 최신 요약 데이터 |
+| 컬렉션 | 인덱스 필드 | 우선순위 | 상태 | 용도 |
+|--------|------------|---------|------|------|
+| `timeseries` | `(artist_id, axis, version DESC)` | HIGH | ✅ 배포됨 | 시계열 조회 (블루프린트/SRD 명시) |
+| `timeseries` | `(artist_id, axis)` | HIGH | ✅ 배포됨 | 기본 시계열 조회 |
+| `compare_pairs` | `(pair_id, axis)` | HIGH | ✅ 배포됨 | 기본 비교 데이터 조회 |
+| `compare_pairs` | `(artistA_id, artistB_id, axis)` | MEDIUM | ✅ 배포됨 | 작가 쌍별 비교 분석 |
+| `artist_summary` | `(artist_id, updated_at DESC)` | MEDIUM | ✅ 배포됨 | 최신 요약 데이터 |
+| `artist_summary` | `(is_temporary)` | MEDIUM | ✅ 배포됨 | P2 협업 상태 확인 |
+| `measures` | `(entity_id, axis, time_window)` | HIGH | ✅ 배포됨 | 시계열 집계 쿼리 |
+| `measures` | `(entity_id, axis)` | HIGH | ✅ 배포됨 | 축별 집계 쿼리 |
+| `events` | `(entity_participants CONTAINS, start_date DESC)` | MEDIUM | ✅ 배포됨 | 이벤트 시간순 조회 (최신순) |
+| `events` | `(entity_participants CONTAINS, start_date ASC)` | MEDIUM | ✅ 배포됨 | 이벤트 범위 조회 |
+| `entities` | `(identity_type, career_status)` | MEDIUM | ✅ 배포됨 | 활성 아티스트 목록 |
+| `edges` | `(src_id, relation_type, weight DESC)` | MEDIUM | ✅ 배포됨 | 관계 네트워크 조회 |
+| `physical_game_sessions` | `(session_id, created_at DESC)` | MEDIUM | ✅ 배포됨 | 게임 세션 조회 |
+| `treasure_box_combinations` | `(combination_id)` | MEDIUM | ✅ 배포됨 | 조합식 조회 |
 
 **인덱스 히트율 목표**: 99%
 
@@ -413,6 +673,11 @@ erDiagram
 - `.limit(50)` 적용 (시계열 bins)
 - `.orderBy()` + `.limit()` 조합
 - `.where()` 조건 순서 최적화
+
+**인덱스 관리**:
+- 자동 검증: `node scripts/firestore/validateIndexes.js`
+- 체크리스트: `docs/firestore/INDEX_CHECKLIST.md`
+- 상세 명세: `docs/data/DATA_MODEL_SPECIFICATION.md` Section 4
 
 ### 4.3 데이터 계층화 다이어그램
 
@@ -501,6 +766,8 @@ erDiagram
 | `events` | `/api/artist/{id}/events/{axis}` | GET | Phase 2 |
 | `compare_pairs` | `/api/compare/{artistA}/{artistB}/{axis}` | GET | Phase 3 |
 | `reports` (옵션) | `/api/report/generate` | POST | Phase 4 |
+| `physical_game_sessions` | WebSocket `/ws` 또는 `GET /api/physical-game/session/{sessionId}` | WebSocket/GET | 피지컬 게임 |
+| `treasure_box_combinations` | `GET /api/treasure-box/combinations` (참조용) | GET | 피지컬 게임 |
 
 ### 6.2 데이터 흐름 매핑
 
@@ -534,6 +801,16 @@ Firestore artist_summary + timeseries + compare_pairs
   → API POST /api/report/generate
   → Vertex AI 호출
   → MarkdownReportDisplay 렌더링
+```
+
+**피지컬 게임**:
+```
+WebSocket 연결 (ws://localhost:8000/ws)
+  → 게임 이벤트 수신 (game_start, ball_collected, treasure_box_selected, game_end)
+  → Firestore physical_game_sessions 저장
+  → 결과 화면 렌더링 (PhysicalGameResultView)
+  → CuratorOdyssey API 호출 (GET /api/artist/{id}/summary, GET /api/compare/{playerSessionId}/{matchedArtistId}/{axis})
+  → CuratorOdyssey 작가 상세 페이지 링크 (/artist/:id)
 ```
 
 ---
@@ -650,11 +927,14 @@ ORDER BY r.correlation DESC
 
 | 엔티티 | PK | 주요 FK | 관계 수 |
 |--------|-----|---------|---------|
-| Artist | artist_id | - | 4개 (timeseries, summary, comparison, report) |
+| Artist | artist_id | - | 5개 (timeseries, summary, comparison, report, physical_game_session) |
 | Timeseries | (artist_id, axis) | artist_id | 1개 (Artist) |
 | ArtistSummary | artist_id | artist_id, weights_version | 2개 (Artist, WeightsVersion) |
 | Comparison | pair_id | artistA, artistB | 2개 (Artist × 2) |
 | Report | report_id | artist_id | 1개 (Artist) |
+| PhysicalGameSession | session_id | matched_artist_id, combination_id | 2개 (Artist, TreasureBoxCombination) |
+| TreasureBox | box_id | - | 1개 (TreasureBoxCombination) |
+| TreasureBoxCombination | combination_id | - | 2개 (PhysicalGameSession, TreasureBox) |
 
 ### 8.2 네비게이션 맵 요약
 
@@ -664,6 +944,7 @@ ORDER BY r.correlation DESC
 | Phase 2 | `/artist/:id/trajectory` | StackedAreaChart, EventTimeline | POST `/api/batch/timeseries` |
 | Phase 3 | `/compare` | ComparisonAreaChart | GET `/api/compare/:A/:B/:axis` |
 | Phase 4 | `/artist/:id/report` | MarkdownReportDisplay | POST `/api/report/generate` |
+| 피지컬 게임 | `/physical-game/result` | PhysicalGameResultView, MainPersonaSection, EffortResultSection, MatchedArtistSection, ComparisonChartSection | WebSocket `/ws`, GET `/api/artist/{id}/summary`, GET `/api/compare/{playerSessionId}/{matchedArtistId}/{axis}` |
 
 ### 8.3 데이터 계층화 요약
 
@@ -678,6 +959,7 @@ ORDER BY r.correlation DESC
 
 **문서 버전 관리**:
 - v1.0 (2025-11-02): 초기 작성 (FRD v1.0 기반)
+- v1.1 (2025-11-10): 문서 동기화 및 참조 관계 확정, 피지컬 컴퓨팅 통합 내용 반영
 - 향후 업데이트: FR 변경 시 IA 동시 업데이트
 
 **주의사항**: 본 문서는 FRD의 모든 데이터 흐름 및 논리 데이터 모델을 커버하며, 성능 제약을 고려한 계층화를 강조한다.
